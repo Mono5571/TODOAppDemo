@@ -1,0 +1,81 @@
+:root {
+  font-size: 16px;
+  --color-error: red;
+  --color-disabled: rgb(126, 147, 211);
+}
+main {
+  width: 480px;
+  margin: 0 auto;
+  padding: 30px 30px 50px;
+  box-shadow: 0 0 10px 0 lightgray;
+}
+input,
+select {
+  margin: 0.5rem 1rem 0.5rem 0;
+}
+#input-task {
+  width: 12rem;
+}
+input[type='number'] {
+  width: 30px;
+}
+button#submit,
+button#priority,
+button#remove {
+  padding: 5px 10px;
+  margin-top: 1rem;
+  background-color: royalblue;
+  color: white;
+  border-style: none;
+
+  &[disabled] {
+    background-color: var(--color-disabled);
+  }
+}
+button#priority {
+  background-color: olivedrab;
+}
+button#remove {
+  background-color: firebrick;
+}
+table {
+  margin-top: 2rem;
+  border: solid 2px lightgray;
+  border-collapse: collapse;
+}
+th,
+td {
+  border: solid 1px lightgray;
+  border-collapse: collapse;
+}
+th {
+  background-color: beige;
+  padding: 0 0.5rem 0;
+}
+th#todoLabel {
+  width: 200px;
+}
+th#dateLabel {
+  width: 100px;
+}
+td {
+  text-align: center;
+}
+td input[type='checkbox'] {
+  margin: 0;
+}
+
+:is(input, select):has(+ .error-msg.visible) {
+  border: 1px solid var(--color-error);
+  border-radius: 0.2em;
+}
+
+.error-msg {
+  display: none;
+  color: var(--color-error);
+  font-size: 0.75rem;
+
+  &.visible {
+    display: inline-block;
+  }
+}

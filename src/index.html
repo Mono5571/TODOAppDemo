@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chapter 14: TODOリスト</title>
+
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="../dist/main.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <div id="input">
+        <label>TODO: <input id="input-task" placeholder="16文字以内で入力してください" /><span id="error-task" class="error-msg"></span></label><br />
+        優先度:
+        <select id="select-priority">
+          <option value="low">低</option>
+          <option value="middle" selected>並</option>
+          <option value="high">高</option>
+        </select>
+        <span id="error-priority" class="error-msg"></span>
+        <label>期日: <input id="input-deadline" type="date" /><span id="error-deadline" class="error-msg"></span></label></span
+        ><br />
+        <button id="submit">登録</button>
+      </div>
+
+      <div id="table-container"></div>
+    </main>
+  </body>
+</html>
