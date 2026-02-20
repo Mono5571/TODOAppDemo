@@ -1,2 +1,21 @@
-# dist/ ディレクトリは無視
+# 依存関連 / ビルド
 dist/
+
+node_modules/
+
+# セキュリティ関連
+.env
+
+*.pem
+
+*.key
+
+id_rsa
+
+# ログ / 一時ファイル
+*.log
+
+*.tmp
+
+# サムネイルなど
+Thumbs.db
