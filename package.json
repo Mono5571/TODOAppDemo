@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "serve": "npx http-server src -p 8080",
+    "serve": "pnpm exec http-server src -p 8080",
     "dev": "pnpm run build && pnpm run serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
