@@ -16,5 +16,7 @@ export const createDB = (config: DbConfig): TodoDataBase => {
       return createMockDBManager(config);
     case 'storage':
       return createStorageDBManager(config);
+    default:
+      return config satisfies never;
   }
 };
