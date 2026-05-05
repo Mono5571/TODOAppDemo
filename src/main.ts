@@ -1,5 +1,6 @@
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
+// import { initTodoDB } from ;
 
 const main = () => {
   const tableContainer = document.getElementById('table-container');
@@ -31,6 +32,9 @@ const main = () => {
   initTodoTable(tableContainer);
 
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
+
+  // initTodoDB({ label: 'storage', storage: localStorage });
+  // -> データの読み込みをおこない、Table に渡して描画させる
 };
 
 document.addEventListener('DOMContentLoaded', main);
