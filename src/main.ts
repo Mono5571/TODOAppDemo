@@ -33,7 +33,8 @@ const main = () => {
 
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
 
-  // initTodoDB({ label: 'storage', storage: localStorage });
+  // const db = createDB({ label: 'storage', storage: window.localStorage });
+  // initTodoDB(db);
   // -> データの読み込みをおこない、Table に渡して描画させる
 };
 
