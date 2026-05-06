@@ -1,7 +1,7 @@
 import type { Todo } from '../types/todo.js';
 import type { DbConfig, TodoDataBase } from '../types/db.js';
 
-export const createStorageDBManager = (config: Extract<DbConfig, { label: 'storage' }>): TodoDataBase => {
+export const createStorageDB = (config: Extract<DbConfig, { label: 'storage' }>): TodoDataBase => {
   const key = 'my-todo-app-v1';
 
   return {
@@ -9,7 +9,7 @@ export const createStorageDBManager = (config: Extract<DbConfig, { label: 'stora
       try {
         config.storage.setItem(key, JSON.stringify(todos));
       } catch (e) {
-        console.error('config.storage の保存に失敗しました。容量不足の可能性があります。', e);
+        console.error('ストレージの保存に失敗しました。容量不足の可能性があります。', e);
       }
     },
     load: async () => {
