@@ -36,8 +36,9 @@ flowchart TD
 ```mermaid
 classDiagram
   class DB {
-    +save(Todo[]): Promise void
-    +load(): Promise Todo[]
+    <<interface>>
+    +save(todos: Todo[])* void
+    +load()* Todo[]
   }
 
   class MockDB
@@ -49,4 +50,6 @@ classDiagram
 
 DB オブジェクトを返す関数 createDB は、種別 (モックなのかストレージなのか、API 経由での実際の DB 操作なのか) と依存 (localStorage / sessionStorage, url など) を引数 config: DbConfig として受け取る。
 
-型 Dbconfig は　discriminated union type で定義、Extract<DbConfig, {label: DbLabel}> で取り出せるようにしておく
+型 Dbconfig は　discriminated union type で定義、Extract<DbConfig, {label: DbLabel}> で取り出せるようにしておく。
+
+save(), load() はそれぞれ Promise<void>, Promise<Todo[]> を返す。
