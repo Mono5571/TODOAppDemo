@@ -1,7 +1,7 @@
 import type { Todo } from '../types/todo.js';
-import type { DbConfig, TodoDataBase } from '../types/db.js';
+import type { ConfigFor, TodoDataBase } from '../types/db.js';
 
-export const createStorageDB = (config: Extract<DbConfig, { label: 'storage' }>): TodoDataBase => {
+export const createStorageDB = (config: ConfigFor<'storage'>): TodoDataBase => {
   const key = 'my-todo-app-v1';
 
   return {

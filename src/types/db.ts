@@ -1,11 +1,13 @@
 import type { Todo } from './todo.js';
 
-const dbLabelList = ['mock', 'storage'] as const; // 必要になったら DB を追加
-export type DbLabel = (typeof dbLabelList)[number];
+const dbLabelList = ['mock', 'storage'] as const; // 必要になったら 'api' を追加
+export type DBLabel = (typeof dbLabelList)[number];
 
-export type DbConfig = { label: 'mock'; initialData?: Todo[] } | { label: 'storage'; storage: Storage };
+// discriminated union: label: DBLabel を discriminator として、分岐による絞り込みを可能にしたユニオン型
+export type DBConfig = { label: 'mock'; initialData?: Todo[] } | { label: 'storage'; storage: Storage };
 
-// export type DbFactoryMap = { [Key in DbLabel]: (config: Extract<DbConfig, { label: Key }>) => TodoDataBase };
+// Mapped Types と FactoryMap Pattern を両立するための補助用の型
+export type ConfigFor<L extends DBLabel> = Extract<DBConfig, { label: L }>;
 
 export interface TodoDataBase {
   save(todos: Todo[]): Promise<void>;
