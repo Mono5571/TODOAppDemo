@@ -62,6 +62,7 @@ ConfigFor<L extends DBLabel> という型を追加することで、Mapped Types
 
 - README.md 内の `docker-compose` コマンドを `docker compose` に変更 (ハイフンからスペースに)。
 - docker-compose.yml に volumes を追記。ローカルでの変更がコンテナ内に反映されるように。
-  > [!NOTE]
-  > TypeScript のファイルを変更した場合は docker exec -it <コンテナ名> ash してから pnpm run build する。
-  > ash なのは alpine をベースイメージに使用しているため。
+
+> [!NOTE]
+> TypeScript のファイルを変更した場合は docker exec -it <コンテナ名> ash してから pnpm run build する。
+> ash なのは alpine をベースイメージに使用しているため。
