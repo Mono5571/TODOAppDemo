@@ -57,3 +57,10 @@ save(), load() はそれぞれ Promise<void>, Promise<Todo[]> を返す。
 ## 2026-05-21
 
 ConfigFor<L extends DBLabel> という型を追加することで、Mapped Types による FactoryMap Pattern と discriminated union を両立するように変更。
+
+## 2026-05-24
+
+- README.md 内の `docker-compose` コマンドを `docker compose` に変更 (ハイフンからスペースに)。
+- docker-compose.yml に volumes を追記。ローカルでの変更がコンテナ内に反映されるように。
+  > [!NOTE] TypeScript のファイルを変更した場合は docker exec -it <コンテナ名> ash してから pnpm run build する。
+  > ash なのは alpine をベースイメージに使用しているため。

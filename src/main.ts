@@ -1,6 +1,7 @@
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
-// import { initTodoDB } from ;
+import { createDB } from './TodoDB/createDB.js';
+import { initTodoDB } from './TodoDB/initTodoDB.js';
 
 const main = () => {
   const tableContainer = document.getElementById('table-container');
@@ -33,8 +34,8 @@ const main = () => {
 
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
 
-  // const db = createDB({ label: 'storage', storage: window.localStorage });
-  // initTodoDB(db);
+  const db = createDB({ label: 'storage', storage: window.localStorage });
+  initTodoDB(db);
   // -> データの読み込みをおこない、Table に渡して描画させる
 };
 
@@ -42,6 +43,6 @@ document.addEventListener('DOMContentLoaded', main);
 
 // --- What TO DO ---
 /*
-4. module tree 書く
+4. delete の実装
 5. storage 保存と読み込みの処理
 */
