@@ -34,9 +34,10 @@ const main = () => {
 
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
 
-  const db = createDB({ label: 'storage', storage: window.localStorage });
+  // DB インスタンスの生成
+  const db = createDB({ label: 'storage', storage: window.sessionStorage });
+  // データの読み込みをおこない、TodoStore に save() を購読させる
   initTodoDB(db);
-  // -> データの読み込みをおこない、Table に渡して描画させる
 };
 
 document.addEventListener('DOMContentLoaded', main);

@@ -12,3 +12,6 @@ services:
       - type: bind
         source: ./src
         target: /app/src
+      - type: bind
+        source: ./public
+        target: /app/public

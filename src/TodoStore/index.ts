@@ -10,5 +10,5 @@ export const todoActions = {
     todoStore.dispatch((s) => [...s, { ...validData, id: generateTodoId(), isDone: false }]),
   toggleDone: (id: string) => todoStore.dispatch((s) => s.map((t) => (t.id === id ? { ...t, isDone: !t.isDone } : t))),
   remove: (id: string) => todoStore.dispatch((s) => s.filter((t) => t.id !== id)),
-  setInitial: (todos: Todo[]) => todoStore.dispatch((_) => ({ ...todos }))
+  setInitial: (todos: Todo[]) => todoStore.dispatch((_) => [...todos])
 };
