@@ -45,5 +45,4 @@ document.addEventListener('DOMContentLoaded', main);
 // --- What TO DO ---
 /*
 4. delete の実装
-5. storage 保存と読み込みの処理
 */

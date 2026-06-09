@@ -3,6 +3,8 @@ import { shallowObjectEqual } from '../../utils/utils.js';
 import { validateInputValues } from '../../validators/validateInputValues.js';
 import { formStore, formActions } from '../../FormStore/index.js';
 import { todoActions } from '../../TodoStore/index.js';
+import { generateTodoId } from '../../utils/generateTodoId.js';
+import { generateTodo } from '../../utils/generateTodo.js';
 
 export const initTodoForm = ({
   taskInput,
@@ -92,7 +94,8 @@ export const initTodoForm = ({
     const result = validateInputValues(currentInputValues);
 
     if (result.isSuccess) {
-      todoActions.add(result.data);
+      const newTodo = generateTodo(result.data);
+      todoActions.add(newTodo);
 
       formActions.reset();
     } else {

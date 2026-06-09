@@ -151,3 +151,8 @@ ConfigFor<L extends DBLabel> という型を追加することで、Mapped Types
   notArray.map((e) => e); // 実行時エラーになる
   notArray.push(3, 4, 5); // 実行時エラーになる
   ```
+
+## 2026-06-03
+
+- todoActions.add() から、ValidInputs を受け取って todo をつくるロジックを分離
+- generateTodo.ts を新規作成して、submitButton のイベントリスナ内で呼ぶ
