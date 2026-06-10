@@ -1,5 +1,7 @@
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
+import { createDB } from './TodoDB/createDB.js';
+import { initTodoDB } from './TodoDB/initTodoDB.js';
 
 const main = () => {
   const tableContainer = document.getElementById('table-container');
@@ -31,12 +33,16 @@ const main = () => {
   initTodoTable(tableContainer);
 
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
+
+  // DB インスタンスの生成
+  const db = createDB({ label: 'storage', storage: window.sessionStorage });
+  // データの読み込みをおこない、TodoStore に save() を購読させる
+  initTodoDB(db);
 };
 
 document.addEventListener('DOMContentLoaded', main);
 
 // --- What TO DO ---
 /*
-4. module tree 書く
-5. storage 保存と読み込みの処理
+4. delete の実装
 */

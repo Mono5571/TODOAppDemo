@@ -8,3 +8,10 @@ services:
       - '8080:8080'
     environment:
       - NODE_ENV=production
+    volumes:
+      - type: bind
+        source: ./src
+        target: /app/src
+      - type: bind
+        source: ./public
+        target: /app/public

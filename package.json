@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "serve": "pnpm exec http-server src -p 8080",
+    "build": "tsc && cp public/index.html dist/index.html && cp public/style.css dist/style.css",
+    "serve": "pnpm exec http-server dist -p 8080",
     "dev": "pnpm run build && pnpm run serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

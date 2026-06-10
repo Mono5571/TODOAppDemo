@@ -3,6 +3,7 @@ import type { Branded } from './branded.js';
 export type TodoId = Branded<string, 'TodoId'>;
 
 export type ValidTask = Branded<string, 'ValidTask'>;
+
 export const priorityList = ['low', 'middle', 'high'] as const;
 export type Priority = (typeof priorityList)[number];
 

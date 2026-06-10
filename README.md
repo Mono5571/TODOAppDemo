@@ -16,7 +16,7 @@
 1. **Dockerイメージのビルドとコンテナの起動**
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 初回実行時は、Dockerイメージのビルドと依存関係のインストールに時間がかかります。
@@ -34,25 +34,27 @@ http://localhost:8080
 コンテナを停止する場合は、`Ctrl+C`を押すか、別のターミナルで以下を実行：
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### Dockerコマンドの詳細
 
 - **バックグラウンドで起動する場合**:
+
   ```bash
-  docker-compose up -d --build
+  docker compose up -d --build
   ```
 
 - **ログを確認する場合**:
+
   ```bash
-  docker-compose logs -f
+  docker compose logs -f
   ```
 
 - **コンテナを再ビルドする場合**:
   ```bash
-  docker-compose build --no-cache
-  docker-compose up
+  docker compose build --no-cache
+  docker compose up
   ```
 
 ## ローカル環境での実行方法
@@ -104,12 +106,14 @@ http://localhost:8080
 `http-server`を使わずに、PythonやNode.jsの組み込みサーバーを使う場合：
 
 ### Python 3の場合
+
 ```bash
 cd src
 python3 -m http.server 8080
 ```
 
 ### Node.jsの場合（npx serveを使用）
+
 ```bash
 npm run build
 npx serve src -p 8080

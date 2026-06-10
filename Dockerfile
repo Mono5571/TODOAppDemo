@@ -19,7 +19,7 @@ COPY . .
 RUN pnpm run build
 
 # distディレクトリをsrc内にシンボリックリンク（http-serverがsrcをルートとして提供するため）
-RUN ln -s ../dist src/dist
+# RUN ln -s ../dist src/dist
 
 # ポート8080を公開
 EXPOSE 8080
