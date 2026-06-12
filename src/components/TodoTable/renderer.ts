@@ -2,7 +2,7 @@ import type { Priority, Todo, TodoId } from '../../types/todo.js';
 import { createElement } from '../../libs/createElement.js';
 import { todoActions } from '../../TodoStore/index.js';
 
-const priorityMap: { [key in Priority]: string } = {
+const priorityMap: { readonly [key in Priority]: string } = {
   low: '低',
   middle: '並',
   high: '高'
@@ -11,6 +11,7 @@ const priorityMap: { [key in Priority]: string } = {
 const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
   const checkbox = createElement('input', { type: 'checkbox', checked: `${todo.isDone}`, className: 'todo-check' });
   if (!(checkbox instanceof HTMLInputElement)) return;
+
   checkbox.addEventListener('change', () => todoActions.toggleDone(todo.id));
 
   const todoRow = createElement(
@@ -21,8 +22,8 @@ const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
     createElement('td', {}, todo.deadline),
     createElement('td', {}, checkbox)
   );
-
   if (!(todoRow instanceof HTMLTableRowElement)) return;
+
   return todoRow;
 };
 
