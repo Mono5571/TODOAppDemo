@@ -1,8 +1,15 @@
-import type { ValidInputs } from '../types/inputs';
-import type { Todo } from '../types/todo';
-import { generateTodoId } from './generateTodoId';
+import type { ValidInputs } from '../types/inputs.js';
+import type { Todo, TodoId } from '../types/todo.js';
 
-export function generateTodo(validData: ValidInputs): Todo {
-  const todo = { ...validData, id: generateTodoId(), isDone: false };
+export function generateTodo({
+  validData,
+  id,
+  isDone = false
+}: {
+  validData: ValidInputs;
+  id: TodoId;
+  isDone?: boolean;
+}): Todo {
+  const todo = { ...validData, id, isDone };
   return todo;
 }

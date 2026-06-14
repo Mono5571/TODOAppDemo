@@ -1,4 +1,4 @@
-import { todoStore, todoActions } from '../../TodoStore/index.js';
+import { todoStore } from '../../TodoStore/index.js';
 import { renderTable } from './renderer.js';
 
 const refreshContainer = (container: HTMLElement) => {

@@ -156,3 +156,38 @@ ConfigFor<L extends DBLabel> という型を追加することで、Mapped Types
 
 - todoActions.add() から、ValidInputs を受け取って todo をつくるロジックを分離
 - generateTodo.ts を新規作成して、submitButton のイベントリスナ内で呼ぶ
+
+## 2026-06-12
+
+- readonly を明示することで、immutablity を型レベルで担保: Todo, priorityMap, keyAndElmList
+- コード全体へのコメントの追加
+
+### todoManipulation ブランチ
+
+ブランチを作成。
+
+todoManipulation ブランチで追加する機能：
+
+- 期限切れ・完了済みのタスクを削除できる機能（個別・一括）
+- 重要度や期日に応じてタスクをソートできる機能
+- 重要度や期日でタスクをフィルターし、絞り込める機能
+
+#### 構想
+
+- remove: todoActions.remove() を削除ボタンにリスナ登録する。
+- sort, filter: 直接 todoStore をいじらないようにする必要あり。
+- view だけの state をつくる？ -> 仮想 DOM など
+
+### todo の id について
+
+もとの todoId の仕組みだと、ロードしたものと重複する問題あり。generatTodoId() IIFE の count は load() したデータを知らない。
+
+- 変更： load() した際に generateTodoId() を実行して id を振りなおす
+
+  // 正直あまりよい実装とは思えない
+  // 本当はバックエンドでやるべき処理
+
+## 2026-06-14
+
+- Docker がうまく動かないので、wsl2 のアップデートと Docker Desktop の再インストールをおこなったところ、問題なく機能するようになった。
+- generateTodoId() への変更: Result 型を返す形に。1,000,000 件を超えるデータは登録しないようにした。

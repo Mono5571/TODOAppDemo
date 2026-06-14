@@ -1,5 +1,7 @@
 import type { TodoDataBase } from '../types/db.js';
 import { todoActions, todoStore } from '../TodoStore/index.js';
+import { generateTodoId } from '../utils/generateTodoId.js';
+import type { Todo } from '../types/todo.js';
 
 // initTodoDB: (db: TodoDataBase) => void
 export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
@@ -13,7 +15,15 @@ export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
   let isInitialized = false;
 
   // 1. 初回起動時に DB からデータをロード
-  const initialData = await db.load();
+  const loadedData = await db.load();
+
+  // ロードしたデータがあれば、id 順に並べなおして新しい id を振る
+  const initialData =
+    loadedData.length > 0
+      ? loadedData
+          .toSorted((prev, next) => parseInt(prev.id) - parseInt(next.id))
+          .map((todo): Todo => ({ ...todo, id: generateTodoId() }))
+      : loadedData;
 
   // 2. ロードしたデータがあれば、Store に反映
   // ここで Store が更新されるが、初期化完了フラグがたっていないので save() されない

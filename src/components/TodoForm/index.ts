@@ -3,8 +3,8 @@ import { shallowObjectEqual } from '../../utils/utils.js';
 import { validateInputValues } from '../../validators/validateInputValues.js';
 import { formStore, formActions } from '../../FormStore/index.js';
 import { todoActions } from '../../TodoStore/index.js';
-import { generateTodoId } from '../../utils/generateTodoId.js';
 import { generateTodo } from '../../utils/generateTodo.js';
+import { generateTodoId } from '../../utils/generateTodoId.js';
 
 export const initTodoForm = ({
   taskInput,
@@ -23,16 +23,12 @@ export const initTodoForm = ({
   deadlineError: HTMLSpanElement;
   submit: HTMLButtonElement;
 }) => {
-  const keyAndElmsList: {
-    key: InputKey;
-    el: HTMLInputElement | HTMLSelectElement;
-    eventType: 'input' | 'change';
-    errorMsg: HTMLElement;
-  }[] = [
+  // キー、html 要素、イベント種別、エラーを表示する span 要素の対応関係のリスト
+  const keyAndElmsList = [
     { key: 'task', el: taskInput, eventType: 'input', errorMsg: taskError },
     { key: 'priority', el: prioritySelect, eventType: 'change', errorMsg: priorityError },
     { key: 'deadline', el: deadlineInput, eventType: 'input', errorMsg: deadlineError }
-  ];
+  ] as const;
 
   // --- 1. Dispatch: ユーザー入力 -> State ---
   keyAndElmsList.forEach(({ el, key, eventType }) => {
@@ -92,14 +88,26 @@ export const initTodoForm = ({
   submit.addEventListener('click', () => {
     const currentInputValues = formStore.state.values;
     const result = validateInputValues(currentInputValues);
+    const idResult = generateTodoId();
 
-    if (result.isSuccess) {
-      const newTodo = generateTodo(result.data);
-      todoActions.add(newTodo);
-
-      formActions.reset();
-    } else {
-      // エラー表示
+    // 入力値が不正な場合
+    // 本当はちゃんと書くべき
+    if (!result.isSuccess) {
+      console.error(result.error);
+      return;
     }
+
+    // generateTodId() が失敗したとき
+    // 本当はちゃんと書くべき
+    // たとえば... submitError を作る
+    if (!idResult.isSuccess) {
+      console.error(idResult.error);
+      return;
+    }
+
+    const newTodo = generateTodo({ validData: result.data, id: idResult.data });
+    todoActions.add(newTodo);
+
+    formActions.reset();
   });
 };

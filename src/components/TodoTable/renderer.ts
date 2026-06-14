@@ -2,52 +2,88 @@ import type { Priority, Todo, TodoId } from '../../types/todo.js';
 import { createElement } from '../../libs/createElement.js';
 import { todoActions } from '../../TodoStore/index.js';
 
+// コード上の priority: string と、画面に表示される優先度を対応付ける keyMap オブジェクト
 const priorityMap: { readonly [key in Priority]: string } = {
   low: '低',
   middle: '並',
   high: '高'
 };
 
+/**
+ * Todo を受け取って HTML の table の行要素を返す関数
+ *
+ * 行にはタスク、優先度、期日に加え、完了状況を入力できるチェックボックスが含まれる
+ * @param todo Todo
+ * @returns todoRow: 行要素 | undefined
+ */
 const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
-  const checkbox = createElement('input', { type: 'checkbox', checked: `${todo.isDone}`, className: 'todo-check' });
-  if (!(checkbox instanceof HTMLInputElement)) return;
+  try {
+    // タスクの完了状況を入力できるチェックボックス要素の生成
+    const checkbox = createElement('input', { type: 'checkbox', checked: `${todo.isDone}`, className: 'todo-check' });
+    if (!(checkbox instanceof HTMLInputElement)) return;
 
-  checkbox.addEventListener('change', () => todoActions.toggleDone(todo.id));
+    checkbox.addEventListener('change', () => todoActions.toggleDone(todo.id));
 
-  const todoRow = createElement(
-    'tr',
-    { className: todo.isDone ? 'is-done' : '' },
-    createElement('td', {}, todo.task),
-    createElement('td', {}, priorityMap[todo.priority]),
-    createElement('td', {}, todo.deadline),
-    createElement('td', {}, checkbox)
-  );
-  if (!(todoRow instanceof HTMLTableRowElement)) return;
+    // 行要素の生成
+    const todoRow = createElement(
+      'tr',
+      { className: todo.isDone ? 'is-done' : '' },
+      createElement('td', {}, todo.task),
+      createElement('td', {}, priorityMap[todo.priority]),
+      createElement('td', {}, todo.deadline),
+      createElement('td', {}, checkbox)
+    );
+    if (!(todoRow instanceof HTMLTableRowElement)) return;
 
-  return todoRow;
+    return todoRow;
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error(`Error on executing createTodoRow(): ${e.message}`);
+      return;
+    }
+    console.error('unknown error occured on executing createTodoRow().');
+  }
 };
 
+/**
+ * todoStore に格納された State(= Todo[]) を受け取り、新しい HTML の 表要素を返す関数
+ * @param todos Todo[]
+ * @returns table: 表要素 | undefined
+ */
 export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
-  const thead = createElement(
-    'thead',
-    {},
-    createElement(
-      'tr',
+  try {
+    // todoTable のヘッダを生成
+    const thead = createElement(
+      'thead',
       {},
-      createElement('th', { id: 'todoLabel1' }, 'TODO'),
-      createElement('th', {}, '優先度'),
-      createElement('th', { id: 'dateLabel1' }, '期日'),
-      createElement('th', {}, '完了')
-    )
-  );
+      createElement(
+        'tr',
+        {},
+        createElement('th', { id: 'todoLabel1' }, 'TODO'),
+        createElement('th', {}, '優先度'),
+        createElement('th', { id: 'dateLabel1' }, '期日'),
+        createElement('th', {}, '完了')
+      )
+    );
 
-  const tbody = createElement(
-    'tbody',
-    {},
-    ...todos.map((todo) => createTodoRow(todo)).filter((r): r is NonNullable<typeof r> => r != null)
-  );
+    // todos から todo をひとつずつとりだして行要素を生成し、todoTable のボディをつくる
+    // null または undefined の行要素は取り除く
+    const tbody = createElement(
+      'tbody',
+      {},
+      ...todos.map((todo) => createTodoRow(todo)).filter((r): r is NonNullable<typeof r> => r != null)
+    );
 
-  const table = createElement('table', { id: 'table' }, thead, tbody);
-  if (!(table instanceof HTMLTableElement)) return;
-  return table;
+    // thead と tbody を 子要素にもつ todoTable 本体の table 要素を生成
+    const table = createElement('table', { id: 'table' }, thead, tbody);
+    if (!(table instanceof HTMLTableElement)) return;
+
+    return table;
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error(`Error on executing renderTable(): ${e.message}`);
+      return;
+    }
+    console.error('unknown error occured on executing renderTable().');
+  }
 };

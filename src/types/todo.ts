@@ -20,6 +20,6 @@ interface BaseTodo {
   isDone: boolean;
 }
 
-export type Todo = Pick<BaseTodo, TodoKey>;
+export type Todo = Pick<Readonly<BaseTodo>, TodoKey>;
 
 const _todoCheck = {} as TodoKey satisfies keyof BaseTodo; // todoKeyList にミスがあればコンパイルエラー
