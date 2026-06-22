@@ -1,4 +1,4 @@
-import type { Priority, Todo, TodoId } from '../../types/todo.js';
+import type { Priority, Todo } from '../../types/todo.js';
 import { createElement } from '../../libs/createElement.js';
 import { todoActions } from '../../TodoStore/index.js';
 
@@ -19,10 +19,13 @@ const priorityMap: { readonly [key in Priority]: string } = {
 const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
   try {
     // タスクの完了状況を入力できるチェックボックス要素の生成
-    const checkbox = createElement('input', { type: 'checkbox', checked: `${todo.isDone}`, className: 'todo-check' });
+    const checkbox = createElement('input', {
+      type: 'checkbox',
+      checked: `${todo.isDone}`,
+      className: 'todo-check',
+      onChange: () => todoActions.toggleDone(todo.id)
+    });
     if (!(checkbox instanceof HTMLInputElement)) return;
-
-    checkbox.addEventListener('change', () => todoActions.toggleDone(todo.id));
 
     // 行要素の生成
     const todoRow = createElement(
@@ -59,10 +62,58 @@ export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
       createElement(
         'tr',
         {},
-        createElement('th', { id: 'todoLabel1' }, 'TODO'),
-        createElement('th', {}, '優先度'),
-        createElement('th', { id: 'dateLabel1' }, '期日'),
-        createElement('th', {}, '完了')
+        createElement(
+          'th',
+          { id: 'todoLabel1' },
+          // ソートボタン: task
+          createElement('button', {
+            type: 'button',
+            className: 'sort-button',
+            textContent: 'TODO',
+            onClick: () => {
+              console.log('sort by task!');
+            }
+          })
+        ),
+        createElement(
+          'th',
+          {},
+          // ソートボタン: priority
+          createElement('button', {
+            type: 'button',
+            className: 'sort-button',
+            textContent: '優先度',
+            onClick: () => {
+              console.log('sort by priority!');
+            }
+          })
+        ),
+        createElement(
+          'th',
+          { id: 'dateLabel1' },
+          // ソートボタン: deadline
+          createElement('button', {
+            type: 'button',
+            className: 'sort-button',
+            textContent: '期日',
+            onClick: () => {
+              console.log('sort by deadline!');
+            }
+          })
+        ),
+        createElement(
+          'th',
+          {},
+          // ソートボタン: isDone
+          createElement('button', {
+            type: 'button',
+            className: 'sort-button',
+            textContent: '完了',
+            onClick: () => {
+              console.log('sort by isDone!');
+            }
+          })
+        )
       )
     );
 

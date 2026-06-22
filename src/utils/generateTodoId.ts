@@ -25,6 +25,3 @@ export const generateTodoId = (() => {
     return createFailure(new Error('unexpeted error: generateTodoId()'));
   };
 })();
-
-// count >= 1,000,000 をどう扱うか？
-// Result 型でラップして、 isSuccess === false でエラー表示するようにする？

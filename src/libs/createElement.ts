@@ -1,44 +1,109 @@
-import { isElement } from '../utils/utils.js';
+import { isElement, isKey } from '../utils/utils.js';
 
-const allowedTagNames = ['table', 'thead', 'tbody', 'th', 'tr', 'td', 'input'] as const;
+const allowedTagNames = ['table', 'thead', 'tbody', 'th', 'tr', 'td', 'input', 'button'] as const;
 type AllowedTagName = (typeof allowedTagNames)[number];
 const allowedPropsKeys = ['id', 'className', 'textContent', 'type', 'value', 'checked'] as const;
 type AllowedPropsKey = (typeof allowedPropsKeys)[number];
+const allowedEventKeys = ['onClick', 'onChange', 'onInput'] as const;
+type AllowedEventsKey = (typeof allowedEventKeys)[number];
 
 const allowedPropsValueTypeList = ['number', 'radio', 'checkbox', 'button'];
 
-const elementPropsValueValidatorMap: { [key in AllowedPropsKey]: (val: string) => boolean } = {
-  id: (val) => /^[A-Za-z][\w-]*$/.test(val),
-  className: (val) => /^[A-Za-z0-9_-]+(?:\s+[A-Za-z0-9_-]+)*$/.test(val) || val === '',
-  type: (val) => allowedPropsValueTypeList.includes(val),
-  value: (_val) => true,
-  textContent: (_val) => true,
-  checked: (val) => val === 'true' || val === 'false'
+type ElementProps = {
+  readonly [key in AllowedPropsKey]?: string;
 };
 
-const elementPropsGrantorMap: { [key in AllowedPropsKey]: (el: HTMLElement, val: string) => void } = {
-  id: (el, val) => {
-    el.id = String(val);
+type BaseElementEvents = {
+  readonly [key in AllowedEventsKey]?: (...args: unknown[]) => void;
+};
+
+type ElementEvents = Pick<Readonly<BaseElementEvents>, AllowedEventsKey>;
+
+const _elementEventsCheck = {} as AllowedEventsKey satisfies keyof BaseElementEvents;
+
+type CreateElementOptions = ElementProps & ElementEvents;
+
+type PropsHandlers = {
+  readonly [key in AllowedPropsKey]: {
+    validate: (v: unknown) => v is string;
+    apply: (el: HTMLElement, v: string) => void;
+  };
+};
+
+type EventsHandlers = {
+  readonly [key in AllowedEventsKey]: {
+    validate: (v: unknown) => v is (...args: unknown[]) => void;
+    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => void;
+  };
+};
+
+const propsHandlers: PropsHandlers = {
+  id: {
+    validate: (v: unknown): v is string => typeof v === 'string' && /^[A-Za-z][\w-]*$/.test(v),
+    apply: (el: HTMLElement, v: string) => {
+      el.id = String(v);
+    }
   },
-  className: (el, val) => {
-    el.className = String(val);
+  className: {
+    validate: (v: unknown): v is string =>
+      (typeof v === 'string' && /^[A-Za-z0-9_-]+(?:\s+[A-Za-z0-9_-]+)*$/.test(v)) || v === '',
+    apply: (el: HTMLElement, v: string) => {
+      el.className = String(v);
+    }
   },
-  textContent: (el, val) => {
-    el.textContent = String(val);
+  type: {
+    validate: (v: unknown): v is string => typeof v === 'string' && allowedPropsValueTypeList.includes(v),
+    apply: (el: HTMLElement, v: string) => {
+      if (el instanceof HTMLInputElement === false && el instanceof HTMLButtonElement === false) return;
+      el.type = String(v);
+    }
   },
-  type: (el, val) => {
-    if (el instanceof HTMLInputElement === false && el instanceof HTMLButtonElement === false) return;
-    el.type = String(val);
+  textContent: {
+    validate: (v: unknown): v is string => typeof v === 'string',
+    apply: (el: HTMLElement, v: string) => {
+      el.textContent = String(v);
+    }
   },
-  value: (el, val) => {
-    if (el instanceof HTMLInputElement === false) return;
-    el.value = String(val);
+  value: {
+    validate: (v: unknown): v is string => typeof v === 'string',
+    apply: (el: HTMLElement, v: string) => {
+      if (el instanceof HTMLInputElement === false) return;
+      el.value = String(v);
+    }
   },
-  checked: (el, val) => {
-    if (el instanceof HTMLInputElement === false) return;
-    const stringVal = String(val);
-    if (stringVal === 'true') el.checked = true;
-    if (stringVal === 'false') el.checked = false;
+  checked: {
+    validate: (v: unknown): v is string => v === 'true' || v === 'false',
+    apply: (el: HTMLElement, v: string) => {
+      if (!(el instanceof HTMLInputElement)) return;
+      if (v === 'true') {
+        el.checked = true;
+      } else if (v === 'false') {
+        el.checked = false;
+      }
+      return;
+    }
+  }
+};
+
+const eventsHandlers: EventsHandlers = {
+  // Events
+  onClick: {
+    validate: (v: unknown): v is (...args: unknown[]) => void => typeof v === 'function',
+    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => {
+      el.addEventListener('click', fn);
+    }
+  },
+  onChange: {
+    validate: (v: unknown): v is (...args: unknown[]) => void => typeof v === 'function',
+    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => {
+      el.addEventListener('change', fn);
+    }
+  },
+  onInput: {
+    validate: (v: unknown): v is (...args: unknown[]) => void => typeof v === 'function',
+    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => {
+      el.addEventListener('input', fn);
+    }
   }
 };
 
@@ -46,24 +111,32 @@ const elementPropsGrantorMap: { [key in AllowedPropsKey]: (el: HTMLElement, val:
  * DOM を生成し、テキストや属性の設定、子要素の追加を同時に行うユーティリティー関数
  * - 例外: **throw**
  * @param tagName - タグ名
- * @param props - DOM 要素のテキストや属性など
+ * @param options - DOM 要素のテキストや属性、イベントリスナの登録など
  * @param children - 子要素の配列
  * @returns
  */
 export const createElement = (
   tagName: AllowedTagName,
-  props: { [key: string]: string } = {},
-  ...children: HTMLElement[] | string[]
+  options: CreateElementOptions = {},
+  ...children: (HTMLElement | string)[]
 ) => {
   if (!allowedTagNames.includes(tagName)) throw new Error(`許可されていないタグ: ${tagName}`);
   const element = document.createElement(tagName);
 
-  Object.entries(props).forEach(([key, value]) => {
+  Object.entries(options).forEach(([key, value]) => {
     if (value == null) return;
-    if (!isElement(key, allowedPropsKeys)) throw new Error(`許可されていないキー: ${key}`);
-    if (typeof value !== 'string') throw new Error(`許可されていないペア キー: ${key} / 値: ${value}`);
-    if (!elementPropsValueValidatorMap[key](value)) throw new Error(`許可されていないペア キー: ${key} / 値: ${value}`);
-    elementPropsGrantorMap[key](element, value);
+
+    if (isElement(key, allowedPropsKeys)) {
+      const handler = propsHandlers[key];
+      if (!handler.validate(value)) throw new Error(`許可されていない値: ${value}`);
+
+      handler.apply(element, value);
+    } else if (isElement(key, allowedEventKeys)) {
+      const handler = eventsHandlers[key];
+      if (!handler.validate(value)) throw new Error(`許可されていない値: ${value}`);
+
+      handler.apply(element, value);
+    } else throw new Error(`許可されていないキー: ${key}`);
   });
 
   children.forEach((child) => {

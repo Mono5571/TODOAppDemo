@@ -191,3 +191,20 @@ todoManipulation ブランチで追加する機能：
 
 - Docker がうまく動かないので、wsl2 のアップデートと Docker Desktop の再インストールをおこなったところ、問題なく機能するようになった。
 - generateTodoId() への変更: Result 型を返す形に。1,000,000 件を超えるデータは登録しないようにした。
+
+## 2026-06-22
+
+### createElement.ts
+
+virtualDOM の準備段階として、createElement.ts を変更する。
+
+- パラメータ props を options に改名。キー: 許可された属性名とその値: string のみ -> キー: onClick, onChange, onInput と値: イベントリスナ ((...args: unknown[]) => void) も許可
+- validatorMap と grantorMap を統合。以下の（模擬的な）交差型の optionsHandler をかわりにつかう。
+
+  ```TS
+  type OptionHandler =
+    & { [key in AllowedPropsKey]: { validator: (val) => val is string, apply: (el, val) => {el['属性名'] = val} } }
+    & { [key in AllowedEventsKey]: { validator: (val) => val is fn, apply: (el, val) => {el.addEventListerner(`${イベント種別}`, val)} } }
+  ```
+
+renderer.ts も追随する形で変更した。

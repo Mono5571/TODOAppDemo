@@ -22,7 +22,12 @@ export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
     loadedData.length > 0
       ? loadedData
           .toSorted((prev, next) => parseInt(prev.id) - parseInt(next.id))
-          .map((todo): Todo => ({ ...todo, id: generateTodoId() }))
+          .map((todo): Todo | null => {
+            const result = generateTodoId();
+            if (result.isSuccess) return { ...todo, id: result.data };
+            return null;
+          })
+          .filter((t): t is NonNullable<Todo> => t != null)
       : loadedData;
 
   // 2. ロードしたデータがあれば、Store に反映
