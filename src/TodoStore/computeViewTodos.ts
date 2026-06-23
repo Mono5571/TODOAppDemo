@@ -1,6 +1,7 @@
 import type { FilterState, TodoState } from '../types/state.js';
 import type { Priority, Todo, TodoKey, ValidDeadline } from '../types/todo.js';
 
+// sort
 // ---
 const priorityNumberMap = {
   low: 0,
@@ -39,7 +40,7 @@ function isCloseToDeadline(d: ValidDeadline, daysCriteria: number = 7): boolean 
   return 0 <= diffDays && diffDays <= daysCriteria;
 }
 
-const extractTodosMap = {
+const filterTodosMap = {
   all: (todos) => [...todos],
   priority: (todos) => todos.filter((t) => (t.priority === 'high' ? true : false)),
   incomplete: (todos) => todos.filter((t) => (t.isDone ? false : true)),
@@ -48,7 +49,7 @@ const extractTodosMap = {
 // ---
 
 export function computeViewTodos(state: TodoState): Todo[] {
-  const filteredTodos = extractTodosMap[state.filter](state.todos);
+  const filteredTodos = filterTodosMap[state.filter](state.todos);
   const sortedTodos = filteredTodos.toSorted(sortTodosMap[state.sort]);
 
   return sortedTodos;
