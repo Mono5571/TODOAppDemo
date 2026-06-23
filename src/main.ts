@@ -2,6 +2,7 @@ import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
 import { createDB } from './TodoDB/createDB.js';
 import { initTodoDB } from './TodoDB/initTodoDB.js';
+import { mockInitialData } from './TodoDB/test/test_mockDB.js'; // テスト用
 
 const main = () => {
   const tableContainer = document.getElementById('table-container');
@@ -35,7 +36,7 @@ const main = () => {
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
 
   // DB インスタンスの生成
-  const db = createDB({ label: 'storage', storage: window.sessionStorage });
+  const db = createDB({ label: 'mock', initialData: mockInitialData });
   // データの読み込みをおこない、TodoStore に save() を購読させる
   initTodoDB(db);
 };

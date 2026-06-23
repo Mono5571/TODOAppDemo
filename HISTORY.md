@@ -185,7 +185,7 @@ todoManipulation ブランチで追加する機能：
 - 変更： load() した際に generateTodoId() を実行して id を振りなおす
 
   // 正直あまりよい実装とは思えない
-  // 本当はバックエンドでやるべき処理
+  // 本当はバックエンドでやるべき処理？
 
 ## 2026-06-14
 
@@ -196,7 +196,7 @@ todoManipulation ブランチで追加する機能：
 
 ### createElement.ts
 
-virtualDOM の準備段階として、createElement.ts を変更する。
+viewTodo の準備段階として、createElement.ts を変更する。
 
 - パラメータ props を options に改名。キー: 許可された属性名とその値: string のみ -> キー: onClick, onChange, onInput と値: イベントリスナ ((...args: unknown[]) => void) も許可
 - validatorMap と grantorMap を統合。以下の（模擬的な）交差型の optionsHandler をかわりにつかう。
@@ -208,3 +208,14 @@ virtualDOM の準備段階として、createElement.ts を変更する。
   ```
 
 renderer.ts も追随する形で変更した。
+
+## 2026-06-23
+
+### viewTodoStore
+
+`type ViewTodo = Todo & { toDisplay: boolean };` として、描画を制御する state (= ViewTodo[]) とその store インスタンスを作成。
+viewTodoActions に　change(), sortBy(), filter() の dispatch 処理をまとめた。
+
+これは Todo[] の派生状態にすぎないので、この方針は破棄する。
+
+かわりに、filterState, SortState をあらたにつくり、Todo[] とこれらを組み合わせて描画をおこなうことにする。

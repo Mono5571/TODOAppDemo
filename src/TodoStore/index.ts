@@ -1,7 +1,8 @@
-import type { Todo } from '../types/todo.js';
+import type { Priority, Todo, TodoKey, ValidDeadline } from '../types/todo.js';
 import { createStore } from '../libs/createStore.js';
+import type { FilterState, TodoState } from '../types/state.js';
 
-export const todoStore = createStore<Todo[]>([]);
+export const todoStore = createStore<TodoState>({ todos: [], sort: 'id', filter: 'all' });
 
 /**
  * todoStore の dispatch 処理をまとめたオブジェクト
@@ -12,8 +13,11 @@ export const todoStore = createStore<Todo[]>([]);
  * - setInitial: state を db.load() が返した Todo[] にする
  */
 export const todoActions = {
-  add: (newTodo: Todo) => todoStore.dispatch((s) => [...s, newTodo]),
-  toggleDone: (id: string) => todoStore.dispatch((s) => s.map((t) => (t.id === id ? { ...t, isDone: !t.isDone } : t))),
-  remove: (id: string) => todoStore.dispatch((s) => s.filter((t) => t.id !== id)),
-  setInitial: (todos: Todo[]) => todoStore.dispatch((_) => [...todos])
+  add: (newTodo: Todo) => todoStore.dispatch((s) => ({ ...s, todos: [...s.todos, { ...newTodo }] })),
+  toggleDone: (id: string) =>
+    todoStore.dispatch((s) => ({ ...s, todos: s.todos.map((t) => (t.id === id ? { ...t, isDone: !t.isDone } : t)) })),
+  remove: (id: string) => todoStore.dispatch((s) => ({ ...s, todos: s.todos.filter((t) => t.id !== id) })),
+  setInitial: (todos: Todo[]) => todoStore.dispatch((s) => ({ ...s, todos: [...todos] })),
+  sortBy: (key: TodoKey) => todoStore.dispatch((s) => ({ ...s, sort: key })),
+  filterBy: (filter: FilterState) => todoStore.dispatch((s) => ({ ...s, filter }))
 } as const;

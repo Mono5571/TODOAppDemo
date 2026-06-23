@@ -3,11 +3,11 @@ import { createElement } from '../../libs/createElement.js';
 import { todoActions } from '../../TodoStore/index.js';
 
 // コード上の priority: string と、画面に表示される優先度を対応付ける keyMap オブジェクト
-const priorityMap: { readonly [key in Priority]: string } = {
+const priorityMap = {
   low: '低',
   middle: '並',
   high: '高'
-};
+} as const satisfies { [key in Priority]: string };
 
 /**
  * Todo を受け取って HTML の table の行要素を返す関数
@@ -53,7 +53,7 @@ const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
  * @param todos Todo[]
  * @returns table: 表要素 | undefined
  */
-export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
+export const renderTable = (vs: Todo[]): HTMLTableElement | undefined => {
   try {
     // todoTable のヘッダを生成
     const thead = createElement(
@@ -71,7 +71,7 @@ export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: 'TODO',
             onClick: () => {
-              console.log('sort by task!');
+              todoActions.sortBy('task');
             }
           })
         ),
@@ -84,7 +84,7 @@ export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: '優先度',
             onClick: () => {
-              console.log('sort by priority!');
+              todoActions.sortBy('priority');
             }
           })
         ),
@@ -97,7 +97,7 @@ export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: '期日',
             onClick: () => {
-              console.log('sort by deadline!');
+              todoActions.sortBy('deadline');
             }
           })
         ),
@@ -110,7 +110,7 @@ export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: '完了',
             onClick: () => {
-              console.log('sort by isDone!');
+              todoActions.sortBy('isDone');
             }
           })
         )
@@ -122,7 +122,7 @@ export const renderTable = (todos: Todo[]): HTMLTableElement | undefined => {
     const tbody = createElement(
       'tbody',
       {},
-      ...todos.map((todo) => createTodoRow(todo)).filter((r): r is NonNullable<typeof r> => r != null)
+      ...vs.map((v) => createTodoRow(v)).filter((r): r is NonNullable<typeof r> => r != null)
     );
 
     // thead と tbody を 子要素にもつ todoTable 本体の table 要素を生成

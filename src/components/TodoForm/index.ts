@@ -1,4 +1,4 @@
-import type { InputValues, InputKey, FormState } from '../../types/inputs.js';
+import type { InputKey, FormState } from '../../types/inputs.js';
 import { shallowObjectEqual } from '../../utils/utils.js';
 import { validateInputValues } from '../../validators/validateInputValues.js';
 import { formStore, formActions } from '../../FormStore/index.js';

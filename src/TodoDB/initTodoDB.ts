@@ -21,7 +21,7 @@ export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
   const initialData =
     loadedData.length > 0
       ? loadedData
-          .toSorted((prev, next) => parseInt(prev.id) - parseInt(next.id))
+          .toSorted((prev, next) => parseInt(prev.id, 10) - parseInt(next.id, 10))
           .map((todo): Todo | null => {
             const result = generateTodoId();
             if (result.isSuccess) return { ...todo, id: result.data };
@@ -40,7 +40,7 @@ export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
   // 4. Store の変更を監視して、変更があるたびに DB に保存
   todoStore.watch(
     // 全体の変更を監視
-    (s) => s,
+    (s) => s.todos,
     async (todos) => {
       // 初期化が終わっていないときは保存しない
       if (!isInitialized) return;
