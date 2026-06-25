@@ -18,8 +18,8 @@ function compareDeadline(dA: ValidDeadline, dB: ValidDeadline) {
   return aDateInt > bDateInt ? 1 : -1;
 }
 
-// ソート用の補助変数の keyMap
-const sortTodosMap = {
+// array.prototype.toSorted() に渡す評価関数の keyMap
+const todosComparerMap = {
   id: (a, b) => parseInt(a.id, 10) - parseInt(b.id, 10),
   task: (a, b) => a.task.localeCompare(b.task), // もう少し厳密に
   priority: (a, b) => priorityNumberMap[b.priority] - priorityNumberMap[a.priority],
@@ -35,22 +35,24 @@ function isCloseToDeadline(d: ValidDeadline, daysCriteria: number = 7): boolean 
   const deadlineDate = new Date(d);
 
   const diffTime = deadlineDate.getTime() - now.getTime();
+  // [ミリ秒] から [日] に変換
   const diffDays = diffTime / (24 * 60 * 60 * 1000);
 
   return 0 <= diffDays && diffDays <= daysCriteria;
 }
 
-const filterTodosMap = {
-  all: (todos) => [...todos],
-  priority: (todos) => todos.filter((t) => (t.priority === 'high' ? true : false)),
-  incomplete: (todos) => todos.filter((t) => (t.isDone ? false : true)),
-  closeToDeadline: (todos) => todos.filter((t) => isCloseToDeadline(t.deadline))
-} as const satisfies { [key in FilterState]: (todos: Todo[]) => Todo[] };
+// array.prototype.filter() に渡す評価関数の keyMap
+const todosFiltererMap = {
+  all: (t) => true,
+  priority: (t) => (t.priority === 'high' ? true : false),
+  incomplete: (t) => t.isDone,
+  closeToDeadline: (t) => isCloseToDeadline(t.deadline)
+} as const satisfies { [key in FilterState]: (t: Todo) => boolean };
 // ---
 
 export function computeViewTodos(state: TodoState): Todo[] {
-  const filteredTodos = filterTodosMap[state.filter](state.todos);
-  const sortedTodos = filteredTodos.toSorted(sortTodosMap[state.sort]);
+  const filteredTodos = state.todos.filter(todosFiltererMap[state.filter]);
 
-  return sortedTodos;
+  const compare = todosComparerMap[state.sort.type];
+  return filteredTodos.toSorted(state.sort.order === 'ascend' ? compare : (a, b) => compare(b, a));
 }

@@ -1,5 +1,5 @@
 import type { Priority, Todo } from '../../types/todo.js';
-import { createElement } from '../../libs/createElement.js';
+import { createElement } from '../../libs/createElement/index.js';
 import { todoActions } from '../../TodoStore/index.js';
 
 // コード上の priority: string と、画面に表示される優先度を対応付ける keyMap オブジェクト
@@ -71,7 +71,7 @@ export const renderTable = (vs: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: 'TODO',
             onClick: () => {
-              todoActions.sortBy('task');
+              todoActions.toggleSort('task');
             }
           })
         ),
@@ -84,7 +84,7 @@ export const renderTable = (vs: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: '優先度',
             onClick: () => {
-              todoActions.sortBy('priority');
+              todoActions.toggleSort('priority');
             }
           })
         ),
@@ -97,7 +97,7 @@ export const renderTable = (vs: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: '期日',
             onClick: () => {
-              todoActions.sortBy('deadline');
+              todoActions.toggleSort('deadline');
             }
           })
         ),
@@ -110,7 +110,7 @@ export const renderTable = (vs: Todo[]): HTMLTableElement | undefined => {
             className: 'sort-button',
             textContent: '完了',
             onClick: () => {
-              todoActions.sortBy('isDone');
+              todoActions.toggleSort('isDone');
             }
           })
         )

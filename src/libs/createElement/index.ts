@@ -1,41 +1,14 @@
-import { isElement, isKey } from '../utils/utils.js';
-
-const allowedTagNames = ['table', 'thead', 'tbody', 'th', 'tr', 'td', 'input', 'button'] as const;
-type AllowedTagName = (typeof allowedTagNames)[number];
-const allowedPropsKeys = ['id', 'className', 'textContent', 'type', 'value', 'checked'] as const;
-type AllowedPropsKey = (typeof allowedPropsKeys)[number];
-const allowedEventKeys = ['onClick', 'onChange', 'onInput'] as const;
-type AllowedEventsKey = (typeof allowedEventKeys)[number];
-
-const allowedPropsValueTypeList = ['number', 'radio', 'checkbox', 'button'];
-
-type ElementProps = {
-  readonly [key in AllowedPropsKey]?: string;
-};
-
-type BaseElementEvents = {
-  readonly [key in AllowedEventsKey]?: (...args: unknown[]) => void;
-};
-
-type ElementEvents = Pick<Readonly<BaseElementEvents>, AllowedEventsKey>;
-
-const _elementEventsCheck = {} as AllowedEventsKey satisfies keyof BaseElementEvents;
-
-type CreateElementOptions = ElementProps & ElementEvents;
-
-type PropsHandlers = {
-  readonly [key in AllowedPropsKey]: {
-    validate: (v: unknown) => v is string;
-    apply: (el: HTMLElement, v: string) => void;
-  };
-};
-
-type EventsHandlers = {
-  readonly [key in AllowedEventsKey]: {
-    validate: (v: unknown) => v is (...args: unknown[]) => void;
-    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => void;
-  };
-};
+import { isElement } from '../../utils/utils.js';
+import {
+  allowedEventKeys,
+  allowedPropsKeys,
+  allowedPropsValueTypeList,
+  allowedTagNames,
+  type AllowedTagName,
+  type CreateElementOptions,
+  type EventsHandlers,
+  type PropsHandlers
+} from './types.js';
 
 const propsHandlers: PropsHandlers = {
   id: {
@@ -121,8 +94,10 @@ export const createElement = (
   ...children: (HTMLElement | string)[]
 ) => {
   if (!allowedTagNames.includes(tagName)) throw new Error(`許可されていないタグ: ${tagName}`);
+  // html element の生成
   const element = document.createElement(tagName);
 
+  // options に基づく属性の付与とイベントリスナの登録
   Object.entries(options).forEach(([key, value]) => {
     if (value == null) return;
 
@@ -139,6 +114,7 @@ export const createElement = (
     } else throw new Error(`許可されていないキー: ${key}`);
   });
 
+  // children を受け取って子要素にする
   children.forEach((child) => {
     if (child == null) return;
     if (child instanceof HTMLElement) {
