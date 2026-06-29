@@ -44,8 +44,8 @@ function isCloseToDeadline(d: ValidDeadline, daysCriteria: number = 7): boolean 
 // array.prototype.filter() に渡す評価関数の keyMap
 const todosFiltererMap = {
   all: (t) => true,
-  priority: (t) => (t.priority === 'high' ? true : false),
-  incomplete: (t) => t.isDone,
+  priorityHigh: (t) => (t.priority === 'high' ? true : false),
+  incomplete: (t) => !t.isDone,
   closeToDeadline: (t) => isCloseToDeadline(t.deadline)
 } as const satisfies { [key in FilterState]: (t: Todo) => boolean };
 // ---

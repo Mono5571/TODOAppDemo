@@ -13,7 +13,6 @@ export type Priority = (typeof priorityList)[number];
 /**
  * 'yyyy-mm-dd' 形式の文字列
  *
- * - 表す日付はアプリの実行日以降のもの
  */
 export type ValidDeadline = Branded<string, 'ValidDeadline'>;
 

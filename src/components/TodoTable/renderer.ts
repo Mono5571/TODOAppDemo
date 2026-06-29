@@ -1,6 +1,7 @@
-import type { Priority, Todo } from '../../types/todo.js';
+import type { Priority, Todo, TodoKey } from '../../types/todo.js';
 import { createElement } from '../../libs/createElement/index.js';
 import { todoActions } from '../../TodoStore/index.js';
+import { isFutureOrToday } from '../../utils/dateStringValidator.js';
 
 // コード上の priority: string と、画面に表示される優先度を対応付ける keyMap オブジェクト
 const priorityMap = {
@@ -25,28 +26,68 @@ const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
       className: 'todo-check',
       onChange: () => todoActions.toggleDone(todo.id)
     });
-    if (!(checkbox instanceof HTMLInputElement)) return;
+
+    // タスクを削除するボタン要素の生成
+    const removeButton = createElement('button', {
+      type: 'button',
+      className: 'todo-remove-button',
+      textContent: '削除',
+      onClick: () => todoActions.remove(todo.id)
+    });
 
     // 行要素の生成
     const todoRow = createElement(
       'tr',
-      { className: todo.isDone ? 'is-done' : '' },
+      {
+        // 短絡評価: todo.isDone === true の時だけ 'is-done' が評価される。これは truthy な値なので、filter で残る
+        className: [todo.isDone && 'is-done', !isFutureOrToday(todo.deadline) && 'is-expired'].filter(Boolean).join(' ')
+      },
       createElement('td', {}, todo.task),
       createElement('td', {}, priorityMap[todo.priority]),
       createElement('td', {}, todo.deadline),
-      createElement('td', {}, checkbox)
+      createElement('td', {}, checkbox),
+      createElement('td', {}, removeButton)
     );
-    if (!(todoRow instanceof HTMLTableRowElement)) return;
 
     return todoRow;
   } catch (e) {
-    if (e instanceof Error) {
-      console.error(`Error on executing createTodoRow(): ${e.message}`);
-      return;
-    }
-    console.error('unknown error occured on executing createTodoRow().');
+    if (e instanceof Error) throw e;
+
+    throw new Error('unknown error occured on executing createTodoRow().');
   }
 };
+
+const sortButtonTextContentMap = {
+  task: 'TODO',
+  priority: '優先度',
+  deadline: '期日',
+  isDone: '完了'
+} as const satisfies { [key in Exclude<TodoKey, 'id'>]: string };
+
+/**
+ * ソートボタンを作成する **throwable** な補助関数
+ * @param textContent keyMap から読み込み
+ * @param sortType toggleSort に渡す type: TodoKey
+ * @returns
+ */
+function createSortButton(todoKey: Exclude<TodoKey, 'id'>): HTMLButtonElement {
+  try {
+    const sortButton = createElement('button', {
+      type: 'button',
+      className: 'sort-button',
+      textContent: sortButtonTextContentMap[todoKey],
+      onClick: () => {
+        todoActions.toggleSort(todoKey);
+      }
+    });
+
+    return sortButton;
+  } catch (e) {
+    if (e instanceof Error) throw e;
+
+    throw new Error('unknown error occured on sort button creation.');
+  }
+}
 
 /**
  * todoStore に格納された State(= Todo[]) を受け取り、新しい HTML の 表要素を返す関数
@@ -62,58 +103,12 @@ export const renderTable = (vs: Todo[]): HTMLTableElement | undefined => {
       createElement(
         'tr',
         {},
-        createElement(
-          'th',
-          { id: 'todoLabel1' },
-          // ソートボタン: task
-          createElement('button', {
-            type: 'button',
-            className: 'sort-button',
-            textContent: 'TODO',
-            onClick: () => {
-              todoActions.toggleSort('task');
-            }
-          })
-        ),
-        createElement(
-          'th',
-          {},
-          // ソートボタン: priority
-          createElement('button', {
-            type: 'button',
-            className: 'sort-button',
-            textContent: '優先度',
-            onClick: () => {
-              todoActions.toggleSort('priority');
-            }
-          })
-        ),
-        createElement(
-          'th',
-          { id: 'dateLabel1' },
-          // ソートボタン: deadline
-          createElement('button', {
-            type: 'button',
-            className: 'sort-button',
-            textContent: '期日',
-            onClick: () => {
-              todoActions.toggleSort('deadline');
-            }
-          })
-        ),
-        createElement(
-          'th',
-          {},
-          // ソートボタン: isDone
-          createElement('button', {
-            type: 'button',
-            className: 'sort-button',
-            textContent: '完了',
-            onClick: () => {
-              todoActions.toggleSort('isDone');
-            }
-          })
-        )
+        createElement('th', { id: 'todoLabel1' }, createSortButton('task')),
+        createElement('th', {}, createSortButton('priority')),
+        createElement('th', { id: 'dateLabel1' }, createSortButton('deadline')),
+        createElement('th', {}, createSortButton('isDone')),
+        // 削除ボタンの列のヘッダ
+        createElement('th')
       )
     );
 
@@ -127,7 +122,6 @@ export const renderTable = (vs: Todo[]): HTMLTableElement | undefined => {
 
     // thead と tbody を 子要素にもつ todoTable 本体の table 要素を生成
     const table = createElement('table', { id: 'table' }, thead, tbody);
-    if (!(table instanceof HTMLTableElement)) return;
 
     return table;
   } catch (e) {

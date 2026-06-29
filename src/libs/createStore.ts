@@ -52,7 +52,7 @@ const createStore = <T>(initial: T) => {
       state = action(state);
       listeners.forEach((listener) => listener(state));
     }
-  };
+  } as const;
 };
 
 export { createStore };

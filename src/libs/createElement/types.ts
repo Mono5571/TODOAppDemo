@@ -1,7 +1,31 @@
-export const allowedTagNames = ['table', 'thead', 'tbody', 'th', 'tr', 'td', 'input', 'button'] as const;
+export const allowedTagNames = [
+  'table',
+  'thead',
+  'tbody',
+  'th',
+  'tr',
+  'td',
+  'input',
+  'button',
+  'select',
+  'label',
+  'option'
+] as const;
 export type AllowedTagName = (typeof allowedTagNames)[number];
-export const allowedPropsKeys = ['id', 'className', 'textContent', 'type', 'value', 'checked'] as const;
+
+export const allowedPropsKeys = [
+  'id',
+  'className',
+  'textContent',
+  'type',
+  'value',
+  'checked',
+  'name',
+  'value',
+  'for'
+] as const;
 export type AllowedPropsKey = (typeof allowedPropsKeys)[number];
+
 export const allowedEventKeys = ['onClick', 'onChange', 'onInput'] as const;
 export type AllowedEventsKey = (typeof allowedEventKeys)[number];
 
@@ -12,7 +36,7 @@ export type ElementProps = {
 };
 
 type BaseElementEvents = {
-  readonly [key in AllowedEventsKey]?: (...args: unknown[]) => void;
+  readonly [key in AllowedEventsKey]?: (e?: Event, ...args: unknown[]) => void;
 };
 
 type ElementEvents = Pick<Readonly<BaseElementEvents>, AllowedEventsKey>;
@@ -31,6 +55,6 @@ export type PropsHandlers = {
 export type EventsHandlers = {
   readonly [key in AllowedEventsKey]: {
     validate: (v: unknown) => v is (...args: unknown[]) => void;
-    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => void;
+    apply: (el: HTMLElement, fn: (e?: Event, ...args: unknown[]) => void) => void;
   };
 };

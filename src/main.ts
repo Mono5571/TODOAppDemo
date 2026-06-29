@@ -1,3 +1,4 @@
+import { initFilterSelect } from './components/FilterSelect/index.js';
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
 import { createDB } from './TodoDB/createDB.js';
@@ -5,6 +6,7 @@ import { initTodoDB } from './TodoDB/initTodoDB.js';
 import { mockInitialData } from './TodoDB/test/test_mockDB.js'; // テスト用
 
 const main = () => {
+  const filterSlectContainer = document.getElementById('filter-select-container');
   const tableContainer = document.getElementById('table-container');
 
   const taskInput = document.getElementById('input-task');
@@ -18,6 +20,7 @@ const main = () => {
   const submit = document.getElementById('submit');
 
   if (
+    !(filterSlectContainer instanceof HTMLElement) ||
     !(tableContainer instanceof HTMLElement) ||
     !(taskInput instanceof HTMLInputElement) ||
     !(prioritySelect instanceof HTMLSelectElement) ||
@@ -30,6 +33,8 @@ const main = () => {
     console.error('要素が存在しないか、誤ったタグが指定されています。');
     return;
   }
+
+  initFilterSelect(filterSlectContainer);
 
   initTodoTable(tableContainer);
 

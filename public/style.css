@@ -8,6 +8,7 @@
   font-size: 16px;
   --color-error: red;
   --color-disabled: rgb(126, 147, 211);
+  --color-expired: #999;
 }
 
 main {
@@ -77,6 +78,10 @@ th#dateLabel {
   width: 100px;
 }
 
+tr.is-expired {
+  color: var(--color-expired);
+}
+
 td {
   text-align: center;
 }
@@ -88,6 +93,19 @@ td input[type='checkbox'] {
 .sort-button {
   width: 100%;
   height: 100%;
+}
+
+.todo-remove-button {
+  color: blue;
+  border: solid 1px blue;
+  background-color: transparent;
+  border-radius: 100vmax;
+}
+
+:is(tr.is-done, tr.is-expired) .todo-remove-button {
+  color: #fff;
+  border-color: red;
+  background-color: red;
 }
 
 :is(input, select):has(+ .error-msg.visible) {

@@ -40,7 +40,13 @@ const propsHandlers: PropsHandlers = {
   value: {
     validate: (v: unknown): v is string => typeof v === 'string',
     apply: (el: HTMLElement, v: string) => {
-      if (el instanceof HTMLInputElement === false) return;
+      if (
+        !(el instanceof HTMLInputElement) &&
+        !(el instanceof HTMLOptionElement) &&
+        !(el instanceof HTMLButtonElement) &&
+        !(el instanceof HTMLLIElement)
+      )
+        return;
       el.value = String(v);
     }
   },
@@ -55,6 +61,30 @@ const propsHandlers: PropsHandlers = {
       }
       return;
     }
+  },
+  name: {
+    validate: (v: unknown): v is string => typeof v === 'string',
+    apply: (el: HTMLElement, v: string) => {
+      if (
+        !(el instanceof HTMLButtonElement) &&
+        !(el instanceof HTMLFormElement) &&
+        !(el instanceof HTMLFieldSetElement) &&
+        !(el instanceof HTMLIFrameElement) &&
+        !(el instanceof HTMLInputElement) &&
+        !(el instanceof HTMLObjectElement) &&
+        !(el instanceof HTMLOutputElement) &&
+        !(el instanceof HTMLSelectElement)
+      )
+        return;
+      el.name = v;
+    }
+  },
+  for: {
+    validate: (v: unknown): v is string => typeof v === 'string',
+    apply: (el: HTMLElement, v: string) => {
+      if (!(el instanceof HTMLLabelElement) && !(el instanceof HTMLOutputElement)) return;
+      el.htmlFor = v;
+    }
   }
 };
 
@@ -62,19 +92,19 @@ const eventsHandlers: EventsHandlers = {
   // Events
   onClick: {
     validate: (v: unknown): v is (...args: unknown[]) => void => typeof v === 'function',
-    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => {
+    apply: (el: HTMLElement, fn: (e?: Event, ...args: unknown[]) => void) => {
       el.addEventListener('click', fn);
     }
   },
   onChange: {
     validate: (v: unknown): v is (...args: unknown[]) => void => typeof v === 'function',
-    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => {
+    apply: (el: HTMLElement, fn: (e?: Event, ...args: unknown[]) => void) => {
       el.addEventListener('change', fn);
     }
   },
   onInput: {
     validate: (v: unknown): v is (...args: unknown[]) => void => typeof v === 'function',
-    apply: (el: HTMLElement, fn: (...args: unknown[]) => void) => {
+    apply: (el: HTMLElement, fn: (e?: Event, ...args: unknown[]) => void) => {
       el.addEventListener('input', fn);
     }
   }
@@ -88,11 +118,11 @@ const eventsHandlers: EventsHandlers = {
  * @param children - 子要素の配列
  * @returns
  */
-export const createElement = (
-  tagName: AllowedTagName,
+export function createElement<T extends AllowedTagName>(
+  tagName: T,
   options: CreateElementOptions = {},
   ...children: (HTMLElement | string)[]
-) => {
+): HTMLElementTagNameMap[T] {
   if (!allowedTagNames.includes(tagName)) throw new Error(`許可されていないタグ: ${tagName}`);
   // html element の生成
   const element = document.createElement(tagName);
@@ -125,4 +155,4 @@ export const createElement = (
   });
 
   return element;
-};
+}
