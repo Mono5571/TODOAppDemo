@@ -1,7 +1,9 @@
+import type { ValidDeadline } from '../types/todo';
+
 /**
  * 書式と実在する日付かを確認
  */
-export const isValidDateString = (date: string): boolean => {
+export const isValidDateString = (date: string): date is ValidDeadline => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
 
   // Dateオブジェクトに入れて、実在しない日付（2/31など）が修正されないか確認

@@ -1,9 +1,8 @@
 import { initFilterSelect } from './components/FilterSelect/index.js';
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
-import { createDB } from './TodoDB/createDB.js';
-import { initTodoDB } from './TodoDB/initTodoDB.js';
-import { mockInitialData } from './TodoDB/test/test_mockDB.js'; // テスト用
+import { db } from './todoPersistence/index.js';
+import { initTodoDB } from './todoPersistence/initTodoDB.js';
 
 const main = () => {
   const filterSlectContainer = document.getElementById('filter-select-container');
@@ -40,9 +39,6 @@ const main = () => {
 
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
 
-  // DB インスタンスの生成
-  const db = createDB({ label: 'mock', initialData: mockInitialData });
-  // データの読み込みをおこない、TodoStore に save() を購読させる
   initTodoDB(db);
 };
 

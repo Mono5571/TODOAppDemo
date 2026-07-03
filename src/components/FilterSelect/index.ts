@@ -1,5 +1,5 @@
 import { createElement } from '../../libs/createElement/index.js';
-import { todoActions } from '../../TodoStore/index.js';
+import { todoActions } from '../../todoActions/index.js';
 import { filterStateList, type FilterState } from '../../types/state.js';
 import { isElement } from '../../utils/utils.js';
 
