@@ -275,10 +275,13 @@ interface RemoveAllMode {
 
 interface UIState {
   readonly removeAllMode: RemoveAllMode;
-  readonly removeDialogOpen: RemoveDialogOpen;
+  readonly removeDialogOpen: boolean;
 }
 
-const uiStore =
+const uiStore = createStore<UIState>({
+  removeAllMode: { removeDone: true, removeExpired: false },
+  removeDialogOpen: false
+})
 
 todoActions = {
   // ...
@@ -303,3 +306,131 @@ todoActions = {
 ## 2026-06-29
 
 上記の 3.1. をいったん実装する。
+
+## 2026-06-30
+
+### 差分の追跡
+
+db.save() に常にすべての Todo[] が渡されているが、これは最終的に DB への書き込み処理であることを考えると、差分だけを反映するようにしたい。
+
+実際に db.save() が走るのは、以下の 3 つのケース。
+
+1. 追加 (todoActions.add())
+2. 削除 (todoActions.remove())
+3. 完了 / 未完了の切り替え (todoActions.toggleDone())
+
+#### Stateful Observer
+
+```TS
+type Diff<T> = {
+  before: T;
+  after: T
+};
+
+type TodoDiffs = {
+  added: Todo[];
+  removed: Todo[];
+  updated: Diff<Todo>;
+};
+
+// こんなイメージ？
+const createDiffs((): => {
+  // Map 化による高速化 (O(N * M) -> O(N + M))
+  // key: id, value: Todo の Map インスタンス
+  let prev: Map<string, Todo> = new Map([]);
+
+  return (next: Todo[]): TodoDiffs => {
+    const nextMap = new Map(next.map(t => [t.id, t]));
+
+    // prev が空の Map なら早期リターン
+    if (prev.size === 0) {
+      prev = nextMap;
+      return { added: next, removed: [], updated: [] };
+    }
+
+    // added: 以前の状態になく次の状態にあるもの
+    const added = next.filter(t => !prev.has(t.id));
+
+    // removed: 以前の状態にあって次の状態にないもの
+    const removed = [...prev.values()].filter(t => !nextMap.has(t.id));
+
+    // updated: 以前の状態と次の状態で参照が違うもの
+    const updated = next.map(t => {
+      const oldTodo = prev.get(t.id);
+      if (oldTodo && oldTodo !== t) {
+        return { before: oldTodo, after: t };
+      }
+      return;
+    }).filter(d => d != null);
+
+    // update memo
+    prev = nextMap;
+
+    return { added, removed, updated };
+  }
+}
+```
+
+#### 役割分担
+
+- Store: truth を保持する
+- Selector: State から描画用データを生成する純粋関数
+- Stateful Observer: 前回状態との差分を追跡する
+- Rederer / Persistence: 差分を消費する
+
+#### SQL のおさらい
+
+```sql
+-- SQL のイメージ
+-- users テーブルの作成
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(40) NOT NULL,
+  -- 認証用 メールアドレス & パスワード認証は脆弱だが、とりあえず
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TODO テーブルの作成
+CREATE TABLE todos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  priority VARCHAR(10) NOT NULL,
+  deadline DATETIME NOT NULL,
+  is_done BOOLEAN NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 追加
+INSERT INTO todos
+VALUES($id, $user_id, $title, $priority, $deadline, $isDone);
+
+-- 削除
+DELETE FROM todos
+WHERE id = $id;
+
+-- 書き換え
+UPDATE todos
+SET is_done = $is_done
+WHERE id = $id;
+```
+
+## 2026-07-03
+
+### トランザクション
+
+> 従来の todos のデータフロー:
+>
+> input -> dispatch -> state の確定 -> db.save(todos) & render(todos)
+
+これはおかしい。db.save() は失敗する可能性がある。以下のようなフローであるべき。
+
+> あるべき todos のデータフロー:
+>
+> input -> try db.save(input)
+>
+> -> success: dispatch -> state の確定 -> render(todos)
+>
+> -> failure: state は更新せず

@@ -3,6 +3,25 @@ import { todoActions, todoStore } from '../TodoStore/index.js';
 import { generateTodoId } from '../utils/generateTodoId.js';
 import type { Todo } from '../types/todo.js';
 
+/**
+ * ロードしたデータがあれば、id 順に並べなおして新しい id を振る
+ *
+ * おそらく実際はサーバーサイドなどでおこなう処理
+ * @param data DB.looad() で読み込んだ Todo[]
+ * @returns 新しく id を振りなおした Todo[]
+ */
+function sortLoadedData(data: Todo[]): Todo[] {
+  if (data.length === 0) return data;
+  return data
+    .toSorted((a, b) => parseInt(a.id, 10) - (b.id, 10))
+    .map((todo): Todo | null => {
+      const result = generateTodoId();
+      if (!result.isSuccess) return null;
+      return { ...todo, id: result.data };
+    })
+    .filter((t): t is NonNullable<Todo> => t != null);
+}
+
 // initTodoDB: (db: TodoDataBase) => void
 export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
   /**
@@ -17,18 +36,7 @@ export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
   // 1. 初回起動時に DB からデータをロード
   const loadedData = await db.load();
 
-  // ロードしたデータがあれば、id 順に並べなおして新しい id を振る
-  const initialData =
-    loadedData.length > 0
-      ? loadedData
-          .toSorted((prev, next) => parseInt(prev.id, 10) - parseInt(next.id, 10))
-          .map((todo): Todo | null => {
-            const result = generateTodoId();
-            if (result.isSuccess) return { ...todo, id: result.data };
-            return null;
-          })
-          .filter((t): t is NonNullable<Todo> => t != null)
-      : loadedData;
+  const initialData = sortLoadedData(loadedData);
 
   // 2. ロードしたデータがあれば、Store に反映
   // ここで Store が更新されるが、初期化完了フラグがたっていないので save() されない
@@ -39,7 +47,7 @@ export const initTodoDB = async (db: TodoDataBase): Promise<void> => {
 
   // 4. Store の変更を監視して、変更があるたびに DB に保存
   todoStore.watch(
-    // 全体の変更を監視
+    // todos: Todo[] の変更を監視
     (s) => s.todos,
     async (todos) => {
       // 初期化が終わっていないときは保存しない

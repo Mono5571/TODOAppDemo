@@ -47,8 +47,3 @@ const main = () => {
 };
 
 document.addEventListener('DOMContentLoaded', main);
-
-// --- What TO DO ---
-/*
-4. delete の実装
-*/
