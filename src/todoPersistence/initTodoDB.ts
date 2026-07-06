@@ -6,7 +6,7 @@ import type { Todo } from '../types/todo.js';
 /**
  * ロードしたデータがあれば、id 順に並べなおして新しい id を振る
  *
- * おそらく実際はサーバーサイドなどでおこなう処理
+ * 本来必要ない処理
  * @param data DB.looad() で読み込んだ Todo[]
  * @returns 新しく id を振りなおした Todo[]
  */

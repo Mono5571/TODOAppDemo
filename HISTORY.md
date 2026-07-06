@@ -382,17 +382,22 @@ const createDiffs((): => {
 
 ```sql
 -- SQL のイメージ
+
+-- $... はサーバーサイドでくっつける
+
 -- users テーブルの作成
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(40) NOT NULL,
-  -- 認証用 メールアドレス & パスワード認証は脆弱だが、とりあえず
+  -- 認証用
+  -- メールアドレス & パスワード認証は脆弱だが、とりあえず
   email VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- TODO テーブルの作成
+-- id と created_at でインデックスを張る
 CREATE TABLE todos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
@@ -403,18 +408,28 @@ CREATE TABLE todos (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 読み込み
+-- 40 件ごとのページネーション
+SELECT id, title, priority, deadline, is_done
+  FROM todos
+  WHERE user_id = $user_id
+   AND is_done = FALSE --                 -- 未完了のタスクのみ
+   AND created_at < $last_seen_created_at -- 前回取得分の続きから
+  ORDER BY created_at DESC --             -- 作成日時の降順で並べる
+  LIMIT 40; --                            -- 40 件を上限として取得
+
 -- 追加
 INSERT INTO todos
-VALUES($id, $user_id, $title, $priority, $deadline, $isDone);
+  VALUES($id, $user_id, $title, $priority, $deadline, $isDone);
 
 -- 削除
 DELETE FROM todos
-WHERE id = $id;
+  WHERE id = $id;
 
 -- 書き換え
 UPDATE todos
-SET is_done = $is_done
-WHERE id = $id;
+  SET is_done = $is_done
+  WHERE id = $id;
 ```
 
 ## 2026-07-03
@@ -434,3 +449,94 @@ WHERE id = $id;
 > -> success: dispatch -> state の確定 -> render(todos)
 >
 > -> failure: state は更新せず
+
+#### commitTodos()
+
+todoActions の add(), toggleDone(), remove() つまり INSERT, UPDATE, DELETE につながる処理は db.save() を通すようにした。DB への書き込みが失敗した場合、Store 内の State を更新する処理も実行されない。
+
+```TypeScript
+async function commitTodos(updater: (todos: Todo[]) => Todo[]) {
+  const current = todoStore.state;
+  const next: TodoState = {
+    ...current,
+    todos: updater(current.todos)
+  };
+
+  try {
+    await db.save(next.todos); // throwable
+
+    todoStore.dispatch(() => next);
+  } catch (e) {
+    if (e instanceof Error) console.error(e.message);
+    console.error('unknow error occured.');
+  }
+}
+```
+
+### todo_id
+
+現在の　generateTodoId() では、複数ユーザ間で重複が発生するため、ほかの方法を検討する必要がある。
+
+候補としては、以下のものが挙げられる。
+
+| 候補                 | 作成方法                           | 利点                           | 欠点                                     |
+| :------------------- | :--------------------------------- | :----------------------------- | :--------------------------------------- |
+| DB 内 AUTO_INCREMENT | INSERT 時に自動                    | 外部依存なし                   | add() 時に id をバケツリレーする必要あり |
+| UUID v4              | クライアントで crypto.randomUUID() | 外部依存なし、バケツリレー不要 | 後述 [^1][^2]                            |
+| UUID v7              | クライアントで uuid ライブラリ     | バケツリレー不要               | 外部依存あり                             |
+
+[^1] DB の設計上、多数のユーザーがひとつの todos テーブルを共有して TODO を追加していくので、RDBMS のインデックスのデータ構造 (B-Tree) 上はシーケンシャルな値が望ましい。UUID v4 はシーケンシャルではないので、インデックスを張る場合、途中への無理やりな挿入が起こり、ページスプリットが発生してパフォーマンスが落ちる。
+
+[^2] crypto.randomUUID() は Secure Context (HTTPS / h\ttp://127.0.0.1, h\ttp://localhost, http://\*.localhost などのローカル開発環境) でなければ動作しない。
+
+## 2026-07-06
+
+### context 層の分離
+
+現在のコードでは、オブジェクトリテラルをもちいて直接 todoActions オブジェクトを作成している。
+
+```
+// /todoPersistence/index.ts
+export db = createDB(config);
+
+export function commitTodos(updater) {...}
+// /todoActions/index.ts
+import { todoStore } from '...';
+import { db, commitTodos } from '...';
+
+const todoActions = {
+  // todoStore, commitTodos() を使うメソッド
+};
+```
+
+これを、ひとつレイヤーを追加することで DB インスタンスを DI して todoActions を返す関数の定義と、その使用にわける。
+
+```
+// import / export は基本的に省略
+// types/state.ts
+type Store<T> = ReturnType<typeof createStore<T>>;
+
+// --- Logic Layer ---
+// /actions/todoActions.ts
+function createTodoActions = (
+  dependencies: {
+    todoStore: Store<TodoState>,
+    db: TodoDataBase
+  }
+): TodoActions {...};
+
+// --- App Context Layer ---
+// /context/....ts
+const todoStore = createStore<TodoState>({...});
+const db = createDB(config);
+
+export const todoActions = ({ todoStore, db }); // DI
+
+// --- UI / Use Case Layer ---
+// /component/....ts
+import { todoActions } from '...';
+
+// ...
+submitButton.addEventListener('click', todoActions.add(...));
+// ...
+```
