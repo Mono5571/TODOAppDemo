@@ -1,8 +1,8 @@
 import { initFilterSelect } from './components/FilterSelect/index.js';
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
-import { db } from './todoPersistence/index.js';
-import { initTodoDB } from './todoPersistence/initTodoDB.js';
+import { db } from './context/index.js';
+import { initTodoDB } from './context/initTodoDB.js';
 
 const main = () => {
   const filterSlectContainer = document.getElementById('filter-select-container');

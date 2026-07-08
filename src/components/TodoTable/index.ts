@@ -1,4 +1,4 @@
-import { todoStore } from '../../TodoStore/index.js';
+import { todoStore } from '../../context/index.js';
 import { selectViewTodos } from '../../TodoStore/selector.js';
 import { renderTable } from './renderer.js';
 

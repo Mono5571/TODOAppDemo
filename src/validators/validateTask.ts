@@ -3,9 +3,10 @@ import type { Result } from '../types/result.js';
 import { createResult } from '../libs/createResult.js';
 import { cast } from '../utils/castBranded.js';
 
+const MAX_LENGTH = 32;
+
 export const validateTask = (task: string): Result<ValidTask, Error> => {
   const { createSuccess, createFailure } = createResult<ValidTask, Error>();
-  const MAX_LENGTH = 32;
 
   const cleanTask = task.trim().replace(/\n/g, ' ');
   const taskLength = [...cleanTask].length;

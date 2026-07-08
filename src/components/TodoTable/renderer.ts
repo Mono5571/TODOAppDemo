@@ -1,7 +1,7 @@
 import type { Priority, Todo, TodoKey } from '../../types/todo.js';
 import { createElement } from '../../libs/createElement/index.js';
-import { todoActions } from '../../todoActions/index.js';
 import { isFutureOrToday } from '../../utils/dateStringValidator.js';
+import { todoActions } from '../../context/index.js';
 
 // コード上の priority: string と、画面に表示される優先度を対応付ける keyMap オブジェクト
 const priorityMap = {

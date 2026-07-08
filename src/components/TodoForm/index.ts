@@ -1,10 +1,9 @@
 import type { InputKey, FormState } from '../../types/inputs.js';
 import { shallowObjectEqual } from '../../utils/utils.js';
 import { validateInputValues } from '../../validators/validateInputValues.js';
-import { formStore, formActions } from '../../FormStore/index.js';
-import { todoActions } from '../../todoActions/index.js';
 import { generateTodo } from '../../utils/generateTodo.js';
 import { generateTodoId } from '../../utils/generateTodoId.js';
+import { formActions, formStore, todoActions } from '../../context/index.js';
 
 export const initTodoForm = ({
   taskInput,
