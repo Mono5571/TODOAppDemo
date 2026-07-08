@@ -17,8 +17,13 @@ function isTodoIdString(maybeId: string): maybeId is TodoId {
   return /^(?!000000$)[0-9]{6}$/.test(maybeId);
 }
 
-function validateMockDataSingle(mockData: MaybeTodo): Result<Todo, Partial<Record<TodoKey, string>>> {
-  const { createSuccess, createFailure } = createResult<Todo, Partial<Record<TodoKey, string>>>();
+function validateMockDataSingle(
+  mockData: MaybeTodo
+): Result<Todo, { id: string; errors: Partial<Record<TodoKey, string>> }> {
+  const { createSuccess, createFailure } = createResult<
+    Todo,
+    { id: string; errors: Partial<Record<TodoKey, string>> }
+  >();
 
   const idResult = resultifyValidator<string, TodoId, Error>(
     isTodoIdString,
@@ -58,7 +63,13 @@ function validateMockDataSingle(mockData: MaybeTodo): Result<Todo, Partial<Recor
   if (!deadlineResult.isSuccess) errors = { ...errors, deadline: deadlineResult.error.message };
   if (!isDoneResult.isSuccess) errors = { ...errors, isDone: isDoneResult.error.message };
 
-  return createFailure(errors);
+  return createFailure({ id: mockData.id, errors });
+}
+
+function logErrors(errors: Partial<Record<TodoKey, string>>): string {
+  return Object.entries(errors)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(', ');
 }
 
 export function validateMockData(dataList: MaybeTodo[]): Todo[] {
@@ -66,7 +77,7 @@ export function validateMockData(dataList: MaybeTodo[]): Todo[] {
     .map((data): undefined | Todo => {
       const result = validateMockDataSingle(data);
       if (!result.isSuccess) {
-        console.log(result.error);
+        console.log(`ERROR on ${result.error.id}: ${logErrors(result.error.errors)}`);
         return;
       }
       return result.data;
