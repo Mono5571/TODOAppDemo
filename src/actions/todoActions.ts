@@ -1,7 +1,9 @@
-import type { FilterState, SortState, TodoState } from '../types/state.js';
+import type { FilterState, SortState, TodoState } from '../types/todoState.js';
 import type { Todo, TodoKey } from '../types/todo.js';
 import type { Store } from '../libs/createStore.js';
 import type { TodoDataBase } from '../types/db.js';
+import type { RemoveAllMode } from '../types/uiState.js';
+import { isFutureOrToday } from '../utils/dateStringValidator.js';
 
 function createTodoTransaction({ todoStore, db }: { todoStore: Store<TodoState>; db: TodoDataBase }) {
   return async (updater: (todos: Todo[]) => Todo[]) => {
@@ -43,6 +45,7 @@ function toggleSortHelper(current: SortState, type: TodoKey): SortState {
  * - add: state.todos の末尾に Todo を追加する
  * - toggleDone: 指定した id の todo.isDone を書き換える
  * - remove: 指定した id の todo を state.todos から削除する
+ * - removeAll: mode に従って done または expired の todo を削除する
  *
  * db.save() を迂回:
  * - toggoleSort: state.sort の変更 -- type 書き換え、 type 同じなら order 逆に
@@ -56,6 +59,14 @@ export function createTodoActions({ todoStore, db }: { todoStore: Store<TodoStat
     toggleDone: (id: string) =>
       transaction((todos) => todos.map((t) => (t.id === id ? { ...t, isDone: !t.isDone } : t))),
     remove: (id: string) => transaction((todos) => todos.filter((t) => t.id !== id)),
+    removeAll: (mode: RemoveAllMode) =>
+      transaction((todos) =>
+        todos.filter(
+          (t) =>
+            !(mode.removeDone && t.isDone) &&
+            !(mode.removeExpired && /* isExpired(t.deadline) */ !isFutureOrToday(t.deadline))
+        )
+      ),
     // filter, sort の変更 -> そのまま dispatch
     toggleSort: (type: TodoKey) => todoStore.dispatch((s) => ({ ...s, sort: toggleSortHelper(s.sort, type) })),
     filterBy: (filter: FilterState) => todoStore.dispatch((s) => ({ ...s, filter }))

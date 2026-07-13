@@ -1,6 +1,6 @@
 import { todoStore } from '../../context/index.js';
-import { selectViewTodos } from '../../TodoStore/selector.js';
 import { renderTable } from './renderer.js';
+import { selectViewTodos } from './selector.js';
 
 const refreshContainer = (container: HTMLElement) => {
   while (container.firstElementChild) {
