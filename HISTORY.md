@@ -184,8 +184,9 @@ todoManipulation ブランチで追加する機能：
 
 - 変更： load() した際に generateTodoId() を実行して id を振りなおす
 
-  // 正直あまりよい実装とは思えない
-  // 本当はバックエンドでやるべき処理？
+> [!NOTE]
+>
+> 正直あまりよい実装とは思えない。本当はバックエンドでやるべき処理？
 
 ## 2026-06-14
 
@@ -523,11 +524,11 @@ const todoActions = {
 
 ```
 // import / export は基本的に省略
-// types/state.ts
+// /src/lib/createStore.ts
 type Store<T> = ReturnType<typeof createStore<T>>;
 
 // --- Logic Layer ---
-// /actions/todoActions.ts
+// /src/actions/todoActions.ts
 function createTodoActions = (
   dependencies: {
     todoStore: Store<TodoState>,
@@ -536,17 +537,88 @@ function createTodoActions = (
 ): TodoActions {...};
 
 // --- App Context Layer ---
-// /context/....ts
+// /src/context/....ts
 const todoStore = createStore<TodoState>({...});
 const db = createDB(config);
 
 export const todoActions = ({ todoStore, db }); // DI
 
-// --- UI / Use Case Layer ---
-// /component/....ts
+// --- UI Layer ---
+// /src/component/....ts
 import { todoActions } from '...';
 
 // ...
 submitButton.addEventListener('click', todoActions.add(...));
 // ...
 ```
+
+## 2026-07-12
+
+### アーキテクチャ
+
+MVC パターンと 4 層アーキテクチャを組み合わせた設計は、以下のような図で表される。
+
+```mermaid
+graph TB
+  subgraph 'プレゼンテーション層'
+    Controller[Controller]
+    View[View]
+  end
+
+  subgraph 'アプリケーション層'
+    Service[Service]
+  end
+
+  subgraph 'ドメイン層'
+    IRepo[IRepository]
+    Model[Model]
+  end
+
+  subgraph 'インフラストラクチャ層'
+    Repo[Repository]
+  end
+
+  Controller --> View
+  Controller --> Service
+  Controller --> Model
+  View --> Model
+  Service --> IRepo
+  Service --> Model
+  IRepo <|.. Repo
+  Repo --> Model
+```
+
+現状のコードの Store まわりは Flux (下図) に近いパターンで実現されている。
+
+```mermaid
+graph LR
+  Action1[Action]
+  Dispatcher[Dispatcher]
+  Action2[Action]
+  Store[Store]
+  View[View]
+
+  Action1 --> Dispatcher
+  Dispatcher --> Store
+  Store --> View
+  View --> Action2
+  Action2 --> Dispatcher
+```
+
+### removeAll()
+
+> todoManipulation ブランチで追加する機能：
+>
+> - 期限切れ・完了済みのタスクを削除できる機能（個別・一括）
+> - 重要度や期日に応じてタスクをソートできる機能
+> - 重要度や期日でタスクをフィルターし、絞り込める機能
+
+これまでの時点で、構想していた機能はほぼ実装できた。
+あとは「期限切れ・完了済みのタスクを一括削除できる機能」を追加すれば、todoManipulation ブランチでの作業をもう一段階先へすすめられる。
+(Todo[] 全体をいちいち描画したり db.save() に渡す形から、差分をとりだして反映する方式へ移行する作業がまだある。)
+
+そのために必要な具体的なオブジェクトや処理は、以下の通り。
+
+- UIStore
+- RemoveAllDialog
+- todoActions.removeAll()
