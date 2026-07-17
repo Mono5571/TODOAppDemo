@@ -202,7 +202,7 @@ viewTodo の準備段階として、createElement.ts を変更する。
 - パラメータ props を options に改名。キー: 許可された属性名とその値: string のみ -> キー: onClick, onChange, onInput と値: イベントリスナ ((...args: unknown[]) => void) も許可
 - validatorMap と grantorMap を統合。以下の（模擬的な）交差型の optionsHandler をかわりにつかう。
 
-  ```TS
+  ```TypeScript
   type OptionHandler =
     & { [key in AllowedPropsKey]: { validator: (val) => val is string, apply: (el, val) => {el['属性名'] = val} } }
     & { [key in AllowedEventsKey]: { validator: (val) => val is fn, apply: (el, val) => {el.addEventListerner(`${イベント種別}`, val)} } }
@@ -225,7 +225,7 @@ viewTodoActions に　change(), sortBy(), filter() の dispatch 処理をまと�
 
 - todoStore が管理する state を従来の Todo[] から以下の形に変更。
 
-```TS
+```TypeScript
 TodoState = {
   todos: Todo[],
   filterState: FilterState,
@@ -241,7 +241,7 @@ TodoState = {
 
 - createElement() にジェネリクスを使い、戻り値の型を絞り込みできるように。
 
-```TS
+```TypeScript
 function createElement<T extends AllowedTagName>(
   tagName: T,
   oprions: CreateElementOptions = {},
@@ -268,7 +268,7 @@ function createElement<T extends AllowedTagName>(
 
 3.2. は array.prototype.filter に渡す関数で対応可能。 `isExpired: boolean` は `deadline: ValidDeadline` (と now) の派生状態にすぎない。
 
-```TS
+```TypeScript
 interface RemoveAllMode {
   readonly removeDone: boolean;
   readonly removeExpired: boolean;
@@ -322,7 +322,7 @@ db.save() に常にすべての Todo[] が渡されているが、これは最�
 
 #### Stateful Observer
 
-```TS
+```TypeScript
 type Diff<T> = {
   before: T;
   after: T
@@ -506,7 +506,7 @@ async function commitTodos(updater: (todos: Todo[]) => Todo[]) {
 
 現在のコードでは、オブジェクトリテラルをもちいて直接 todoActions オブジェクトを作成している。
 
-```
+```TypeScript
 // /todoPersistence/index.ts
 export db = createDB(config);
 
@@ -522,7 +522,7 @@ const todoActions = {
 
 これを、ひとつレイヤーを追加することで DB インスタンスを DI して todoActions を返す関数の定義と、その使用にわける。
 
-```
+```TypeScript
 // import / export は基本的に省略
 // /src/lib/createStore.ts
 type Store<T> = ReturnType<typeof createStore<T>>;
@@ -584,7 +584,7 @@ graph TB
   View --> Model
   Service --> IRepo
   Service --> Model
-  IRepo <|.. Repo
+  Repo -.->IRepo
   Repo --> Model
 ```
 
