@@ -584,8 +584,8 @@ graph TB
   View --> Model
   Service --> IRepo
   Service --> Model
-  Repo -.->IRepo
-  Repo --> Model
+  IRepo <-.- Repo
+  Model <-- Repo
 ```
 
 現状のコードの Store まわりは Flux (下図) に近いパターンで実現されている。
