@@ -28,7 +28,7 @@ const mockDataBeforeValidation: MaybeTodo[] = [
     id: '000004',
     task: 'bakuhatsu',
     priority: 'middle',
-    deadline: '2028-01-30',
+    deadline: '2023-01-30',
     isDone: true
   },
   {
@@ -42,7 +42,7 @@ const mockDataBeforeValidation: MaybeTodo[] = [
     id: '000006',
     task: 'chat with a cat',
     priority: 'middle',
-    deadline: '2040-08-18',
+    deadline: '2022-08-18',
     isDone: false
   },
   {

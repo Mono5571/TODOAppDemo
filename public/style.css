@@ -122,3 +122,11 @@ td input[type='checkbox'] {
     display: inline-block;
   }
 }
+
+.remove-all-dialog {
+  display: none;
+
+  &.is-open {
+    display: block;
+  }
+}

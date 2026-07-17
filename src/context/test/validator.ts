@@ -25,12 +25,14 @@ function validateMockDataSingle(
     { id: string; errors: Partial<Record<TodoKey, string>> }
   >();
 
+  // バリデーションのセクション
   const idResult = resultifyValidator<string, TodoId, Error>(
     isTodoIdString,
     new Error('invalid mock data: id is an incorrect format.')
   )(mockData.id);
   const taskResult = validateTask(mockData.task);
   const priorityResult = validatePriority(mockData.priority);
+  // 日付文字列として妥当か否かのみ検証、期限内かどうかは検証しない
   const deadlineResult = resultifyValidator<string, ValidDeadline, Error>(
     isValidDateString,
     new Error('invalid mock data: deadline is an incorrect format.')

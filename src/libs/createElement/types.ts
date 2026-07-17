@@ -1,4 +1,5 @@
 export const allowedTagNames = [
+  'div',
   'table',
   'thead',
   'tbody',
