@@ -1,12 +1,7 @@
 import { todoStore } from '../../context/index.js';
+import { refreshContainer } from '../../utils/refreshContainer.js';
 import { renderTable } from './renderer.js';
 import { selectViewTodos } from './selector.js';
-
-const refreshContainer = (container: HTMLElement) => {
-  while (container.firstElementChild) {
-    container.removeChild(container.firstElementChild);
-  }
-};
 
 export const initTodoTable = (container: HTMLElement) => {
   const unsubscribeRenderTable = todoStore.watch(

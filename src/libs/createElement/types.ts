@@ -23,7 +23,8 @@ export const allowedPropsKeys = [
   'checked',
   'name',
   'value',
-  'for'
+  'for',
+  'disabled'
 ] as const;
 export type AllowedPropsKey = (typeof allowedPropsKeys)[number];
 

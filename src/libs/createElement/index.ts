@@ -85,6 +85,27 @@ const propsHandlers: PropsHandlers = {
       if (!(el instanceof HTMLLabelElement) && !(el instanceof HTMLOutputElement)) return;
       el.htmlFor = v;
     }
+  },
+  disabled: {
+    validate: (v: unknown): v is string => v === 'true' || v === 'false',
+    apply: (el: HTMLElement, v: string) => {
+      if (
+        !(el instanceof HTMLButtonElement) &&
+        !(el instanceof HTMLInputElement) &&
+        !(el instanceof HTMLFieldSetElement) &&
+        !(el instanceof HTMLOptGroupElement) &&
+        !(el instanceof HTMLOptionElement) &&
+        !(el instanceof HTMLSelectElement) &&
+        !(el instanceof HTMLTextAreaElement)
+      )
+        return;
+      if (v === 'true') {
+        el.disabled = true;
+      } else if (v === 'false') {
+        el.disabled = false;
+      }
+      return;
+    }
   }
 };
 
