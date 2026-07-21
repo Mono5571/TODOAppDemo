@@ -622,3 +622,9 @@ graph LR
 - UIStore
 - RemoveAllDialog
 - todoActions.removeAll()
+
+## 2026-07-21
+
+### todoManipulation ブランチ
+
+todoManipulation ブランチを main ブランチにマージする。
