@@ -11,12 +11,12 @@ export interface BaseValidInputValues {
   deadline: ValidDeadline;
 }
 
-export type ValidInputs = Pick<BaseValidInputValues, InputKey>;
+export type ValidInputs = Pick<Readonly<BaseValidInputValues>, InputKey>;
 
 const _inputsCheck = {} as InputKey satisfies keyof BaseValidInputValues; // inputsKeyList にミスがあればコンパイルエラー
 
-export type FormState = {
-  values: InputValues;
-  touched: Set<InputKey>;
-  hasAttemptedSubmit: boolean;
-};
+export interface FormState {
+  readonly values: InputValues;
+  readonly touched: Set<InputKey>;
+  readonly hasAttemptedSubmit: boolean;
+}

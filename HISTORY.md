@@ -156,3 +156,475 @@ ConfigFor<L extends DBLabel> という型を追加することで、Mapped Types
 
 - todoActions.add() から、ValidInputs を受け取って todo をつくるロジックを分離
 - generateTodo.ts を新規作成して、submitButton のイベントリスナ内で呼ぶ
+
+## 2026-06-12
+
+- readonly を明示することで、immutablity を型レベルで担保: Todo, priorityMap, keyAndElmList
+- コード全体へのコメントの追加
+
+### todoManipulation ブランチ
+
+ブランチを作成。
+
+todoManipulation ブランチで追加する機能：
+
+- 期限切れ・完了済みのタスクを削除できる機能（個別・一括）
+- 重要度や期日に応じてタスクをソートできる機能
+- 重要度や期日でタスクをフィルターし、絞り込める機能
+
+#### 構想
+
+- remove: todoActions.remove() を削除ボタンにリスナ登録する。
+- sort, filter: 直接 todoStore をいじらないようにする必要あり。
+- view だけの state をつくる？ -> 仮想 DOM など
+
+### todo の id について
+
+もとの todoId の仕組みだと、ロードしたものと重複する問題あり。generatTodoId() IIFE の count は load() したデータを知らない。
+
+- 変更： load() した際に generateTodoId() を実行して id を振りなおす
+
+> [!NOTE]
+>
+> 正直あまりよい実装とは思えない。本当はバックエンドでやるべき処理？
+
+## 2026-06-14
+
+- Docker がうまく動かないので、wsl2 のアップデートと Docker Desktop の再インストールをおこなったところ、問題なく機能するようになった。
+- generateTodoId() への変更: Result 型を返す形に。1,000,000 件を超えるデータは登録しないようにした。
+
+## 2026-06-22
+
+### createElement.ts
+
+viewTodo の準備段階として、createElement.ts を変更する。
+
+- パラメータ props を options に改名。キー: 許可された属性名とその値: string のみ -> キー: onClick, onChange, onInput と値: イベントリスナ ((...args: unknown[]) => void) も許可
+- validatorMap と grantorMap を統合。以下の（模擬的な）交差型の optionsHandler をかわりにつかう。
+
+  ```TypeScript
+  type OptionHandler =
+    & { [key in AllowedPropsKey]: { validator: (val) => val is string, apply: (el, val) => {el['属性名'] = val} } }
+    & { [key in AllowedEventsKey]: { validator: (val) => val is fn, apply: (el, val) => {el.addEventListerner(`${イベント種別}`, val)} } }
+  ```
+
+renderer.ts も追随する形で変更した。
+
+## 2026-06-23
+
+### viewTodoStore
+
+`type ViewTodo = Todo & { toDisplay: boolean };` として、描画を制御する state (= ViewTodo[]) とその store インスタンスを作成。
+viewTodoActions に　change(), sortBy(), filter() の dispatch 処理をまとめた。
+
+これは Todo[] の派生状態にすぎないので、この方針は破棄する。
+
+かわりに、filterState, SortState をあらたにつくり、Todo[] とこれらを組み合わせて描画をおこなうことにする。
+
+## 2026-06-27
+
+- todoStore が管理する state を従来の Todo[] から以下の形に変更。
+
+```TypeScript
+TodoState = {
+  todos: Todo[],
+  filterState: FilterState,
+  sortState: { type: TodoKey, order: 'ascend' | 'descend' }
+}
+```
+
+- todoStore.watch() の selector として、 computeVIeTodos() と selectViewTodos() を定義し、state 自体から 描画の際の監視対象を組み立てるように。
+
+- 削除ボタンを実装。あわせて renderer.ts の重複した記述の簡略化も済ませる。
+
+## 2026-06-28
+
+- createElement() にジェネリクスを使い、戻り値の型を絞り込みできるように。
+
+```TypeScript
+function createElement<T extends AllowedTagName>(
+  tagName: T,
+  oprions: CreateElementOptions = {},
+  ...children: (HTMLElement | string)[]
+): HTMLElementTagNameMap[T] /* ブラケット記法による interface HTMLElementTagNameMap へのアクセス */{
+  // ...
+}
+```
+
+### className: 'is-expired' / isExpired: boolean
+
+検討：
+
+1. Todo に `isExpired: boolean` を持たせるべきか？
+2. isFutureOrToday() の再利用 -> どこで呼ぶか？
+3. ユースケースを考える:
+   1. html 要素にクラス名 .is-expired をつけて装飾する。
+   2. removeAll() で `isDone: true` と `isExpired: true` の要素をすべて消す
+
+      > - [x] 完了済み
+      > - [x] 期限切れ
+
+      > のタスクをすべて消す [実行 (ボタン)]
+
+3.2. は array.prototype.filter に渡す関数で対応可能。 `isExpired: boolean` は `deadline: ValidDeadline` (と now) の派生状態にすぎない。
+
+```TypeScript
+interface RemoveAllMode {
+  readonly removeDone: boolean;
+  readonly removeExpired: boolean;
+}
+
+interface UIState {
+  readonly removeAllMode: RemoveAllMode;
+  readonly removeDialogOpen: boolean;
+}
+
+const uiStore = createStore<UIState>({
+  removeAllMode: { removeDone: true, removeExpired: false },
+  removeDialogOpen: false
+})
+
+todoActions = {
+  // ...
+  removeAll: (mode: RemoveAllMode) =>
+    todoStore.dispatch((s) => ({
+      ...s,
+      todos: s.todos.filter(
+        // 短絡評価:
+        // 1. mode.removeDone === true の時だけ t.isDone をチェック
+        // 2. 1. が false なら 3. をチェック
+        // 3. mode.removeExpired === true の時だけ isFutureOrToday(t.deadline) をチェック
+        // 1. 3. どちらかが false を返す t だけ抽出
+        // つまり、removeDone モードなら isDone を、removeExpired モードなら expired を削除
+        (t) => !((mode.removeDone && t.isDone) || (mode.removeExpired && !isFutureOrToday(t.deadline)))
+      )
+    })),
+};
+```
+
+3.1. は描画時に isFutureOrToday() を呼べば問題ない。
+
+## 2026-06-29
+
+上記の 3.1. をいったん実装する。
+
+## 2026-06-30
+
+### 差分の追跡
+
+db.save() に常にすべての Todo[] が渡されているが、これは最終的に DB への書き込み処理であることを考えると、差分だけを反映するようにしたい。
+
+実際に db.save() が走るのは、以下の 3 つのケース。
+
+1. 追加 (todoActions.add())
+2. 削除 (todoActions.remove())
+3. 完了 / 未完了の切り替え (todoActions.toggleDone())
+
+#### Stateful Observer
+
+```TypeScript
+type Diff<T> = {
+  before: T;
+  after: T
+};
+
+type TodoDiffs = {
+  added: Todo[];
+  removed: Todo[];
+  updated: Diff<Todo>;
+};
+
+// こんなイメージ？
+const createDiffs((): => {
+  // Map 化による高速化 (O(N * M) -> O(N + M))
+  // key: id, value: Todo の Map インスタンス
+  let prev: Map<string, Todo> = new Map([]);
+
+  return (next: Todo[]): TodoDiffs => {
+    const nextMap = new Map(next.map(t => [t.id, t]));
+
+    // prev が空の Map なら早期リターン
+    if (prev.size === 0) {
+      prev = nextMap;
+      return { added: next, removed: [], updated: [] };
+    }
+
+    // added: 以前の状態になく次の状態にあるもの
+    const added = next.filter(t => !prev.has(t.id));
+
+    // removed: 以前の状態にあって次の状態にないもの
+    const removed = [...prev.values()].filter(t => !nextMap.has(t.id));
+
+    // updated: 以前の状態と次の状態で参照が違うもの
+    const updated = next.map(t => {
+      const oldTodo = prev.get(t.id);
+      if (oldTodo && oldTodo !== t) {
+        return { before: oldTodo, after: t };
+      }
+      return;
+    }).filter(d => d != null);
+
+    // update memo
+    prev = nextMap;
+
+    return { added, removed, updated };
+  }
+}
+```
+
+#### 役割分担
+
+- Store: truth を保持する
+- Selector: State から描画用データを生成する純粋関数
+- Stateful Observer: 前回状態との差分を追跡する
+- Rederer / Persistence: 差分を消費する
+
+#### SQL のおさらい
+
+```sql
+-- SQL のイメージ
+
+-- $... はサーバーサイドでくっつける
+
+-- users テーブルの作成
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(40) NOT NULL,
+  -- 認証用
+  -- メールアドレス & パスワード認証は脆弱だが、とりあえず
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TODO テーブルの作成
+-- id と created_at でインデックスを張る
+CREATE TABLE todos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  priority VARCHAR(10) NOT NULL,
+  deadline DATETIME NOT NULL,
+  is_done BOOLEAN NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 読み込み
+-- 40 件ごとのページネーション
+SELECT id, title, priority, deadline, is_done
+  FROM todos
+  WHERE user_id = $user_id
+   AND is_done = FALSE --                 -- 未完了のタスクのみ
+   AND created_at < $last_seen_created_at -- 前回取得分の続きから
+  ORDER BY created_at DESC --             -- 作成日時の降順で並べる
+  LIMIT 40; --                            -- 40 件を上限として取得
+
+-- 追加
+INSERT INTO todos
+  VALUES($id, $user_id, $title, $priority, $deadline, $isDone);
+
+-- 削除
+DELETE FROM todos
+  WHERE id = $id;
+
+-- 書き換え
+UPDATE todos
+  SET is_done = $is_done
+  WHERE id = $id;
+```
+
+## 2026-07-03
+
+### トランザクション
+
+> 従来の todos のデータフロー:
+>
+> input -> dispatch -> state の確定 -> db.save(todos) & render(todos)
+
+これはおかしい。db.save() は失敗する可能性がある。以下のようなフローであるべき。
+
+> あるべき todos のデータフロー:
+>
+> input -> try db.save(input)
+>
+> -> success: dispatch -> state の確定 -> render(todos)
+>
+> -> failure: state は更新せず
+
+#### commitTodos()
+
+todoActions の add(), toggleDone(), remove() つまり INSERT, UPDATE, DELETE につながる処理は db.save() を通すようにした。DB への書き込みが失敗した場合、Store 内の State を更新する処理も実行されない。
+
+```TypeScript
+async function commitTodos(updater: (todos: Todo[]) => Todo[]) {
+  const current = todoStore.state;
+  const next: TodoState = {
+    ...current,
+    todos: updater(current.todos)
+  };
+
+  try {
+    await db.save(next.todos); // throwable
+
+    todoStore.dispatch(() => next);
+  } catch (e) {
+    if (e instanceof Error) console.error(e.message);
+    console.error('unknow error occured.');
+  }
+}
+```
+
+### todo_id
+
+現在の　generateTodoId() では、複数ユーザ間で重複が発生するため、ほかの方法を検討する必要がある。
+
+候補としては、以下のものが挙げられる。
+
+| 候補                 | 作成方法                           | 利点                           | 欠点                                     |
+| :------------------- | :--------------------------------- | :----------------------------- | :--------------------------------------- |
+| DB 内 AUTO_INCREMENT | INSERT 時に自動                    | 外部依存なし                   | add() 時に id をバケツリレーする必要あり |
+| UUID v4              | クライアントで crypto.randomUUID() | 外部依存なし、バケツリレー不要 | 後述 [^1][^2]                            |
+| UUID v7              | クライアントで uuid ライブラリ     | バケツリレー不要               | 外部依存あり                             |
+
+[^1] DB の設計上、多数のユーザーがひとつの todos テーブルを共有して TODO を追加していくので、RDBMS のインデックスのデータ構造 (B-Tree) 上はシーケンシャルな値が望ましい。UUID v4 はシーケンシャルではないので、インデックスを張る場合、途中への無理やりな挿入が起こり、ページスプリットによる断片化 (fragmentation) が発生してパフォーマンスが落ちる。
+
+[^2] crypto.randomUUID() は Secure Context (HTTPS / h\ttp://127.0.0.1, h\ttp://localhost, http://\*.localhost などのローカル開発環境) でなければ動作しない。
+
+> [!NOTE]
+>
+> 2026-07-08 追記:
+> UUID v4 / v7 (16 進法、ハイフン含め 36 文字) を採用する場合、値の型を VARCHAR(36) ではなく適切なものに設定する。
+>
+> - BINARY(16) / MySQL
+> - UUID / PostgreSQL
+>
+> また、36 文字の文字列は URL としては長すぎるため、DB の外部では Base58 エンコーディングをもちいて 21 - 22 文字程度に短縮する。
+
+## 2026-07-06
+
+### context 層の分離
+
+現在のコードでは、オブジェクトリテラルをもちいて直接 todoActions オブジェクトを作成している。
+
+```TypeScript
+// /todoPersistence/index.ts
+export db = createDB(config);
+
+export function commitTodos(updater) {...}
+// /todoActions/index.ts
+import { todoStore } from '...';
+import { db, commitTodos } from '...';
+
+const todoActions = {
+  // todoStore, commitTodos() を使うメソッド
+};
+```
+
+これを、ひとつレイヤーを追加することで DB インスタンスを DI して todoActions を返す関数の定義と、その使用にわける。
+
+```TypeScript
+// import / export は基本的に省略
+// /src/lib/createStore.ts
+type Store<T> = ReturnType<typeof createStore<T>>;
+
+// --- Logic Layer ---
+// /src/actions/todoActions.ts
+function createTodoActions = (
+  dependencies: {
+    todoStore: Store<TodoState>,
+    db: TodoDataBase
+  }
+): TodoActions {...};
+
+// --- App Context Layer ---
+// /src/context/....ts
+const todoStore = createStore<TodoState>({...});
+const db = createDB(config);
+
+export const todoActions = ({ todoStore, db }); // DI
+
+// --- UI Layer ---
+// /src/component/....ts
+import { todoActions } from '...';
+
+// ...
+submitButton.addEventListener('click', todoActions.add(...));
+// ...
+```
+
+## 2026-07-12
+
+### アーキテクチャ
+
+MVC パターンと 4 層アーキテクチャを組み合わせた設計は、以下のような図で表される。
+
+```mermaid
+graph TB
+  subgraph 'プレゼンテーション層'
+    Controller[Controller]
+    View[View]
+  end
+
+  subgraph 'アプリケーション層'
+    Service[Service]
+  end
+
+  subgraph 'ドメイン層'
+    IRepo[IRepository]
+    Model[Model]
+  end
+
+  subgraph 'インフラストラクチャ層'
+    Repo[Repository]
+  end
+
+  Controller --> View
+  Controller --> Service
+  Controller --> Model
+  View --> Model
+  Service --> IRepo
+  Service --> Model
+  IRepo <-.- Repo
+  Repo --> Model
+```
+
+現状のコードの Store まわりは Flux (下図) に近いパターンで実現されている。
+
+```mermaid
+graph LR
+  Action1[Action]
+  Dispatcher[Dispatcher]
+  Action2[Action]
+  Store[Store]
+  View[View]
+
+  Action1 --> Dispatcher
+  Dispatcher --> Store
+  Store --> View
+  View --> Action2
+  Action2 --> Dispatcher
+```
+
+### removeAll()
+
+> todoManipulation ブランチで追加する機能：
+>
+> - 期限切れ・完了済みのタスクを削除できる機能（個別・一括）
+> - 重要度や期日に応じてタスクをソートできる機能
+> - 重要度や期日でタスクをフィルターし、絞り込める機能
+
+これまでの時点で、構想していた機能はほぼ実装できた。
+あとは「期限切れ・完了済みのタスクを一括削除できる機能」を追加すれば、todoManipulation ブランチでの作業をもう一段階先へすすめられる。
+(Todo[] 全体をいちいち描画したり db.save() に渡す形から、差分をとりだして反映する方式へ移行する作業がまだある。)
+
+そのために必要な具体的なオブジェクトや処理は、以下の通り。
+
+- UIStore
+- RemoveAllDialog
+- todoActions.removeAll()
+
+## 2026-07-21
+
+### todoManipulation ブランチ
+
+todoManipulation ブランチを main ブランチにマージする。

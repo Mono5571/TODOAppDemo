@@ -1,18 +1,14 @@
-import { todoStore, todoActions } from '../../TodoStore/index.js';
+import { todoStore } from '../../context/index.js';
+import { refreshContainer } from '../../utils/refreshContainer.js';
 import { renderTable } from './renderer.js';
-
-const refreshContainer = (container: HTMLElement) => {
-  while (container.firstElementChild) {
-    container.removeChild(container.firstElementChild);
-  }
-};
+import { selectViewTodos } from './selector.js';
 
 export const initTodoTable = (container: HTMLElement) => {
   const unsubscribeRenderTable = todoStore.watch(
-    (todos) => todos,
-    (todos) => {
+    (s) => selectViewTodos(s),
+    (s) => {
       refreshContainer(container);
-      const table = renderTable(todos);
+      const table = renderTable(s);
       if (table) container.appendChild(table);
     },
     (a, b) => {

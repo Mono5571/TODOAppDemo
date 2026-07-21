@@ -1,4 +1,4 @@
-const createStore = <T>(initial: T) => {
+export function createStore<T>(initial: T) {
   let state: T = initial;
   let listeners: ((s: T) => void)[] = [];
 
@@ -52,7 +52,7 @@ const createStore = <T>(initial: T) => {
       state = action(state);
       listeners.forEach((listener) => listener(state));
     }
-  };
-};
+  } as const;
+}
 
-export { createStore };
+export type Store<T> = ReturnType<typeof createStore<T>>;

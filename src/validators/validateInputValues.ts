@@ -21,10 +21,10 @@ export const validateInputValues = (values: InputValues): Result<ValidInputs, Pa
     });
   }
 
-  const errors: Partial<Record<InputKey, string>> = {};
-  if (!taskResult.isSuccess) errors.task = taskResult.error.message;
-  if (!priorityResult.isSuccess) errors.priority = priorityResult.error.message;
-  if (!deadlineResult.isSuccess) errors.deadline = deadlineResult.error.message;
+  let errors: Partial<Record<InputKey, string>> = {};
+  if (!taskResult.isSuccess) errors = { ...errors, task: taskResult.error.message };
+  if (!priorityResult.isSuccess) errors = { ...errors, priority: priorityResult.error.message };
+  if (!deadlineResult.isSuccess) errors = { ...errors, deadline: deadlineResult.error.message };
 
   return createFailure(errors);
 };

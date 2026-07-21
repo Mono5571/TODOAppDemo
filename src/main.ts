@@ -1,9 +1,15 @@
+import { initFilterSelect } from './components/FilterSelect/index.js';
+import { initRemoveAllDialog } from './components/RemoveAllDialog/index.js';
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
-import { createDB } from './TodoDB/createDB.js';
-import { initTodoDB } from './TodoDB/initTodoDB.js';
+import { db } from './context/index.js';
+import { initTodoDB } from './context/initTodoDB.js';
 
 const main = () => {
+  const filterSlectContainer = document.getElementById('filter-select-container');
+
+  const removeAllDialogContainer = document.getElementById('remove-all-dialog-container');
+
   const tableContainer = document.getElementById('table-container');
 
   const taskInput = document.getElementById('input-task');
@@ -17,6 +23,8 @@ const main = () => {
   const submit = document.getElementById('submit');
 
   if (
+    !(filterSlectContainer instanceof HTMLElement) ||
+    !(removeAllDialogContainer instanceof HTMLElement) ||
     !(tableContainer instanceof HTMLElement) ||
     !(taskInput instanceof HTMLInputElement) ||
     !(prioritySelect instanceof HTMLSelectElement) ||
@@ -30,19 +38,15 @@ const main = () => {
     return;
   }
 
+  initFilterSelect(filterSlectContainer);
+
+  initRemoveAllDialog(removeAllDialogContainer);
+
   initTodoTable(tableContainer);
 
   initTodoForm({ taskInput, prioritySelect, deadlineInput, taskError, priorityError, deadlineError, submit });
 
-  // DB インスタンスの生成
-  const db = createDB({ label: 'storage', storage: window.sessionStorage });
-  // データの読み込みをおこない、TodoStore に save() を購読させる
   initTodoDB(db);
 };
 
 document.addEventListener('DOMContentLoaded', main);
-
-// --- What TO DO ---
-/*
-4. delete の実装
-*/
