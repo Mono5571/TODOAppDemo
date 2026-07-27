@@ -628,3 +628,19 @@ graph LR
 ### todoManipulation ブランチ
 
 todoManipulation ブランチを main ブランチにマージする。
+
+## 2026-07-22
+
+main から develop ブランチを分離。基本的には develop ブランチで開発を進めていく。
+
+これまでの雑多な更新を一つのブランチで進めていくやり方を改め、ブランチごとの責務を考えてそれを明確化した名前を付けていく。
+
+### refactor/render-form ブランチ
+
+まずは todoForm コンポーネントのリファクタリングを進めていく。main() で取得した DOM 要素を弄り回すのをやめ、ほかのコンポーネント同様に render...() を都度呼ぶ設計にする。
+
+これによって達成できることは、主に以下の三つ。
+
+1. main() が DOM を必要以上に知りすぎなくてよくなる。
+2. index.html がただの入れ物になる。コードの凝集性が高まる。
+3. HTMLElement.addEventlistener() を createElement() に隠蔽したことを生かせる。

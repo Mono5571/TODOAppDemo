@@ -106,6 +106,20 @@ const propsHandlers: PropsHandlers = {
       }
       return;
     }
+  },
+  placeholder: {
+    validate: (v: unknown): v is string => typeof v === 'string',
+    apply: (el: HTMLElement, v: string) => {
+      if (!(el instanceof HTMLInputElement) && !(el instanceof HTMLTextAreaElement)) return;
+      el.placeholder = v;
+    }
+  },
+  selected: {
+    validate: (v: unknown): v is string => v === 'true' || v === 'false',
+    apply(el: HTMLElement, v: string) {
+      if (!(el instanceof HTMLOptionElement)) return;
+      el.selected = v === 'true' ? true : false;
+    }
   }
 };
 
