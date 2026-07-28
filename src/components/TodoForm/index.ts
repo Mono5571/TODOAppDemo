@@ -1,4 +1,4 @@
-import { type InputKey, type FormState, type ValidInputs, type InputValues, inputKeyList } from '../../types/inputs.js';
+import type { InputKey, FormState, ValidInputs } from '../../types/inputs.js';
 import { shallowObjectEqual } from '../../utils/utils.js';
 import { validateInputValues } from '../../validators/validateInputValues.js';
 import { generateTodo } from '../../utils/generateTodo.js';
@@ -10,11 +10,15 @@ import type { Result } from '../../types/result.js';
 import { refreshContainer } from '../../utils/refreshContainer.js';
 
 export function initTodoForm(formContainer: HTMLElement) {
-  const handleInputOrChange = (key: InputKey, e?: Event) => {
+  const handleInput = (key: InputKey, e?: Event) => {
     const target = e?.currentTarget;
     if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLSelectElement)) return;
     formActions.update(key, target.value);
   };
+
+  // FormState から <option> が選択されているかを判別する
+  const getSelected = (priority: Priority): 'true' | 'false' =>
+    formStore.state.values.priority === priority ? 'true' : 'false';
 
   const handleSubmit = () => {
     const currentInputValues = formStore.state.values;
@@ -42,135 +46,144 @@ export function initTodoForm(formContainer: HTMLElement) {
     formActions.reset();
   };
 
-  const renderErrorMsg = ({
+  const createErrorMsg = ({
+    el,
     key,
     result,
     touched,
     hasAttemptedSubmit
   }: {
+    el: HTMLInputElement | HTMLSelectElement;
     key: InputKey;
     result: Result<ValidInputs, Partial<Record<'task' | 'priority' | 'deadline', string>>>;
     touched: Set<InputKey>;
     hasAttemptedSubmit: boolean;
-  }) => {
+  }): { textContent: ''; isVisible: false } | { textContent: string; isVisible: true } => {
     const shouldShowError = hasAttemptedSubmit || touched.has(key);
-    if (!shouldShowError) {
-      return { textContent: '', isVisible: false };
-    }
+    if (!shouldShowError) return { textContent: '', isVisible: false };
 
-    if (!result.isSuccess && result.error[key]) {
-      return { textContent: result.error[key], isVisible: true };
-    } else {
-      return { textContent: '', isVisible: false };
-    }
+    // 制約検証 API でのエラーが erroMsg に反映されるように
+    // input.value が js に渡らないので、自動的に isSuccess === false
+    if (!el.checkValidity()) return { textContent: el.validationMessage, isVisible: true };
+
+    // 入力値の検証が inputKey について失敗していたらエラーメッセージを表示
+    if (!result.isSuccess && result.error[key]) return { textContent: result.error[key], isVisible: true };
+
+    // 入力値検証に成功 / 検証失敗だが inputKey については成功 -> エラーメッセージは表示しない
+    return { textContent: '', isVisible: false };
   };
 
-  const renderForm = ({
-    values,
-    touched,
-    hasAttemptedSubmit
-  }: {
-    values: InputValues;
-    touched: Set<InputKey>;
-    hasAttemptedSubmit: boolean;
-  }) => {
+  const renderForm = ({ values, touched, hasAttemptedSubmit }: FormState) => {
     const result = validateInputValues(values);
 
-    // 各項目の <input>, <select> 要素を作成
-    const taskInput = createElement('input', {
-      id: 'input-task',
-      placeholder: '32文字以内で入力してください',
-      value: values.task,
-      onChange: (e?: Event) => handleInputOrChange('task', e)
-    });
-    const prioritySelect = createElement(
-      'select',
-      { id: 'select-priority', onChange: (e?: Event) => handleInputOrChange('priority', e) },
-      createElement('option', {
-        value: 'low' satisfies Priority,
-        textContent: '低',
-        selected: formStore.state.values.priority === 'low' ? 'true' : 'false'
-      }),
-      createElement('option', {
-        value: 'middle' satisfies Priority,
-        textContent: '並',
-        selected: formStore.state.values.priority === 'middle' ? 'true' : 'false'
-      }),
-      createElement('option', {
-        value: 'high' satisfies Priority,
-        textContent: '高',
-        selected: formStore.state.values.priority === 'high' ? 'true' : 'false'
-      })
-    );
-    const deadlineInput = createElement('input', {
-      id: 'input-deadline',
-      type: 'date',
-      value: values.deadline,
-      onInput: (e?: Event) => handleInputOrChange('deadline', e)
-    });
+    try {
+      // 各項目の <input>, <select> 要素を作成
+      const taskInput = createElement('input', {
+        id: 'input-task',
+        placeholder: '32文字以内で入力してください',
+        value: values.task,
+        onChange: (e?: Event) => handleInput('task', e)
+      });
+      const prioritySelect = createElement(
+        'select',
+        { id: 'select-priority', onChange: (e?: Event) => handleInput('priority', e) },
+        createElement('option', {
+          value: 'low' satisfies Priority,
+          textContent: '低',
+          selected: getSelected('low')
+        }),
+        createElement('option', {
+          value: 'middle' satisfies Priority,
+          textContent: '並',
+          selected: getSelected('middle')
+        }),
+        createElement('option', {
+          value: 'high' satisfies Priority,
+          textContent: '高',
+          selected: getSelected('high')
+        })
+      );
+      const deadlineInput = createElement('input', {
+        id: 'input-deadline',
+        type: 'date',
+        value: values.deadline,
+        onInput: (e?: Event) => handleInput('deadline', e)
+      });
 
-    // エラーメッセージの内容を取得
-    const taskErrorMsg = renderErrorMsg({ key: 'task', result, touched, hasAttemptedSubmit });
-    const priorityErrorMsg = renderErrorMsg({ key: 'priority', result, touched, hasAttemptedSubmit });
-    const deadlineErrorMsg = renderErrorMsg({ key: 'deadline', result, touched, hasAttemptedSubmit });
+      // エラーメッセージの内容を取得
+      const taskErrorMsg = createErrorMsg({ el: taskInput, key: 'task', result, touched, hasAttemptedSubmit });
+      const priorityErrorMsg = createErrorMsg({
+        el: prioritySelect,
+        key: 'priority',
+        result,
+        touched,
+        hasAttemptedSubmit
+      });
+      const deadlineErrorMsg = createErrorMsg({
+        el: deadlineInput,
+        key: 'deadline',
+        result,
+        touched,
+        hasAttemptedSubmit
+      });
 
-    // 各項目のエラーメッセージを表示する <span> 要素を作成
-    const taskError = createElement('span', {
-      id: 'error-task',
-      className: ['error-msg', taskErrorMsg.isVisible && 'is-visible'].filter(Boolean).join(' '),
-      textContent: taskErrorMsg.textContent
-    });
-    const priorityError = createElement('span', {
-      id: 'error-priority',
-      className: ['error-msg', priorityErrorMsg.isVisible && 'is-visible'].filter(Boolean).join(' '),
-      textContent: priorityErrorMsg.textContent
-    });
-    const deadlineError = createElement('span', {
-      id: 'error-deadline',
-      className: ['error-msg', deadlineErrorMsg.isVisible && 'is-visible'].filter(Boolean).join(' '),
-      textContent: deadlineErrorMsg.textContent
-    });
+      // 各項目のエラーメッセージを表示する <span> 要素を作成
+      const taskError = createElement('span', {
+        id: 'error-task',
+        className: ['error-msg', taskErrorMsg.isVisible && 'is-visible'].filter(Boolean).join(' '),
+        textContent: taskErrorMsg.textContent
+      });
+      const priorityError = createElement('span', {
+        id: 'error-priority',
+        className: ['error-msg', priorityErrorMsg.isVisible && 'is-visible'].filter(Boolean).join(' '),
+        textContent: priorityErrorMsg.textContent
+      });
+      const deadlineError = createElement('span', {
+        id: 'error-deadline',
+        className: ['error-msg', deadlineErrorMsg.isVisible && 'is-visible'].filter(Boolean).join(' '),
+        textContent: deadlineErrorMsg.textContent
+      });
 
-    const submitButton = createElement('button', {
-      type: 'button',
-      id: 'submit',
-      disabled: result.isSuccess ? 'false' : 'true',
-      textContent: '登録',
-      onClick: handleSubmit
-    });
+      // 登録ボタンを作成
+      const submitButton = createElement('button', {
+        type: 'button',
+        id: 'submit',
+        disabled: result.isSuccess ? 'false' : 'true',
+        textContent: '登録',
+        onClick: handleSubmit
+      });
 
-    const todoForm = createElement(
-      'div',
-      {},
-      createElement('label', { textContent: 'TODO: ', className: 'form-label' }, taskInput, taskError),
-      createElement('label', { textContent: '優先度: ', className: 'form-label' }, prioritySelect, priorityError),
-      createElement('label', { textContent: '期日: ', className: 'form-label' }, deadlineInput, deadlineError),
-      submitButton
-    );
+      // フォーム本体を作成
+      const todoForm = createElement(
+        'div',
+        {},
+        createElement('label', { textContent: 'TODO: ', className: 'form-label' }, taskInput, taskError),
+        createElement('label', { textContent: '優先度: ', className: 'form-label' }, prioritySelect, priorityError),
+        createElement('label', { textContent: '期日: ', className: 'form-label' }, deadlineInput, deadlineError),
+        submitButton
+      );
 
-    return todoForm;
+      return todoForm;
+    } catch (error) {
+      if (error instanceof Error) console.error(error.message);
+      console.error('unknown error occurred on rendering todo form.');
+    }
   };
 
-  // --- 2. Watch: State -> UI (バリデーション & ボタン制御) ---
+  // --- Watch: State -> render UI ---
   formStore.watch(
     (s) => s, // 全体の変更を監視
     ({ values, touched, hasAttemptedSubmit }) => {
+      // コンテナの DOM 要素をクリア
       refreshContainer(formContainer);
 
       const todoForm = renderForm({ values, touched, hasAttemptedSubmit });
-
-      formContainer.appendChild(todoForm);
-
-      /* 
-      // 制約検証 API でのエラーが erroMsg に反映されるように
-      if (!el.checkValidity()) -> errorMsg.textContent = el.validationMessage;
-      // input.value が js に渡らないので、自動的に isSuccess === false
-      */
+      if (todoForm) formContainer.appendChild(todoForm);
     },
     shallowObjectEqual<FormState>
   );
 
   // 初回のレンダリング
   const todoForm = renderForm(formStore.state);
-  formContainer.appendChild(todoForm);
+  if (todoForm) formContainer.appendChild(todoForm);
 }
