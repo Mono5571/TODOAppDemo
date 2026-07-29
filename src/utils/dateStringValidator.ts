@@ -1,9 +1,11 @@
-import type { ValidDeadline } from '../domain/Todo/types';
+import type { Branded } from '../types/branded.js';
+
+export type DateString = Branded<string, 'DateString'>;
 
 /**
  * 書式と実在する日付かを確認
  */
-export const isValidDateString = (date: string): date is ValidDeadline => {
+export const isValidDateString = (date: string): date is DateString => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
 
   // Dateオブジェクトに入れて、実在しない日付（2/31など）が修正されないか確認

@@ -34,7 +34,7 @@ function validateMockDataSingle(
   const priorityResult = validatePriority(mockData.priority);
   // 日付文字列として妥当か否かのみ検証、期限内かどうかは検証しない
   const deadlineResult = resultifyValidator<string, ValidDeadline, Error>(
-    isValidDateString,
+    (d: string): d is ValidDeadline => isValidDateString(d),
     new Error('invalid mock data: deadline is an incorrect format.')
   )(mockData.deadline);
   const isDoneResult = resultifyValidator<unknown, boolean, Error>(
