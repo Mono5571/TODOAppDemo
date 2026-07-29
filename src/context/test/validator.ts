@@ -1,9 +1,9 @@
 import { createResult } from '../../libs/createResult.js';
 import type { Result } from '../../types/result.js';
-import type { Todo, TodoId, TodoKey, ValidDeadline } from '../../types/todo.js';
+import type { Todo, TodoId, TodoKey, ValidDeadline } from '../../domain/Todo/types.js';
 import { isValidDateString } from '../../utils/dateStringValidator.js';
-import { validatePriority } from '../../validators/validatePriority.js';
-import { validateTask } from '../../validators/validateTask.js';
+import { validatePriority } from '../../domain/Todo/validators/validatePriority.js';
+import { validateTask } from '../../domain/Todo/validators/validateTask.js';
 import type { MaybeTodo } from './types.js';
 
 /** Type Predicator を受け取り、Result 型を返す関数に加工するデコレータ */

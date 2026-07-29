@@ -1,4 +1,4 @@
-import type { ValidDeadline } from '../types/todo';
+import type { ValidDeadline } from '../domain/Todo/types';
 
 /**
  * 書式と実在する日付かを確認

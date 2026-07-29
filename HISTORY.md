@@ -644,3 +644,21 @@ main から develop ブランチを分離。基本的には develop ブランチ
 1. main() が DOM を必要以上に知りすぎなくてよくなる。
 2. index.html がただの入れ物になる。コードの凝集性が高まる。
 3. HTMLElement.addEventlistener() を createElement() に隠蔽したことを生かせる。
+
+## 2026-07-29
+
+refactor/render-form ブランチでの作業を終了し、develop ブランチにマージした。
+
+### refactor/relocation-files ブランチ
+
+utils/ 下にアプリケーション / ドメインの知識を持つ関数があるため、これらを分離する。
+
+分離対象：
+
+- castBranded.ts
+- genaerateTodo.ts -> createTodo.ts に改名
+- generateTodoId.ts
+
+#### domain ディレクトリ
+
+src/ 下に domain/ ディレクトリをもうける。さらにその下に todo/ を作成し、そこに Todo にかかわるコードを集約する。

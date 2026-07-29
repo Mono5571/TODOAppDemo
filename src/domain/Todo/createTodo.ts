@@ -1,7 +1,7 @@
-import type { ValidInputs } from '../types/inputs.js';
-import type { Todo, TodoId } from '../types/todo.js';
+import type { ValidInputs } from '../../types/inputs.js';
+import type { Todo, TodoId } from './types.js';
 
-export function generateTodo({
+export function createTodo({
   validData,
   id,
   isDone = false

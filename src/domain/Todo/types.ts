@@ -1,4 +1,4 @@
-import type { Branded } from './branded.js';
+import type { Branded } from '../../types/branded.js';
 // --- todoTypes ---
 /**
  * '000001' から '999999' までの連番文字列

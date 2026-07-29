@@ -1,5 +1,5 @@
 import type { FilterState, TodoState } from '../../types/todoState.js';
-import type { Priority, Todo, TodoKey, ValidDeadline } from '../../types/todo.js';
+import type { Priority, Todo, TodoKey, ValidDeadline } from '../../domain/Todo/types.js';
 
 // sort
 // ---

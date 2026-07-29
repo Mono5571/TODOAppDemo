@@ -1,4 +1,4 @@
-import type { ValidTask, Priority, ValidDeadline } from './todo.js';
+import type { ValidTask, Priority, ValidDeadline } from '../domain/Todo/types.js';
 
 export const inputKeyList = ['task', 'priority', 'deadline'] as const;
 export type InputKey = (typeof inputKeyList)[number];

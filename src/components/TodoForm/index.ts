@@ -1,11 +1,11 @@
 import type { InputKey, FormState, ValidInputs } from '../../types/inputs.js';
 import { shallowObjectEqual } from '../../utils/utils.js';
-import { validateInputValues } from '../../validators/validateInputValues.js';
-import { generateTodo } from '../../utils/generateTodo.js';
-import { generateTodoId } from '../../utils/generateTodoId.js';
+import { validateInputValues } from '../../domain/Todo/validators/validateInputValues.js';
+import { createTodo } from '../../domain/Todo/createTodo.js';
+import { generateTodoId } from '../../services/generateTodoId.js';
 import { formActions, formStore, todoActions } from '../../context/index.js';
 import { createElement } from '../../libs/createElement/index.js';
-import type { Priority } from '../../types/todo.js';
+import type { Priority } from '../../domain/Todo/types.js';
 import type { Result } from '../../types/result.js';
 import { refreshContainer } from '../../utils/refreshContainer.js';
 
@@ -40,7 +40,7 @@ export function initTodoForm(formContainer: HTMLElement) {
       return;
     }
 
-    const newTodo = generateTodo({ validData: result.data, id: idResult.data });
+    const newTodo = createTodo({ validData: result.data, id: idResult.data });
     todoActions.add(newTodo);
 
     formActions.reset();
