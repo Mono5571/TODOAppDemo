@@ -10,7 +10,8 @@ export const allowedTagNames = [
   'button',
   'select',
   'label',
-  'option'
+  'option',
+  'span'
 ] as const;
 export type AllowedTagName = (typeof allowedTagNames)[number];
 
@@ -24,14 +25,16 @@ export const allowedPropsKeys = [
   'name',
   'value',
   'for',
-  'disabled'
+  'disabled',
+  'placeholder',
+  'selected'
 ] as const;
 export type AllowedPropsKey = (typeof allowedPropsKeys)[number];
 
 export const allowedEventKeys = ['onClick', 'onChange', 'onInput'] as const;
 export type AllowedEventsKey = (typeof allowedEventKeys)[number];
 
-export const allowedPropsValueTypeList = ['number', 'radio', 'checkbox', 'button'];
+export const allowedPropsValueTypeList = ['number', 'radio', 'checkbox', 'button', 'date'];
 
 export type ElementProps = {
   readonly [key in AllowedPropsKey]?: string;
