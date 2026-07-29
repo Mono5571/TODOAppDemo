@@ -46,6 +46,7 @@ export function initTodoForm(formContainer: HTMLElement) {
     formActions.reset();
   };
 
+  // State および入力の検証結果から、エラーメッセージと <span> 要素の表示・非表示を返す
   const createErrorMsg = ({
     el,
     key,
@@ -73,9 +74,10 @@ export function initTodoForm(formContainer: HTMLElement) {
     return { textContent: '', isVisible: false };
   };
 
-  const renderForm = ({ values, touched, hasAttemptedSubmit }: FormState) => {
-    const result = validateInputValues(values);
-
+  const renderForm = (
+    result: Result<ValidInputs, Partial<Record<InputKey, string>>>,
+    { values, touched, hasAttemptedSubmit }: FormState
+  ) => {
     try {
       // 各項目の <input>, <select> 要素を作成
       const taskInput = createElement('input', {
@@ -173,17 +175,20 @@ export function initTodoForm(formContainer: HTMLElement) {
   // --- Watch: State -> render UI ---
   formStore.watch(
     (s) => s, // 全体の変更を監視
-    ({ values, touched, hasAttemptedSubmit }) => {
+    (s) => {
       // コンテナの DOM 要素をクリア
       refreshContainer(formContainer);
 
-      const todoForm = renderForm({ values, touched, hasAttemptedSubmit });
+      // 入力値の検証とレンダリング
+      const r = validateInputValues(s.values);
+      const todoForm = renderForm(r, s);
       if (todoForm) formContainer.appendChild(todoForm);
     },
     shallowObjectEqual<FormState>
   );
 
-  // 初回のレンダリング
-  const todoForm = renderForm(formStore.state);
+  // 初回の検証とレンダリング
+  const result = validateInputValues(formStore.state.values);
+  const todoForm = renderForm(result, formStore.state);
   if (todoForm) formContainer.appendChild(todoForm);
 }
