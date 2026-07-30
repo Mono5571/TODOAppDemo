@@ -1,4 +1,4 @@
-import type { TodoDataBase } from '../types/db.js';
+import type { TodoDataBase } from '../TodoDB/types.js';
 import { generateTodoId } from '../services/generateTodoId.js';
 import type { Todo } from '../domain/Todo/types.js';
 import { todoStore } from './index.js';
@@ -26,6 +26,7 @@ export async function initTodoDB(db: TodoDataBase): Promise<void> {
   // 初回起動時に DB からデータをロード
   const loadedData = await db.load();
 
+  // !!! --- delete later --- !!!
   const initialData = sortLoadedData(loadedData);
 
   // ロードしたデータがあれば、Store に反映

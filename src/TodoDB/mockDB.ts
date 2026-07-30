@@ -1,5 +1,5 @@
 import type { Todo } from '../domain/Todo/types.js';
-import type { ConfigFor, TodoDataBase } from '../types/db.js';
+import type { ConfigFor, TodoDataBase } from './types.js';
 
 export const createMockDB = (config: ConfigFor<'mock'>): TodoDataBase => {
   let memoryStorage: Todo[] = config.initialData ?? [];

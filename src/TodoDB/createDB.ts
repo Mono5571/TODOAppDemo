@@ -1,4 +1,4 @@
-import type { DBLabel, ConfigFor, TodoDataBase } from '../types/db.js';
+import type { DBLabel, ConfigFor, TodoDataBase } from './types.js';
 import { createMockDB } from './mockDB.js';
 import { createStorageDB } from './storageDB.js';
 
