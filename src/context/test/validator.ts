@@ -1,6 +1,6 @@
 import { createResult } from '../../libs/createResult.js';
 import type { Result } from '../../types/result.js';
-import type { Todo, TodoId, TodoKey, ValidDeadline } from '../../domain/Todo/types.js';
+import type { Priority, Todo, TodoId, TodoKey, ValidDeadline, ValidTask } from '../../domain/Todo/types.js';
 import { isValidDateString } from '../../utils/dateStringValidator.js';
 import { validatePriority } from '../../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../../domain/Todo/validators/validateTask.js';
@@ -17,7 +17,32 @@ function isTodoIdString(maybeId: string): maybeId is TodoId {
   return /^(?!000000$)[0-9]{6}$/.test(maybeId);
 }
 
-function validateMockDataSingle(
+// { [k in TodoKey]: ErrorMessage } のオブジェクトを作る
+// ただし Success のときはそのキーのプロパティ自体をもたない
+function createErrors({
+  idResult,
+  taskResult,
+  priorityResult,
+  deadlineResult,
+  isDoneResult
+}: {
+  idResult: Result<TodoId, Error>;
+  taskResult: Result<ValidTask, Error>;
+  priorityResult: Result<Priority, Error>;
+  deadlineResult: Result<ValidDeadline, Error>;
+  isDoneResult: Result<boolean, Error>;
+}): Partial<Record<TodoKey, string>> {
+  const errors: Partial<Record<TodoKey, string>> = {};
+  if (!idResult.isSuccess) errors.id = idResult.error.message;
+  if (!taskResult.isSuccess) errors.task = taskResult.error.message;
+  if (!priorityResult.isSuccess) errors.priority = priorityResult.error.message;
+  if (!deadlineResult.isSuccess) errors.deadline = deadlineResult.error.message;
+  if (!isDoneResult.isSuccess) errors.isDone = isDoneResult.error.message;
+
+  return errors;
+}
+
+function validateMockDataSingular(
   mockData: MaybeTodo
 ): Result<Todo, { id: string; errors: Partial<Record<TodoKey, string>> }> {
   const { createSuccess, createFailure } = createResult<
@@ -58,28 +83,30 @@ function validateMockDataSingle(
     });
   }
 
-  let errors: Partial<Record<TodoKey, string>> = {};
-  if (!idResult.isSuccess) errors = { ...errors, id: idResult.error.message };
-  if (!taskResult.isSuccess) errors = { ...errors, task: taskResult.error.message };
-  if (!priorityResult.isSuccess) errors = { ...errors, priority: priorityResult.error.message };
-  if (!deadlineResult.isSuccess) errors = { ...errors, deadline: deadlineResult.error.message };
-  if (!isDoneResult.isSuccess) errors = { ...errors, isDone: isDoneResult.error.message };
+  const errors: Partial<Record<TodoKey, string>> = createErrors({
+    idResult,
+    taskResult,
+    priorityResult,
+    deadlineResult,
+    isDoneResult
+  });
 
   return createFailure({ id: mockData.id, errors });
 }
 
-function logErrors(errors: Partial<Record<TodoKey, string>>): string {
-  return Object.entries(errors)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join(', ');
+function stringifyErrors(errors: Partial<Record<TodoKey, string>>): string {
+  const errorKeyValues = Object.entries(errors);
+  return errorKeyValues.length === 0
+    ? 'unknown error occuerred.'
+    : errorKeyValues.map(([key, value]) => `${key}: ${value}`).join(', ');
 }
 
 export function validateMockData(dataList: MaybeTodo[]): Todo[] {
   return dataList
     .map((data): undefined | Todo => {
-      const result = validateMockDataSingle(data);
+      const result = validateMockDataSingular(data);
       if (!result.isSuccess) {
-        console.log(`ERROR on ${result.error.id}: ${logErrors(result.error.errors)}`);
+        console.log(`ERROR on ${result.error.id}: ${stringifyErrors(result.error.errors)}`);
         return;
       }
       return result.data;

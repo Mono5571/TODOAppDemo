@@ -4,8 +4,26 @@ import { createResult } from '../../../libs/createResult.js';
 import { validateTask } from './validateTask.js';
 import { validatePriority } from './validatePriority.js';
 import { validateDeadline } from './validateDeadline.js';
+import type { Priority, ValidDeadline, ValidTask } from '../types.js';
 
-export const validateInputValues = (values: InputValues): Result<ValidInputs, Partial<Record<InputKey, string>>> => {
+function createErrors({
+  taskResult,
+  priorityResult,
+  deadlineResult
+}: {
+  taskResult: Result<ValidTask, Error>;
+  priorityResult: Result<Priority, Error>;
+  deadlineResult: Result<ValidDeadline, Error>;
+}): Partial<Record<InputKey, string>> {
+  const errors: Partial<Record<InputKey, string>> = {};
+  if (!taskResult.isSuccess) errors.task = taskResult.error.message;
+  if (!priorityResult.isSuccess) errors.priority = priorityResult.error.message;
+  if (!deadlineResult.isSuccess) errors.deadline = deadlineResult.error.message;
+
+  return errors;
+}
+
+export function validateInputValues(values: InputValues): Result<ValidInputs, Partial<Record<InputKey, string>>> {
   const { createSuccess, createFailure } = createResult<ValidInputs, Partial<Record<InputKey, string>>>();
 
   const { task, priority, deadline } = values;
@@ -21,10 +39,7 @@ export const validateInputValues = (values: InputValues): Result<ValidInputs, Pa
     });
   }
 
-  let errors: Partial<Record<InputKey, string>> = {};
-  if (!taskResult.isSuccess) errors = { ...errors, task: taskResult.error.message };
-  if (!priorityResult.isSuccess) errors = { ...errors, priority: priorityResult.error.message };
-  if (!deadlineResult.isSuccess) errors = { ...errors, deadline: deadlineResult.error.message };
+  const errors: Partial<Record<InputKey, string>> = createErrors({ taskResult, priorityResult, deadlineResult });
 
   return createFailure(errors);
-};
+}

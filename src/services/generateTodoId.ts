@@ -1,6 +1,6 @@
 import { createResult } from '../libs/createResult.js';
 import type { Result } from '../types/result.js';
-import type { TodoId } from '../domain/Todo/types.js';
+import { type TodoId, TODO_ID_COUNT_MAX } from '../domain/Todo/types.js';
 import { cast } from '../domain/Todo/validators/castBranded.js';
 
 /**
@@ -17,11 +17,10 @@ export const generateTodoId = (() => {
     // Result 型への準備
     const { createSuccess, createFailure } = createResult<TodoId, Error>();
 
-    // count >= 1,000,000 なら失敗
-    if (count >= 1000000) return createFailure(new Error('タスクの登録数が上限に達しています。'));
+    if (count >= TODO_ID_COUNT_MAX + 1) return createFailure(new Error('タスクの登録数が上限に達しています。'));
 
-    if (count >= 1 && count <= 999999) return createSuccess(cast.todoId(count.toString().padStart(6, '0')));
+    if (count >= 1 && count <= TODO_ID_COUNT_MAX) return createSuccess(cast.todoId(count.toString().padStart(6, '0')));
 
-    return createFailure(new Error('unexpeted error: generateTodoId()'));
+    return createFailure(new Error('unexpeted error occurred on generateTodoId()'));
   };
 })();
