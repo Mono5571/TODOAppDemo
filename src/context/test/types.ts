@@ -1,4 +1,4 @@
-import type { TodoKey } from '../../types/todo.js';
+import type { TodoKey } from '../../domain/Todo/types.js';
 
 export type MaybeTodo = {
   readonly id: string;

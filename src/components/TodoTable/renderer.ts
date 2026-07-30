@@ -1,4 +1,4 @@
-import type { Priority, Todo, TodoKey } from '../../types/todo.js';
+import type { Priority, Todo, TodoKey } from '../../domain/Todo/types.js';
 import { createElement } from '../../libs/createElement/index.js';
 import { isFutureOrToday } from '../../utils/dateStringValidator.js';
 import { todoActions } from '../../context/index.js';

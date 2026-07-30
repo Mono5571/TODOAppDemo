@@ -1,9 +1,9 @@
 import { createResult } from '../../libs/createResult.js';
 import type { Result } from '../../types/result.js';
-import type { Todo, TodoId, TodoKey, ValidDeadline } from '../../types/todo.js';
+import type { Todo, TodoId, TodoKey, ValidDeadline } from '../../domain/Todo/types.js';
 import { isValidDateString } from '../../utils/dateStringValidator.js';
-import { validatePriority } from '../../validators/validatePriority.js';
-import { validateTask } from '../../validators/validateTask.js';
+import { validatePriority } from '../../domain/Todo/validators/validatePriority.js';
+import { validateTask } from '../../domain/Todo/validators/validateTask.js';
 import type { MaybeTodo } from './types.js';
 
 /** Type Predicator を受け取り、Result 型を返す関数に加工するデコレータ */
@@ -34,7 +34,7 @@ function validateMockDataSingle(
   const priorityResult = validatePriority(mockData.priority);
   // 日付文字列として妥当か否かのみ検証、期限内かどうかは検証しない
   const deadlineResult = resultifyValidator<string, ValidDeadline, Error>(
-    isValidDateString,
+    (d: string): d is ValidDeadline => isValidDateString(d),
     new Error('invalid mock data: deadline is an incorrect format.')
   )(mockData.deadline);
   const isDoneResult = resultifyValidator<unknown, boolean, Error>(

@@ -1,6 +1,6 @@
 import type { TodoDataBase } from '../types/db.js';
-import { generateTodoId } from '../utils/generateTodoId.js';
-import type { Todo } from '../types/todo.js';
+import { generateTodoId } from '../services/generateTodoId.js';
+import type { Todo } from '../domain/Todo/types.js';
 import { todoStore } from './index.js';
 
 /**

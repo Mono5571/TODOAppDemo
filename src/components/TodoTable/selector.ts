@@ -1,5 +1,5 @@
 import type { FilterState, SortState, TodoState } from '../../types/todoState.js';
-import type { Todo } from '../../types/todo.js';
+import type { Todo } from '../../domain/Todo/types.js';
 import { computeViewTodos } from './computeViewTodos.js';
 
 /**

@@ -1,6 +1,6 @@
-import type { Priority, TodoKey, ValidDeadline, Todo } from '../types/todo.js';
-import { priorityList, todoKeyList } from '../types/todo.js';
-import { isElement } from '../utils/utils.js';
+import type { Priority, TodoKey } from '../types.js';
+import { priorityList, todoKeyList } from '../types.js';
+import { isElement } from '../../../utils/utils.js';
 
 export const isPriority = (str: string): str is Priority => isElement<Priority>(str, priorityList);
 

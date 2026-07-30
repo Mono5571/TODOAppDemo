@@ -1,7 +1,7 @@
 import { createResult } from '../libs/createResult.js';
 import type { Result } from '../types/result.js';
-import type { TodoId } from '../types/todo.js';
-import { cast } from './castBranded.js';
+import type { TodoId } from '../domain/Todo/types.js';
+import { cast } from '../domain/Todo/validators/castBranded.js';
 
 /**
  * '000001' から '999999' までのゼロ埋め 6 ケタの連番の文字列を TodoId として生成し、Result 型に包んで返す関数

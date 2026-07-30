@@ -1,4 +1,4 @@
-import type { Todo } from '../types/todo.js';
+import type { Todo } from '../domain/Todo/types.js';
 import type { ConfigFor, TodoDataBase } from '../types/db.js';
 
 export const createStorageDB = (config: ConfigFor<'storage'>): TodoDataBase => {
