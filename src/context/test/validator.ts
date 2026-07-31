@@ -6,10 +6,33 @@ import { validatePriority } from '../../domain/Todo/validators/validatePriority.
 import { validateTask } from '../../domain/Todo/validators/validateTask.js';
 import type { MaybeTodo } from './types.js';
 import { createErrors } from '../../domain/Todo/validators/validateInputValues.js';
+import { cast } from '../../domain/Todo/validators/castBranded.js';
 
-// 考慮事項: 重複を除外できていない
-function isTodoIdString(maybeId: string): maybeId is TodoId {
+// フォーマットだけを検証
+function matchTodoIdFormat(maybeId: string): boolean {
   return /^(?!000000$)[0-9]{6}$/.test(maybeId);
+}
+
+// 重複を検証
+const isFirstOf: (maybeId: string) => boolean = (() => {
+  const usedIds = new Set<string>();
+
+  return (maybeId: string): boolean => {
+    if (usedIds.has(maybeId)) return false;
+    usedIds.add(maybeId);
+    return true;
+  };
+})();
+
+// フォーマットの検証をしたのち、クリアしたものだけ重複を検証
+function validateMaybeId(maybeId: string): Result<TodoId, Error> {
+  const { createSuccess, createFailure } = createResult<TodoId, Error>();
+
+  if (!matchTodoIdFormat(maybeId)) return createFailure(new Error('invalid mock data: id is an incorrect format.'));
+
+  if (!isFirstOf(maybeId)) return createFailure(new Error('invalid mock data: id is already used.'));
+
+  return createSuccess(cast.todoId(maybeId));
 }
 
 function validateMockDataSingular(
@@ -22,10 +45,7 @@ function validateMockDataSingular(
 
   // バリデーションのセクション
   const results = {
-    id: resultifyValidator<string, TodoId, Error>(
-      isTodoIdString,
-      new Error('invalid mock data: id is an incorrect format.')
-    )(mockData.id),
+    id: validateMaybeId(mockData.id),
     task: validateTask(mockData.task),
     priority: validatePriority(mockData.priority),
     // 日付文字列として妥当か否かのみ検証、期限内かどうかは検証しない
@@ -49,7 +69,7 @@ function validateMockDataSingular(
     });
   }
 
-  const errors: Partial<Record<TodoKey, string>> = createErrors(todoKeyList, results);
+  const errors: Partial<Record<TodoKey, string>> = createErrors<Todo, Error>(todoKeyList, results);
 
   return createFailure({ id: mockData.id, errors });
 }
@@ -57,7 +77,7 @@ function validateMockDataSingular(
 function stringifyErrors(errors: Partial<Record<TodoKey, string>>): string {
   const errorKeyValues = Object.entries(errors);
   return errorKeyValues.length === 0
-    ? 'unknown error occuerred.'
+    ? 'unknown error occuerred.' // 本当はありえないが、型上は許容している
     : errorKeyValues.map(([key, value]) => `${key}: ${value}`).join(', ');
 }
 

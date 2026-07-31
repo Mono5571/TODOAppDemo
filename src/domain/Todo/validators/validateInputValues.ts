@@ -5,12 +5,11 @@ import { validateTask } from './validateTask.js';
 import { validatePriority } from './validatePriority.js';
 import { validateDeadline } from './validateDeadline.js';
 
-export function createErrors<
-  K extends string | number | symbol,
-  T extends { [k in K]: unknown },
-  E extends { message: string }
->(keys: readonly K[], results: { [k in K]: Result<T[k], E> }): Partial<Record<K, string>> {
-  const errors: Partial<Record<K, string>> = {};
+export function createErrors<T, E extends { message: string }>(
+  keys: readonly (keyof T)[],
+  results: { [k in keyof T]: Result<T[k], E> }
+): Partial<Record<keyof T, string>> {
+  const errors: Partial<Record<keyof T, string>> = {};
 
   keys.forEach((key) => {
     if (!results[key].ok) errors[key] = results[key].err.message;
@@ -40,7 +39,7 @@ export function validateInputValues({
     });
   }
 
-  const errors: Partial<Record<InputKey, string>> = createErrors(inputKeyList, results);
+  const errors: Partial<Record<InputKey, string>> = createErrors<ValidInputs, Error>(inputKeyList, results);
 
   return createFailure(errors);
 }
