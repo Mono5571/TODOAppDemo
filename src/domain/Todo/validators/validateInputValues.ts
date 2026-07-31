@@ -1,6 +1,6 @@
 import { type InputValues, type InputKey, type ValidInputs, inputKeyList } from '../../../types/inputs.js';
 import type { Result } from '../../../types/result.js';
-import { createResult } from '../../../libs/createResult.js';
+import { createResult } from '../../../libs/result.js';
 import { validateTask } from './validateTask.js';
 import { validatePriority } from './validatePriority.js';
 import { validateDeadline } from './validateDeadline.js';

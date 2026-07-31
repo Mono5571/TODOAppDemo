@@ -1,6 +1,6 @@
 import { type ValidTask, TASK_MAX_LENGTH } from '../types.js';
 import type { Result } from '../../../types/result.js';
-import { createResult } from '../../../libs/createResult.js';
+import { createResult } from '../../../libs/result.js';
 import { cast } from './castBranded.js';
 
 export const validateTask = (task: string): Result<ValidTask, Error> => {

@@ -1,4 +1,4 @@
-import { createResult } from '../libs/createResult.js';
+import { createResult } from '../libs/result.js';
 import type { Result } from '../types/result.js';
 import { type TodoId, TODO_ID_COUNT_MAX } from '../domain/Todo/types.js';
 import { cast } from '../domain/Todo/validators/castBranded.js';

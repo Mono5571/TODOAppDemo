@@ -1,4 +1,4 @@
-import { createResult } from '../../libs/createResult.js';
+import { createResult, resultifyValidator } from '../../libs/result.js';
 import type { Result } from '../../types/result.js';
 import { todoKeyList, type Todo, type TodoId, type TodoKey, type ValidDeadline } from '../../domain/Todo/types.js';
 import { isValidDateString } from '../../utils/dateStringValidator.js';
@@ -6,12 +6,6 @@ import { validatePriority } from '../../domain/Todo/validators/validatePriority.
 import { validateTask } from '../../domain/Todo/validators/validateTask.js';
 import type { MaybeTodo } from './types.js';
 import { createErrors } from '../../domain/Todo/validators/validateInputValues.js';
-
-/** Type Predicator を受け取り、Result 型を返す関数に加工するデコレータ */
-function resultifyValidator<T, D extends T, E>(validator: (arg: T) => arg is D, error: E): (arg: T) => Result<D, E> {
-  const { createSuccess, createFailure } = createResult<D, E>();
-  return (arg: T) => (validator(arg) ? createSuccess(arg) : createFailure(error));
-}
 
 // 考慮事項: 重複を除外できていない
 function isTodoIdString(maybeId: string): maybeId is TodoId {

@@ -699,4 +699,6 @@ type Failure<E> = {
 
 ### validateInputValues() / validateMockData() のリファクタリング
 
-createErrors() などほぼ共通の関数なので、共通化したい。
+createErrors() などほぼ共通の関数なので、共通化する。
+
+すべての検証結果が ok なら Success<...> を返す節を共通化しようとしたが、型のアサーションがうまくいかないので断念した。
