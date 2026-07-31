@@ -29,9 +29,6 @@ function createTodoTransaction({ todoStore, db }: { todoStore: Store<TodoState>;
  *
  * - sort タイプが同じなら昇順 / 降順の切り替え
  * - sort タイプが異なるなら、タイプを切り替えて昇順に
- * @param current
- * @param type
- * @returns
  */
 function toggleSortHelper(current: SortState, type: TodoKey): SortState {
   if (current.type === type) return { type, order: current.order === 'ascend' ? 'descend' : 'ascend' };

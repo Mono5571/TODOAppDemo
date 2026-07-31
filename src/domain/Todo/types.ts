@@ -17,6 +17,7 @@ export type Priority = (typeof priorityList)[number];
  *
  */
 export type ValidDeadline = Branded<string, 'ValidDeadline'>;
+export const DEADLINE_THRESHOLD_DAYS = 7;
 
 export const todoKeyList = ['id', 'task', 'priority', 'deadline', 'isDone'] as const;
 export type TodoKey = (typeof todoKeyList)[number];
