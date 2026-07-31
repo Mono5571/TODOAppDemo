@@ -33,11 +33,11 @@ function createErrors({
   isDoneResult: Result<boolean, Error>;
 }): Partial<Record<TodoKey, string>> {
   const errors: Partial<Record<TodoKey, string>> = {};
-  if (!idResult.isSuccess) errors.id = idResult.error.message;
-  if (!taskResult.isSuccess) errors.task = taskResult.error.message;
-  if (!priorityResult.isSuccess) errors.priority = priorityResult.error.message;
-  if (!deadlineResult.isSuccess) errors.deadline = deadlineResult.error.message;
-  if (!isDoneResult.isSuccess) errors.isDone = isDoneResult.error.message;
+  if (!idResult.ok) errors.id = idResult.err.message;
+  if (!taskResult.ok) errors.task = taskResult.err.message;
+  if (!priorityResult.ok) errors.priority = priorityResult.err.message;
+  if (!deadlineResult.ok) errors.deadline = deadlineResult.err.message;
+  if (!isDoneResult.ok) errors.isDone = isDoneResult.err.message;
 
   return errors;
 }
@@ -67,13 +67,7 @@ function validateMockDataSingular(
     new Error('invalid mock data: isDone must be boolean.')
   )(mockData.isDone);
 
-  if (
-    idResult.isSuccess &&
-    taskResult.isSuccess &&
-    priorityResult.isSuccess &&
-    deadlineResult.isSuccess &&
-    isDoneResult.isSuccess
-  ) {
+  if (idResult.ok && taskResult.ok && priorityResult.ok && deadlineResult.ok && isDoneResult.ok) {
     return createSuccess({
       id: idResult.data,
       task: taskResult.data,
@@ -105,8 +99,8 @@ export function validateMockData(dataList: MaybeTodo[]): Todo[] {
   return dataList
     .map((data): undefined | Todo => {
       const result = validateMockDataSingular(data);
-      if (!result.isSuccess) {
-        console.log(`ERROR on ${result.error.id}: ${stringifyErrors(result.error.errors)}`);
+      if (!result.ok) {
+        console.log(`ERROR on ${result.err.id}: ${stringifyErrors(result.err.errors)}`);
         return;
       }
       return result.data;

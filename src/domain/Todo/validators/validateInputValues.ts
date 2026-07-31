@@ -16,9 +16,9 @@ function createErrors({
   deadlineResult: Result<ValidDeadline, Error>;
 }): Partial<Record<InputKey, string>> {
   const errors: Partial<Record<InputKey, string>> = {};
-  if (!taskResult.isSuccess) errors.task = taskResult.error.message;
-  if (!priorityResult.isSuccess) errors.priority = priorityResult.error.message;
-  if (!deadlineResult.isSuccess) errors.deadline = deadlineResult.error.message;
+  if (!taskResult.ok) errors.task = taskResult.err.message;
+  if (!priorityResult.ok) errors.priority = priorityResult.err.message;
+  if (!deadlineResult.ok) errors.deadline = deadlineResult.err.message;
 
   return errors;
 }
@@ -31,7 +31,7 @@ export function validateInputValues(values: InputValues): Result<ValidInputs, Pa
   const priorityResult = validatePriority(priority);
   const deadlineResult = validateDeadline(deadline);
 
-  if (taskResult.isSuccess && deadlineResult.isSuccess && priorityResult.isSuccess) {
+  if (taskResult.ok && deadlineResult.ok && priorityResult.ok) {
     return createSuccess({
       task: taskResult.data,
       priority: priorityResult.data,

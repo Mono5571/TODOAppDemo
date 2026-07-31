@@ -16,7 +16,7 @@ function sortLoadedData(data: Todo[]): Todo[] {
     .toSorted((a, b) => parseInt(a.id, 10) - (b.id, 10))
     .map((todo): Todo | null => {
       const result = generateTodoId();
-      if (!result.isSuccess) return null;
+      if (!result.ok) return null;
       return { ...todo, id: result.data };
     })
     .filter((t): t is NonNullable<Todo> => t != null);
