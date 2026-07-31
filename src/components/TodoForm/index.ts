@@ -27,16 +27,16 @@ export function initTodoForm(formContainer: HTMLElement) {
 
     // 入力値が不正な場合
     // 本当はちゃんと書くべき
-    if (!result.isSuccess) {
-      console.error(result.error);
+    if (!result.ok) {
+      console.error(result.err);
       return;
     }
 
     // generateTodId() が失敗したとき
     // 本当はちゃんと書くべき
     // たとえば... submitError を作る
-    if (!idResult.isSuccess) {
-      console.error(idResult.error);
+    if (!idResult.ok) {
+      console.error(idResult.err);
       return;
     }
 
@@ -64,11 +64,11 @@ export function initTodoForm(formContainer: HTMLElement) {
     if (!shouldShowError) return { textContent: '', isVisible: false };
 
     // 制約検証 API でのエラーが erroMsg に反映されるように
-    // input.value が js に渡らないので、自動的に isSuccess === false
+    // input.value が js に渡らないので、自動的に ok === false
     if (!el.checkValidity()) return { textContent: el.validationMessage, isVisible: true };
 
     // 入力値の検証が inputKey について失敗していたらエラーメッセージを表示
-    if (!result.isSuccess && result.error[key]) return { textContent: result.error[key], isVisible: true };
+    if (!result.ok && result.err[key]) return { textContent: result.err[key], isVisible: true };
 
     // 入力値検証に成功 / 検証失敗だが inputKey については成功 -> エラーメッセージは表示しない
     return { textContent: '', isVisible: false };
@@ -150,7 +150,7 @@ export function initTodoForm(formContainer: HTMLElement) {
       const submitButton = createElement('button', {
         type: 'button',
         id: 'submit',
-        disabled: result.isSuccess ? 'false' : 'true',
+        disabled: result.ok ? 'false' : 'true',
         textContent: '登録',
         onClick: handleSubmit
       });

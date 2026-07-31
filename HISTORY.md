@@ -664,3 +664,51 @@ utils/ 下にアプリケーション / ドメインの知識を持つ関数が�
 src/ 下に domain/ ディレクトリをもうける。さらにその下に Todo/ を作成し、そこに Todo にかかわるコードを集約する。
 
 集約後、 utils/ 下のコードからドメイン知識を排除するため、 dateStringValidators.ts に変更を加え、isValidDateString() を日付文字列（'yyyy-mm-dd' 形式の実在する日付に対応する文字列）かどうかを検証するだけの関数とした。
+
+## 2026-07-31
+
+### Result 型の修正
+
+一般的な慣習に合致するように Result 型のプロパティ名を変更した。
+
+```TypeScript
+type Result<D, E> = Success<D> | Failure<E>;
+
+// old
+type Success<D> = {
+  readonly isSuccess: true;
+  readonly data: D;
+};
+
+type Failure<E> = {
+  readonly isSuccess: false;
+  readonly error: E;
+};
+
+// new
+type Success<D> = {
+  readonly ok: true;
+  readonly data: D;
+};
+
+type Failure<E> = {
+  readonly ok: false;
+  readonly err: E;
+};
+```
+
+### validateInputValues() / validateMockData() のリファクタリング
+
+createErrors() などほぼ共通の関数なので、共通化する。
+
+すべての検証結果が ok なら Success<...> を返す節を共通化しようとしたが、型推論がうまくいかないので断念した。
+
+### ** やるべきこと **
+
+Docker コンテナを起動してモックデータと入力値の検証がきちんとなされているか動作確認する。
+
+### 今後の展望
+
+- 自動テスト・単体テストが書けるように環境構築 (Jest / Vitest ? Node.js 標準の node:test という選択肢も)
+- バックエンドの構築 (Hono を採用)
+- DB とつなぎこむ (Docker 経由)

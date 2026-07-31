@@ -1,4 +1,4 @@
-import type { TodoDataBase } from '../types/db.js';
+import type { TodoDataBase } from '../TodoDB/types.js';
 import { generateTodoId } from '../services/generateTodoId.js';
 import type { Todo } from '../domain/Todo/types.js';
 import { todoStore } from './index.js';
@@ -16,7 +16,7 @@ function sortLoadedData(data: Todo[]): Todo[] {
     .toSorted((a, b) => parseInt(a.id, 10) - (b.id, 10))
     .map((todo): Todo | null => {
       const result = generateTodoId();
-      if (!result.isSuccess) return null;
+      if (!result.ok) return null;
       return { ...todo, id: result.data };
     })
     .filter((t): t is NonNullable<Todo> => t != null);
@@ -26,6 +26,7 @@ export async function initTodoDB(db: TodoDataBase): Promise<void> {
   // 初回起動時に DB からデータをロード
   const loadedData = await db.load();
 
+  // !!! --- delete later --- !!!
   const initialData = sortLoadedData(loadedData);
 
   // ロードしたデータがあれば、Store に反映

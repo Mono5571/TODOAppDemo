@@ -1,5 +1,5 @@
 import type { Success } from '../types/result.js';
-import { createResult } from './createResult.js';
+import { createResult } from './result.js';
 
 // --- 必要な下準備 ---
 /*

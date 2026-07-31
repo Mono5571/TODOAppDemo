@@ -1,23 +1,41 @@
-import { createResult } from '../../libs/createResult.js';
+import { createResult, resultifyValidator } from '../../libs/result.js';
 import type { Result } from '../../types/result.js';
-import type { Todo, TodoId, TodoKey, ValidDeadline } from '../../domain/Todo/types.js';
+import { todoKeyList, type Todo, type TodoId, type TodoKey, type ValidDeadline } from '../../domain/Todo/types.js';
 import { isValidDateString } from '../../utils/dateStringValidator.js';
 import { validatePriority } from '../../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../../domain/Todo/validators/validateTask.js';
 import type { MaybeTodo } from './types.js';
+import { createErrors } from '../../domain/Todo/validators/validateInputValues.js';
+import { cast } from '../../domain/Todo/validators/castBranded.js';
 
-/** Type Predicator を受け取り、Result 型を返す関数に加工するデコレータ */
-function resultifyValidator<T, D extends T, E>(validator: (arg: T) => arg is D, error: E): (arg: T) => Result<D, E> {
-  const { createSuccess, createFailure } = createResult<D, E>();
-  return (arg: T) => (validator(arg) ? createSuccess(arg) : createFailure(error));
-}
-
-// 考慮事項: 重複を除外できていない
-function isTodoIdString(maybeId: string): maybeId is TodoId {
+// フォーマットだけを検証
+function matchTodoIdFormat(maybeId: string): boolean {
   return /^(?!000000$)[0-9]{6}$/.test(maybeId);
 }
 
-function validateMockDataSingle(
+// 重複を検証
+const isFirstOf: (maybeId: string) => boolean = (() => {
+  const usedIds = new Set<string>();
+
+  return (maybeId: string): boolean => {
+    if (usedIds.has(maybeId)) return false;
+    usedIds.add(maybeId);
+    return true;
+  };
+})();
+
+// フォーマットの検証をしたのち、クリアしたものだけ重複を検証
+function validateMaybeId(maybeId: string): Result<TodoId, Error> {
+  const { createSuccess, createFailure } = createResult<TodoId, Error>();
+
+  if (!matchTodoIdFormat(maybeId)) return createFailure(new Error('invalid mock data: id is an incorrect format.'));
+
+  if (!isFirstOf(maybeId)) return createFailure(new Error('invalid mock data: id is already used.'));
+
+  return createSuccess(cast.todoId(maybeId));
+}
+
+function validateMockDataSingular(
   mockData: MaybeTodo
 ): Result<Todo, { id: string; errors: Partial<Record<TodoKey, string>> }> {
   const { createSuccess, createFailure } = createResult<
@@ -26,60 +44,49 @@ function validateMockDataSingle(
   >();
 
   // バリデーションのセクション
-  const idResult = resultifyValidator<string, TodoId, Error>(
-    isTodoIdString,
-    new Error('invalid mock data: id is an incorrect format.')
-  )(mockData.id);
-  const taskResult = validateTask(mockData.task);
-  const priorityResult = validatePriority(mockData.priority);
-  // 日付文字列として妥当か否かのみ検証、期限内かどうかは検証しない
-  const deadlineResult = resultifyValidator<string, ValidDeadline, Error>(
-    (d: string): d is ValidDeadline => isValidDateString(d),
-    new Error('invalid mock data: deadline is an incorrect format.')
-  )(mockData.deadline);
-  const isDoneResult = resultifyValidator<unknown, boolean, Error>(
-    (x) => typeof x === 'boolean',
-    new Error('invalid mock data: isDone must be boolean.')
-  )(mockData.isDone);
+  const results = {
+    id: validateMaybeId(mockData.id),
+    task: validateTask(mockData.task),
+    priority: validatePriority(mockData.priority),
+    // 日付文字列として妥当か否かのみ検証、期限内かどうかは検証しない
+    deadline: resultifyValidator<string, ValidDeadline, Error>(
+      (d: string): d is ValidDeadline => isValidDateString(d),
+      new Error('invalid mock data: deadline is an incorrect format.')
+    )(mockData.deadline),
+    isDone: resultifyValidator<unknown, boolean, Error>(
+      (x) => typeof x === 'boolean',
+      new Error('invalid mock data: isDone must be boolean.')
+    )(mockData.isDone)
+  };
 
-  if (
-    idResult.isSuccess &&
-    taskResult.isSuccess &&
-    priorityResult.isSuccess &&
-    deadlineResult.isSuccess &&
-    isDoneResult.isSuccess
-  ) {
+  if (results.id.ok && results.task.ok && results.priority.ok && results.deadline.ok && results.isDone.ok) {
     return createSuccess({
-      id: idResult.data,
-      task: taskResult.data,
-      priority: priorityResult.data,
-      deadline: deadlineResult.data,
-      isDone: isDoneResult.data
+      id: results.id.data,
+      task: results.task.data,
+      priority: results.priority.data,
+      deadline: results.deadline.data,
+      isDone: results.isDone.data
     });
   }
 
-  let errors: Partial<Record<TodoKey, string>> = {};
-  if (!idResult.isSuccess) errors = { ...errors, id: idResult.error.message };
-  if (!taskResult.isSuccess) errors = { ...errors, task: taskResult.error.message };
-  if (!priorityResult.isSuccess) errors = { ...errors, priority: priorityResult.error.message };
-  if (!deadlineResult.isSuccess) errors = { ...errors, deadline: deadlineResult.error.message };
-  if (!isDoneResult.isSuccess) errors = { ...errors, isDone: isDoneResult.error.message };
+  const errors: Partial<Record<TodoKey, string>> = createErrors<Todo, Error>(todoKeyList, results);
 
   return createFailure({ id: mockData.id, errors });
 }
 
-function logErrors(errors: Partial<Record<TodoKey, string>>): string {
-  return Object.entries(errors)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join(', ');
+function stringifyErrors(errors: Partial<Record<TodoKey, string>>): string {
+  const errorKeyValues = Object.entries(errors);
+  return errorKeyValues.length === 0
+    ? 'unknown error occuerred.' // 本当はありえないが、型上は許容している
+    : errorKeyValues.map(([key, value]) => `${key}: ${value}`).join(', ');
 }
 
 export function validateMockData(dataList: MaybeTodo[]): Todo[] {
   return dataList
     .map((data): undefined | Todo => {
-      const result = validateMockDataSingle(data);
-      if (!result.isSuccess) {
-        console.log(`ERROR on ${result.error.id}: ${logErrors(result.error.errors)}`);
+      const result = validateMockDataSingular(data);
+      if (!result.ok) {
+        console.log(`ERROR on ${result.err.id}: ${stringifyErrors(result.err.errors)}`);
         return;
       }
       return result.data;

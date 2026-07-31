@@ -49,7 +49,7 @@ const mockDataBeforeValidation: MaybeTodo[] = [
     id: '000007',
     task: 'kono task ha mechamecha nagai moziretsu nanode hyouzi sare nai youni natteiru kara error ni nari masu yo', // error
     priority: 'extra', // error
-    deadline: '2026-04-27', // error -> 実際は error にならないほうがいい
+    deadline: '2026-04-27',
     isDone: false
   }
 ];

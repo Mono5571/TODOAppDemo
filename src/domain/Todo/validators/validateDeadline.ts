@@ -1,4 +1,4 @@
-import { createResult } from '../../../libs/createResult.js';
+import { createResult } from '../../../libs/result.js';
 import type { Result } from '../../../types/result.js';
 import type { ValidDeadline } from '../types.js';
 import { cast } from './castBranded.js';

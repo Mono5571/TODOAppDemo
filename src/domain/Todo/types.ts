@@ -1,11 +1,13 @@
 import type { Branded } from '../../types/branded.js';
-// --- todoTypes ---
+
 /**
  * '000001' から '999999' までの連番文字列
  */
 export type TodoId = Branded<string, 'TodoId'>;
+export const TODO_ID_COUNT_MAX = 999_999;
 
 export type ValidTask = Branded<string, 'ValidTask'>;
+export const TASK_MAX_LENGTH = 32;
 
 export const priorityList = ['low', 'middle', 'high'] as const;
 export type Priority = (typeof priorityList)[number];

@@ -1,11 +1,11 @@
 type Success<D> = {
-  readonly isSuccess: true;
+  readonly ok: true;
   readonly data: D;
 };
 
 type Failure<E> = {
-  readonly isSuccess: false;
-  readonly error: E;
+  readonly ok: false;
+  readonly err: E;
 };
 
 type Result<D, E> = Success<D> | Failure<E>;
