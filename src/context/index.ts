@@ -1,6 +1,6 @@
 import type { Todo } from '../domain/Todo/types.js';
 import { createDB } from '../TodoDB/createDB.js';
-import { mockInitialData } from './test/test_mockDB.js';
+import { mockInitialData } from './mock/mockData.js';
 import type { TodoState } from '../types/todoState.js';
 import { createStore } from '../libs/createStore.js';
 import type { FormState } from '../types/inputs.js';

@@ -705,10 +705,20 @@ createErrors() などほぼ共通の関数なので、共通化する。
 
 ### ** やるべきこと **
 
-Docker コンテナを起動してモックデータと入力値の検証がきちんとなされているか動作確認する。
+> - [x] Docker コンテナを起動してモックデータと入力値の検証がきちんとなされているか動作確認する。
 
 ### 今後の展望
 
 - 自動テスト・単体テストが書けるように環境構築 (Jest / Vitest ? Node.js 標準の node:test という選択肢も)
 - バックエンドの構築 (Hono を採用)
 - DB とつなぎこむ (Docker 経由)
+
+### node:test 導入
+
+pnpm を ver11.18.0 にアップデートし `$ pnpm i --save-dev @types/node` を実行、tsconfig.json に `"types": ["node"]` を追記。 -> `import ... from 'node:test'; import assert from 'node:assert'; ` でテストコードが書けるように。
+
+TODO:
+
+> - [x] package.json に pnpm run test で node --test が走るように設定する
+
+package.json に `"type": "module"` と `"scripts": { ..., "test": "node --experimental-strip-types --test src/__test__/*.ts" }` を追記。
