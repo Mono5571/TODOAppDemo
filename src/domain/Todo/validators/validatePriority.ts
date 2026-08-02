@@ -2,7 +2,7 @@ import type { Result } from '../../../types/result.js';
 import { isElement } from '../../../utils/utils.js';
 import { priorityList, type Priority } from '../types.js';
 
-const isPriority = (str: string): str is Priority => isElement<Priority>(str, priorityList);
+const isPriority = (str: string): str is Priority => isElement<string, Priority>(str, priorityList);
 
 export const validatePriority = (str: string): Result<Priority, Error> =>
   isPriority(str)
