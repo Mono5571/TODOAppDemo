@@ -705,10 +705,37 @@ createErrors() などほぼ共通の関数なので、共通化する。
 
 ### ** やるべきこと **
 
-Docker コンテナを起動してモックデータと入力値の検証がきちんとなされているか動作確認する。
+> - [x] Docker コンテナを起動してモックデータと入力値の検証がきちんとなされているか動作確認する。
 
 ### 今後の展望
 
-- 自動テスト・単体テストが書けるように環境構築 (Jest / Vitest ? Node.js 標準の node:test という選択肢も)
+- [x] 自動テスト・単体テストが書けるように環境構築 (Jest / Vitest ? Node.js 標準の node:test という選択肢も)
 - バックエンドの構築 (Hono を採用)
 - DB とつなぎこむ (Docker 経由)
+
+### node:test 導入
+
+pnpm を ver11.18.0 にアップデートし `$ pnpm i --save-dev @types/node` を実行、tsconfig.json に `"types": ["node"]` を追記。 -> `import ... from 'node:test'; import assert from 'node:assert'; ` でテストコードが書けるように。
+
+TODO:
+
+> - [x] package.json に pnpm run test で node --test が走るように設定する
+
+package.json に `"type": "module"` と `"scripts": { ..., "test": "node --experimental-strip-types --test src/__test__/*.ts" }` を追記。
+
+## 2026-08-01
+
+### テストファイルの import
+
+pnpm test run 実行時に、`import { ... } from '\{file_path}.js'` としているテストコードの ts ファイルが ERROR を発生させた。コンパイル前の ts ファイルから、パスがコンパイル後のものを想定している js のモジュールを読み込むことはできない。
+
+tsconfig.json に --allowImportingTsExtensions オプションを設定すれば防げるようだ。
+allowImportingTsExtensions オプションを有効化するには、 --noEmit または --emitDeclarationOnly オプションの有効化が前提となるらしい。これらのオプションを有効化すると、`$ tsc` コマンドで dist/ に js ファイルを出力することができなくなる。
+
+暫定的な措置として、package.json を修正。 `"scripts": { ..., "test": "node --experimental-strip-types --test dist/__test__/*.js" }` として、ビルド後の js ファイルをテスト対象にするように。
+
+## 2026-08-02
+
+### 未使用の関数を削除
+
+エクスポートしている isKey(), isTodoKey() が参照されている箇所がないので、これらのコードを削除した。

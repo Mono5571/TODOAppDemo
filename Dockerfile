@@ -1,8 +1,8 @@
 # Node.jsのLTSバージョンを使用
-FROM node:20-alpine
+FROM node:24-alpine
 
 # pnpmをインストール
-RUN corepack enable && corepack prepare pnpm@10.30.0 --activate
+RUN corepack enable && corepack prepare pnpm@11.18.0 --activate
 
 # 作業ディレクトリを設定
 WORKDIR /app

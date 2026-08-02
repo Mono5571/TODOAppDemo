@@ -5,9 +5,11 @@ import { validateTask } from './validateTask.js';
 import { validatePriority } from './validatePriority.js';
 import { validateDeadline } from './validateDeadline.js';
 
+export type ValidationResults<T, E> = { [k in keyof T]: Result<T[k], E> };
+
 export function createErrors<T, E extends { message: string }>(
   keys: readonly (keyof T)[],
-  results: { [k in keyof T]: Result<T[k], E> }
+  results: ValidationResults<T, E>
 ): Partial<Record<keyof T, string>> {
   const errors: Partial<Record<keyof T, string>> = {};
 
@@ -25,7 +27,7 @@ export function validateInputValues({
 }: InputValues): Result<ValidInputs, Partial<Record<InputKey, string>>> {
   const { createSuccess, createFailure } = createResult<ValidInputs, Partial<Record<InputKey, string>>>();
 
-  const results = {
+  const results: ValidationResults<ValidInputs, Error> = {
     task: validateTask(task),
     priority: validatePriority(priority),
     deadline: validateDeadline(deadline)

@@ -1,6 +1,8 @@
 import type { Result } from '../../../types/result.js';
-import type { Priority } from '../types.js';
-import { isPriority } from './todoValidators.js';
+import { isElement } from '../../../utils/utils.js';
+import { priorityList, type Priority } from '../types.js';
+
+const isPriority = (str: string): str is Priority => isElement<string, Priority>(str, priorityList);
 
 export const validatePriority = (str: string): Result<Priority, Error> =>
   isPriority(str)

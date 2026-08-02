@@ -1,5 +1,11 @@
 import type { FilterState, TodoState } from '../../types/todoState.js';
-import type { Priority, Todo, TodoKey, ValidDeadline } from '../../domain/Todo/types.js';
+import {
+  type Priority,
+  type Todo,
+  type TodoKey,
+  type ValidDeadline,
+  DEADLINE_THRESHOLD_DAYS
+} from '../../domain/Todo/types.js';
 
 // sort
 // ---
@@ -30,7 +36,7 @@ const todosComparerMap = {
 
 // filter
 // ---
-function isCloseToDeadline(d: ValidDeadline, daysCriteria: number = 7): boolean {
+function isCloseToDeadline(d: ValidDeadline, daysCriteria: number = DEADLINE_THRESHOLD_DAYS): boolean {
   const now = new Date();
   const deadlineDate = new Date(d);
 
