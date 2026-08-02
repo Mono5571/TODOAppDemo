@@ -2,15 +2,8 @@
 export const isElement = <E extends string>(maybeElement: string, listOfElement: readonly E[]): maybeElement is E =>
   listOfElement.some((e) => e === maybeElement);
 
-export const isKey = <T extends { [key: string | number | symbol]: any }>(
-  key: string | number | symbol,
-  keyMap: T
-): key is keyof T => Object.hasOwn(keyMap, key);
-
 export const existsTrueVal = <T extends number | string | symbol>(obj: Record<T, boolean>): boolean =>
   Object.entries(obj).some(([_, v]) => v === true);
 
-export const shallowObjectEqual = <V extends { [k: string]: any }>(a: V, b: V): boolean => {
-  if (a === b) return true;
-  return Object.entries(a).every(([k, v]) => v === b[k]);
-};
+export const shallowObjectEqual = <V extends { [k: string]: any }>(a: V, b: V): boolean =>
+  a === b ? true : Object.entries(a).every(([k, v]) => v === b[k]);
