@@ -1,15 +1,33 @@
 import { describe, it, type TestContext } from 'node:test';
-import { isFutureOrToday, isValidDateString } from '../utils/dateStringValidator.js';
+import { isFutureOrToday, isValidDateString, type DateString } from '../utils/dateStringValidator.js';
 import { validateDeadline } from '../domain/Todo/validators/validateDeadline.js';
 import { validatePriority } from '../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../domain/Todo/validators/validateTask.js';
 import { TASK_MAX_LENGTH } from '../domain/Todo/types.js';
 
 // 補助関数
-function getDateStringBefore(days: number): string {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  const dateStr = date.toISOString().split('T')[0] ?? '2100-01-01';
+/**
+ * [yyyy-MM-dd] 形式のローカル日付 (e.g. JST)
+ */
+function formatDate(date: Date): DateString {
+  const y = String(date.getFullYear());
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+
+  return `${y}-${m}-${d}` as DateString;
+}
+/**
+ * date から \\{days} 日前の日付文字列を返す
+ *
+ * - days の小数点以下は切り捨てる。
+ * @param date 基準となる日に対応する Date オブジェクト
+ * @param days 遡りたい日数
+ * @returns [yyyy-MM-dd] 形式の \\{days} 日前の日付文字列
+ */
+export function getDateStringBefore(date: Date, days: number): DateString {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() - days);
+  const dateStr = formatDate(copy);
   return dateStr;
 }
 
@@ -33,13 +51,13 @@ describe('isValidDateString() のテスト', () => {
 
 describe('isFutureOrToday() のテスト', () => {
   it('前日の日付なら失敗', (t: TestContext) => {
-    const yesterdayStr = getDateStringBefore(1);
+    const yesterdayStr = getDateStringBefore(new Date(), 1);
 
     t.assert.strictEqual(isFutureOrToday(yesterdayStr), false);
   });
 
   it('当日の日付なら成功', (t: TestContext) => {
-    const todayStr = getDateStringBefore(0);
+    const todayStr = getDateStringBefore(new Date(), 0);
 
     t.assert.strictEqual(isFutureOrToday(todayStr), true);
   });
@@ -68,7 +86,7 @@ describe('validateDeadline() のテスト', () => {
   });
 
   it('前日の日付なら失敗', (t: TestContext) => {
-    const yesterdayStr = getDateStringBefore(1);
+    const yesterdayStr = getDateStringBefore(new Date(), 1);
     t.assert.deepStrictEqual(validateDeadline(yesterdayStr), {
       ok: false,
       err: new Error('今日以降の日付を入力してください')
@@ -76,7 +94,7 @@ describe('validateDeadline() のテスト', () => {
   });
 
   it('今日の日付なら成功', (t: TestContext) => {
-    const todayStr = getDateStringBefore(0);
+    const todayStr = getDateStringBefore(new Date(), 0);
     t.assert.deepStrictEqual(validateDeadline(todayStr), {
       ok: true,
       data: todayStr

@@ -1,4 +1,5 @@
 import type { Branded } from '../../types/branded.js';
+import type { DateString } from '../../utils/dateStringValidator.js';
 
 /**
  * '000001' から '999999' までの連番文字列

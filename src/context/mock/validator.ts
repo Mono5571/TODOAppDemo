@@ -9,12 +9,12 @@ import { createErrors } from '../../domain/Todo/validators/validateInputValues.j
 import { cast } from '../../domain/Todo/validators/castBranded.js';
 
 // フォーマットだけを検証
-function matchTodoIdFormat(maybeId: string): boolean {
+export function matchTodoIdFormat(maybeId: string): boolean {
   return /^(?!000000$)[0-9]{6}$/.test(maybeId);
 }
 
 // 重複を検証
-const isFirstOf: (maybeId: string) => boolean = (() => {
+export function createIsFirstOf(): (maybeId: string) => boolean {
   const usedIds = new Set<string>();
 
   return (maybeId: string): boolean => {
@@ -22,7 +22,9 @@ const isFirstOf: (maybeId: string) => boolean = (() => {
     usedIds.add(maybeId);
     return true;
   };
-})();
+}
+
+const isFirstOf = createIsFirstOf();
 
 // フォーマットの検証をしたのち、クリアしたものだけ重複を検証
 function validateMaybeId(maybeId: string): Result<TodoId, Error> {
@@ -35,7 +37,7 @@ function validateMaybeId(maybeId: string): Result<TodoId, Error> {
   return createSuccess(cast.todoId(maybeId));
 }
 
-function validateMockDataSingular(
+export function validateMockDataSingular(
   mockData: MaybeTodo
 ): Result<Todo, { id: string; errors: Partial<Record<TodoKey, string>> }> {
   const { createSuccess, createFailure } = createResult<
@@ -74,7 +76,7 @@ function validateMockDataSingular(
   return createFailure({ id: mockData.id, errors });
 }
 
-function stringifyErrors(errors: Partial<Record<TodoKey, string>>): string {
+export function stringifyErrors(errors: Partial<Record<TodoKey, string>>): string {
   const errorKeyValues = Object.entries(errors);
   return errorKeyValues.length === 0
     ? 'unknown error occuerred.' // 本当はありえないが、型上は許容している
