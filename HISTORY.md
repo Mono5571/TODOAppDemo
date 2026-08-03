@@ -739,3 +739,7 @@ allowImportingTsExtensions オプションを有効化するには、 --noEmit �
 ### 未使用の関数を削除
 
 エクスポートしている isKey(), isTodoKey() が参照されている箇所がないので、これらのコードを削除した。
+
+## todoValidators.test.ts
+
+domain/Todo/validators 内の各種の関数のテストコードを書いた。
