@@ -3,7 +3,7 @@ import type { Todo, TodoKey } from '../domain/Todo/types.js';
 import type { Store } from '../libs/createStore.js';
 import type { TodoDataBase } from '../TodoDB/types.js';
 import type { RemoveAllMode } from '../types/uiState.js';
-import { isFutureOrToday } from '../utils/dateStringValidator.js';
+import { isExpiredDeadline } from '../services/isExpiredDeadline.js';
 
 function createTodoTransaction({ todoStore, db }: { todoStore: Store<TodoState>; db: TodoDataBase }) {
   return async (updater: (todos: Todo[]) => Todo[]) => {
@@ -58,11 +58,7 @@ export function createTodoActions({ todoStore, db }: { todoStore: Store<TodoStat
     remove: (id: string) => transaction((todos) => todos.filter((t) => t.id !== id)),
     removeAll: (mode: RemoveAllMode) =>
       transaction((todos) =>
-        todos.filter(
-          (t) =>
-            !(mode.removeDone && t.isDone) &&
-            !(mode.removeExpired && /* isExpired(t.deadline) */ !isFutureOrToday(t.deadline))
-        )
+        todos.filter((t) => !(mode.removeDone && t.isDone) && !(mode.removeExpired && isExpiredDeadline(t.deadline)))
       ),
     // filter, sort の変更 -> そのまま dispatch
     toggleSort: (type: TodoKey) => todoStore.dispatch((s) => ({ ...s, sort: toggleSortHelper(s.sort, type) })),

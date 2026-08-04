@@ -1,7 +1,7 @@
 import type { Priority, Todo, TodoKey } from '../../domain/Todo/types.js';
 import { createElement } from '../../libs/createElement/index.js';
-import { isFutureOrToday } from '../../utils/dateStringValidator.js';
 import { todoActions } from '../../context/index.js';
+import { isExpiredDeadline } from '../../services/isExpiredDeadline.js';
 
 // コード上の priority: string と、画面に表示される優先度を対応付ける keyMap オブジェクト
 const priorityMap = {
@@ -40,7 +40,9 @@ const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
       'tr',
       {
         // 短絡評価: todo.isDone === true の時だけ 'is-done' が評価される。これは truthy な値なので、filter で残る
-        className: [todo.isDone && 'is-done', !isFutureOrToday(todo.deadline) && 'is-expired'].filter(Boolean).join(' ')
+        className: [todo.isDone && 'is-done', isExpiredDeadline(todo.deadline) && 'is-expired']
+          .filter(Boolean)
+          .join(' ')
       },
       createElement('td', {}, todo.task),
       createElement('td', {}, priorityMap[todo.priority]),

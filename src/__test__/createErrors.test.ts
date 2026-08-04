@@ -54,7 +54,7 @@ describe('createErrors() のテスト：入力値の検証', () => {
     };
 
     t.assert.deepStrictEqual(createErrors(inputKeyList, results), {
-      deadline: '入力された日付が存在しないか、無効な形式です'
+      deadline: '日付が無効な形式です'
     });
   });
 
@@ -79,7 +79,7 @@ describe('createErrors() のテスト：入力値の検証', () => {
 
     t.assert.deepStrictEqual(createErrors(inputKeyList, results1), {
       priority: '「低」「並」「高」のうちいずれかを選んでください',
-      deadline: '入力された日付が存在しないか、無効な形式です'
+      deadline: '入力された日付が存在しません'
     });
     t.assert.deepStrictEqual(createErrors(inputKeyList, results2), {
       task: 'タイトルを入力してください',
