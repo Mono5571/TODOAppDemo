@@ -1,7 +1,7 @@
 import { createResult, resultifyValidator } from '../../libs/result.js';
 import type { Result } from '../../types/result.js';
 import { todoKeyList, type Todo, type TodoId, type TodoKey, type ValidDeadline } from '../../domain/Todo/types.js';
-import { isValidDateString } from '../../utils/dateStringValidator.js';
+import { isValidDateNums, parseLocalDateNums } from '../../utils/dateStringValidator.js';
 import { validatePriority } from '../../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../../domain/Todo/validators/validateTask.js';
 import type { MaybeTodo } from './types.js';
@@ -51,10 +51,11 @@ export function validateMockDataSingular(
     task: validateTask(mockData.task),
     priority: validatePriority(mockData.priority),
     // 日付文字列として妥当か否かのみ検証、期限内かどうかは検証しない
-    deadline: resultifyValidator<string, ValidDeadline, Error>(
-      (d: string): d is ValidDeadline => isValidDateString(d),
-      new Error('invalid mock data: deadline is an incorrect format.')
-    )(mockData.deadline),
+    deadline: resultifyValidator<string, ValidDeadline, Error>((d: string): d is ValidDeadline => {
+      const dNums = parseLocalDateNums(d);
+      if (dNums === undefined) return false;
+      return isValidDateNums(...dNums);
+    }, new Error('invalid mock data: deadline is an incorrect format.'))(mockData.deadline),
     isDone: resultifyValidator<unknown, boolean, Error>(
       (x) => typeof x === 'boolean',
       new Error('invalid mock data: isDone must be boolean.')

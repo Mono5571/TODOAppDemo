@@ -18,9 +18,9 @@ const priorityNumberMap = {
 /**
  * 'yyyy-mm-dd' 形式の日付文字列を二つ引数にとり、前者が後者より前なら -1 を、同じなら 0 を、先なら 1 を返す関数
  */
-function compareDeadline(dA: ValidDeadline, dB: ValidDeadline) {
-  if (dA === dB) return 0;
-  const [aDateInt, bDateInt] = [parseInt(dA.replaceAll(/-/g, '')), parseInt(dB.replaceAll(/-/g, ''))];
+function compareDeadline(a: ValidDeadline, b: ValidDeadline) {
+  if (a === b) return 0;
+  const [aDateInt, bDateInt] = [parseInt(a.replaceAll(/-/g, '')), parseInt(b.replaceAll(/-/g, ''))];
   return aDateInt > bDateInt ? 1 : -1;
 }
 
@@ -36,7 +36,7 @@ const todosComparerMap = {
 
 // filter
 // ---
-function isCloseToDeadline(d: ValidDeadline, daysCriteria: number = DEADLINE_THRESHOLD_DAYS): boolean {
+function isCloseToDeadline(d: ValidDeadline, thresholdDays: number = DEADLINE_THRESHOLD_DAYS): boolean {
   const now = new Date();
   const deadlineDate = new Date(d);
 
@@ -44,7 +44,7 @@ function isCloseToDeadline(d: ValidDeadline, daysCriteria: number = DEADLINE_THR
   // [ミリ秒] から [日] に変換
   const diffDays = diffTime / (24 * 60 * 60 * 1000);
 
-  return 0 <= diffDays && diffDays <= daysCriteria;
+  return 0 <= diffDays && diffDays <= thresholdDays;
 }
 
 // array.prototype.filter() に渡す評価関数の keyMap

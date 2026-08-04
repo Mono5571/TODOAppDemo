@@ -763,3 +763,19 @@ domain/Todo/validators 内の各種の関数のテストコードを書いた。
 後者の関数内で使っていた Date.prototype.toISOString() は UTC 基準のメソッドで、前者の関数内の Date.prototype.setDate() や Date.prototype.getDate() などのローカル基準のメソッドとはタイムゾーンがずれてしまうことが原因だった。
 
 一律でローカルタイムゾーンを基準にするよう変更し、併せて dateStringValidator.ts の関数に変更を加えた。
+
+## 2026-08-04
+
+### dateStringValidator の見直し
+
+関数内で文字列の書式の検証を重複して行っている部分があった。これを改め、isValidDateString() と parseLocalDate() を削除し、isFutureOrToday() も書き換えた。
+
+変更後の関数：
+
+- [yyyy, mm, dd] (いずれも number 型) のタプルにパースする（マッチしないなら undefined を返す）parseLocalDateNums()
+- タプルを受け取って実在する日付かを検証する isValidDateNums()
+- タプルを受け取って期日を過ぎていないかを検証する isFutureOrToday()
+
+### computeViewTodos.ts 内の比較ロジックのテスト
+
+未着手なので書きたい。
