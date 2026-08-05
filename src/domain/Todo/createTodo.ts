@@ -2,14 +2,14 @@ import type { ValidInputs } from '../../types/inputs.js';
 import type { Todo, TodoId } from './types.js';
 
 export function createTodo({
-  validData,
   id,
+  validData,
   isDone = false
 }: {
-  validData: ValidInputs;
   id: TodoId;
+  validData: ValidInputs;
   isDone?: boolean;
 }): Todo {
-  const todo = { ...validData, id, isDone };
+  const todo = { id, ...validData, isDone };
   return todo;
 }
