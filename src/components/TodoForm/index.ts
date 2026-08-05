@@ -40,7 +40,7 @@ export function initTodoForm(formContainer: HTMLElement) {
       return;
     }
 
-    const newTodo = createTodo({ validData: result.data, id: idResult.data });
+    const newTodo = createTodo({ id: idResult.data, validData: result.data });
     todoActions.add(newTodo);
 
     formActions.reset();
