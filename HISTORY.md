@@ -779,3 +779,57 @@ domain/Todo/validators 内の各種の関数のテストコードを書いた。
 ### computeViewTodos.ts 内の比較ロジックのテスト
 
 未着手なので書きたい。
+
+## 2026-08-05
+
+### deadline 関係のテストの見直し
+
+#### 現状
+
+- テスト実行時の N 日前の日付について、関数で数値タプルや日付文字列を作成している。
+
+```TypeScript
+function formatDate(date: Date): string {
+  const y = String(date.getFullYear());
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+
+  return `${y}-${m}-${d}`;
+}
+
+function getDateStringBefore(date: Date, days: -1 | 0 | 1 | 2): string {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() - days);
+
+  return formatDate(copy);
+}
+
+export function getDateTupleBefore(date: Date, days: -1 | 0 | 1 | 2): [number, number, number] {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() - days);
+
+  return [copy.getFullYear(), copy.getMonth() + 1, copy.getDate()];
+}
+```
+
+- 外から引数として Date オブジェクトを渡せるように、一部の関数にデフォルト引数を設定している
+
+#### 問題
+
+- 現状のふたつのアプローチはテストのためだけのもので、アプリケーションの本質的なロジックではない。
+- テストのために N 日前の日付を動的に生成していることで、テストの前提が外部からは不明瞭になっている。
+- Date オブジェクトを引数にすることで、テスト時にバケツリレーが発生しうる。
+
+#### 解決策
+
+Date をモックする。
+
+```TypeScript
+import { describe, it, type TestContext } from 'node:test';
+
+describe('mocks the Date object', () => {
+  it('use TestContext mock timers enable() method', (t: TestContext) => {
+    t.mock.timers.enable({ apis: ['Date'] });
+  });
+});
+```

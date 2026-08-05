@@ -1,5 +1,3 @@
-import type { Branded } from '../types/branded.js';
-
 /**
  * 書式が [yyyy-mm-dd] に沿っていれば { year: number, month: number, day: number } を返す
  *
