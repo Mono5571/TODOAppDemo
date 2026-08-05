@@ -25,7 +25,7 @@ function compareDeadline(a: ValidDeadline, b: ValidDeadline) {
 }
 
 // array.prototype.toSorted() に渡す評価関数の keyMap
-const todosComparerMap = {
+export const todosComparerMap = {
   id: (a, b) => parseInt(a.id, 10) - parseInt(b.id, 10),
   task: (a, b) => a.task.localeCompare(b.task), // もう少し厳密に
   priority: (a, b) => priorityNumberMap[b.priority] - priorityNumberMap[a.priority],
@@ -36,7 +36,15 @@ const todosComparerMap = {
 
 // filter
 // ---
-function isCloseToDeadline(d: ValidDeadline, thresholdDays: number = DEADLINE_THRESHOLD_DAYS): boolean {
+/**
+ * 現在の日付と比較して、対象の todo の期限が迫っているかどうか判定する
+ *
+ * - 期限が ${thresholdDays - 1} 以内なら true
+ * - 期限が ${thresholdDays} 日後以降なら false
+ * @param d todo に設定されている期限
+ * @param thresholdDays 判断の基準となる閾値、デフォルトでは 7 日
+ */
+export function isCloseToDeadline(d: ValidDeadline, thresholdDays: number = DEADLINE_THRESHOLD_DAYS): boolean {
   const now = new Date();
   const deadlineDate = new Date(d);
 
