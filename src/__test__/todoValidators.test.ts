@@ -1,67 +1,35 @@
-import { describe, it, type TestContext } from 'node:test';
+import { mock, describe, it, type TestContext, beforeEach, afterEach } from 'node:test';
 import { isFutureOrToday } from '../utils/dateStringValidator.js';
 import { validateDeadline } from '../domain/Todo/validators/validateDeadline.js';
 import { validatePriority } from '../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../domain/Todo/validators/validateTask.js';
 import { TASK_MAX_LENGTH } from '../domain/Todo/types.js';
 
-// 補助関数
-/**
- * [yyyy-MM-dd] 形式のローカル日付 (e.g. JST)
- */
-function formatDate(date: Date): string {
-  const y = String(date.getFullYear());
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-
-  return `${y}-${m}-${d}`;
-}
-
-/**
- * date から \\{days} 日前の日付を表す文字列を返す
- *
- * - days の小数点以下は切り捨てる。
- * @param date 基準となる日に対応する Date オブジェクト
- * @param days 遡りたい日数
- * @returns [yyyy-mm-dd] 形式の \\{days} 日前の日付文字列
- */
-export function getDateStringBefore(date: Date, days: -1 | 0 | 1 | 2): string {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() - days);
-
-  return formatDate(copy);
-}
-
-/**
- * date から \\{days} 日前の日付を表す数値のタプルを返す
- *
- * - days の小数点以下は切り捨てる。
- * @param date 基準となる日に対応する Date オブジェクト
- * @param days 遡りたい日数
- * @returns [yyyy, mm, dd] の \\{days} 日前の数値タプル
- */
-export function getDateTupleBefore(date: Date, days: -1 | 0 | 1 | 2): [number, number, number] {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() - days);
-
-  return [copy.getFullYear(), copy.getMonth() + 1, copy.getDate()];
-}
-
 describe('isFutureOrToday() のテスト', () => {
-  it('前日の日付なら失敗', (t: TestContext) => {
-    const yesterdayTuple = getDateTupleBefore(new Date(), 1);
+  beforeEach(() => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+  });
+  afterEach(() => {
+    mock.timers.reset();
+  });
 
-    t.assert.strictEqual(isFutureOrToday(...yesterdayTuple), false);
+  it('前日の日付なら失敗', (t: TestContext) => {
+    t.assert.strictEqual(isFutureOrToday(2026, 8, 4), false);
   });
 
   it('当日の日付なら成功', (t: TestContext) => {
-    const todayTuple = getDateTupleBefore(new Date(), 0);
-
-    t.assert.strictEqual(isFutureOrToday(...todayTuple), true);
+    t.assert.strictEqual(isFutureOrToday(2026, 8, 5), true);
   });
 });
 
 describe('validateDeadline() のテスト', () => {
+  beforeEach(() => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+  });
+  afterEach(() => {
+    mock.timers.reset();
+  });
+
   it('空文字列なら失敗', (t: TestContext) => {
     t.assert.deepStrictEqual(validateDeadline(''), {
       ok: false,
@@ -84,7 +52,7 @@ describe('validateDeadline() のテスト', () => {
   });
 
   it('前日の日付なら失敗', (t: TestContext) => {
-    const yesterdayStr = getDateStringBefore(new Date(), 1);
+    const yesterdayStr = '2026-08-04';
     t.assert.deepStrictEqual(validateDeadline(yesterdayStr), {
       ok: false,
       err: new Error('今日以降の日付を入力してください')
@@ -92,7 +60,7 @@ describe('validateDeadline() のテスト', () => {
   });
 
   it('今日の日付なら成功', (t: TestContext) => {
-    const todayStr = getDateStringBefore(new Date(), 0);
+    const todayStr = '2026-08-05';
     t.assert.deepStrictEqual(validateDeadline(todayStr), {
       ok: true,
       data: todayStr

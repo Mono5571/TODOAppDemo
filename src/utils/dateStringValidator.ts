@@ -21,13 +21,15 @@ export function isValidDateNums(year: number, month: number, day: number): boole
 /**
  * 今日以降の日付かを確認 (時刻を 00:00:00 に揃えて比較)
  *
- * テストを容易にするため、today を外から渡せるように
+ * - 入力例：2026-08-05 -> isFutureOrToday(2026, 8, 5)
+ *
  */
-export function isFutureOrToday(year: number, month: number, day: number, today: Date = new Date()): boolean {
+export function isFutureOrToday(year: number, month: number, day: number): boolean {
   const targetDate = new Date(year, month - 1, day);
   if (!targetDate) return false;
   targetDate.setHours(0, 0, 0, 0);
 
+  const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   return targetDate >= today;

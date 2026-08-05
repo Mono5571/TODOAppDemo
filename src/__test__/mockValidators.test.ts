@@ -1,7 +1,6 @@
-import { describe, it, type TestContext } from 'node:test';
+import { afterEach, beforeEach, describe, it, mock, type TestContext } from 'node:test';
 import { matchTodoIdFormat, createIsFirstOf, validateMockDataSingular } from '../context/mock/validator.js';
 import type { MaybeTodo } from '../context/mock/types.js';
-import { getDateStringBefore } from './todoValidators.test.js';
 import { TASK_MAX_LENGTH, type TodoKey } from '../domain/Todo/types.js';
 import type { Failure } from '../types/result.js';
 
@@ -61,6 +60,13 @@ describe('isFirstOf() のテスト', () => {
 });
 
 describe('validateMockDataSingular() のテスト', () => {
+  beforeEach(() => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+  });
+  afterEach(() => {
+    mock.timers.reset();
+  });
+
   it('成功：期日を過ぎたかは問わない', (t: TestContext) => {
     const todo_1: MaybeTodo = {
       id: '123456',
@@ -74,7 +80,7 @@ describe('validateMockDataSingular() のテスト', () => {
       id: '000001',
       task: '123456',
       priority: 'middle',
-      deadline: getDateStringBefore(new Date(), 2), // 期日を過ぎたかは問わない
+      deadline: '2026-08-03', // 期日を過ぎたかは問わない
       isDone: true
     };
 
@@ -97,14 +103,6 @@ describe('validateMockDataSingular() のテスト', () => {
       isDone: true
     };
 
-    const notTodo_2: MaybeTodo = {
-      id: '',
-      task: Array.from({ length: TASK_MAX_LENGTH + 1 }, () => 'a').join(''),
-      priority: 'very high',
-      deadline: getDateStringBefore(new Date(), 1),
-      isDone: false
-    };
-
     t.assert.deepStrictEqual(validateMockDataSingular(notTodo_1), {
       ok: false,
       err: {
@@ -117,6 +115,15 @@ describe('validateMockDataSingular() のテスト', () => {
         }
       }
     } satisfies Failure<{ id: string; errors: Partial<Record<TodoKey, string>> }>);
+
+    const notTodo_2: MaybeTodo = {
+      id: '',
+      task: Array.from({ length: TASK_MAX_LENGTH + 1 }, () => 'a').join(''),
+      priority: 'very high',
+      deadline: '2026-08-04',
+      isDone: false
+    };
+
     t.assert.deepStrictEqual(validateMockDataSingular(notTodo_2), {
       ok: false,
       err: {
