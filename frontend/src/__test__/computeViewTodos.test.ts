@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, it, mock, type TestContext } from 'nod
 import { computeViewTodos, isCloseToDeadline, todosComparerMap } from '../components/TodoTable/computeViewTodos.js';
 import type { FilterState, SortState, TodoState } from '../types/todoState.js';
 import type { MaybeTodo } from '../context/mock/types.js';
-import type { Todo, ValidDeadline } from '../domain/Todo/types';
+import type { Todo, ValidDeadline } from '../domain/Todo/types.js';
 
 function createTestTodo(todo: MaybeTodo): Todo {
   return todo as Todo;

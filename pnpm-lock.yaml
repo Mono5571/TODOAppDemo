@@ -6,7 +6,9 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  frontend:
     devDependencies:
       '@types/node':
         specifier: ^26.1.2

@@ -1,22 +1,5 @@
 {
-  "name": "14",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc && cp public/index.html dist/index.html && cp public/style.css dist/style.css",
-    "serve": "pnpm exec http-server dist -p 8080",
-    "dev": "pnpm run build && pnpm run serve",
-    "test": "node --experimental-strip-types --test dist/__test__/*.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@11.18.0",
-  "devDependencies": {
-    "@types/node": "^26.1.2",
-    "http-server": "^14.1.1",
-    "typescript": "^5.9.3"
-  }
+  "name": "todo-app-demo",
+  "private": true,
+  "packageManager": "pnpm@11.18.0"
 }
