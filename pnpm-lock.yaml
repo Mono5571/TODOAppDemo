@@ -8,6 +8,15 @@ importers:
 
   .: {}
 
+  backend:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.1.2
+        version: 26.1.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   frontend:
     devDependencies:
       '@types/node':

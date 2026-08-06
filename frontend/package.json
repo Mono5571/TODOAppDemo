@@ -8,7 +8,7 @@
     "build": "tsc && cp public/index.html dist/index.html && cp public/style.css dist/style.css",
     "serve": "pnpm exec http-server dist -p 8080",
     "dev": "pnpm run build && pnpm run serve",
-    "test": "node --experimental-strip-types --test dist/__test__/*.js"
+    "test": "node --test dist/__test__/*.js"
   },
   "keywords": [],
   "author": "",
