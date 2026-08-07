@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "node --watch src/index.ts",
     "start": "node src/index.ts",
@@ -9,5 +10,9 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.0",
+    "hono": "^4.13.0"
   }
 }

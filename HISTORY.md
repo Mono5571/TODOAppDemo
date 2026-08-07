@@ -853,3 +853,66 @@ describe('mocks the Date object', () => {
   });
 });
 ```
+
+## 2026-08-06
+
+### バックエンド開発の準備
+
+これまで作業を進めていたクライアントサイドのファイルをほぼすべて frontend/ 下に移植した。新規に　backend/ ディレクトリを作成し、バックエンド開発の土台とした。
+
+pnpm-workspace.yaml を root/ 直下に作成し、全体をワークスペース化した。
+
+## 2026-08-07
+
+### リファクタリング案
+
+1. frontend/src/components/ 内のコンポーネントについて、
+   <button> 要素など共通のコンポーネントを別関数に切り出して、
+   components/common/ ディレクトリ下に置いて export する。
+
+   ```TypeScript
+   // e.g. ボタンコンポーネント
+   export function createButton(
+     ops: CreateElementOptions,
+     ...children: (HTMLElement | string)[]
+   ): (
+     ops: CreateElementOptions,
+     ...children: (HTMLElement | string)[]
+   ) => HTMLButtonElement {
+     return (
+       ops: CreateElementOptions,
+       ...children: (HTMLElement | string)[]
+     ) => createElement('button', {
+       type: 'button',
+       ...ops
+     }, ...children)
+   }
+   ```
+
+   > REJECT:
+   > たいしてコード量が削減できない
+
+2. [] components/ 内のコールバック関数を `onChange: $functionName` の
+   形から `onChange: ($param) => $functionName($param)` の形に。
+
+   -- なぜこうするのか？
+
+   関数名だけを書く、つまり「引数を明示せずに関数オブジェクトを直接渡す」記法を Point-free style という。関数型言語において広く用いられる記法だが、様々な問題がある。
+
+   cf. [TypeScriptでPoint-free styleが非推奨とされる理由](https://zenn.dev/aldagram_tech/articles/00c849a61f5e86)
+
+### Hono.js の導入
+
+root/ で次の CLI コマンドを実行：
+
+```
+pnpm add hono @hono/node-server --filter backend
+
+```
+
+backend/tsconfig.json に --allowImportingTsExtensions を設定。
+TS ファイルを直接 import できるようにした。node:24 の機能を使って直接 TS ファイルを実行している方針にマッチしている。
+
+backend/ で空のディレクトリをいくつか作成。将来的な設計を見据えた構成の下準備をする。
+
+`curl http://localhost:3000/health` でヘルスチェックができるようにした。

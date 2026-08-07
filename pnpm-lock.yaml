@@ -9,6 +9,13 @@ importers:
   .: {}
 
   backend:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^2.1.0
+        version: 2.1.0(hono@4.13.0)
+      hono:
+        specifier: ^4.13.0
+        version: 4.13.0
     devDependencies:
       '@types/node':
         specifier: ^26.1.2
@@ -30,6 +37,12 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@hono/node-server@2.1.0':
+    resolution: {integrity: sha512-XovyyCCnBzW+zKu+z/zq8hwNs4KOR5rEMAOxo2f40Q5xoOI37IMm6MIg2COOUtUApo0i6850MTBKH2u4QLGIqg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      hono: ^4
 
   '@types/node@26.1.2':
     resolution: {integrity: sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg==}
@@ -136,6 +149,10 @@ packages:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
 
+  hono@4.13.0:
+    resolution: {integrity: sha512-jhunvfHWxd7J5EFfSgH4xsYJzSe/lfqbUCxiyyeaQasUsXeEHXtzVid+7EOGByc5JnFa23SSFL3Y2RV/z1T+eQ==}
+    engines: {node: '>=16.9.0'}
+
   html-encoding-sniffer@3.0.0:
     resolution: {integrity: sha512-oWv4T4yJ52iKrufjnyZPkrN0CH3QnrUqdB6In1g5Fe1mia8GmF36gnfNySxoZtxD5+NmYw1EElVXiBk93UeskA==}
     engines: {node: '>=12'}
@@ -238,6 +255,10 @@ packages:
 
 snapshots:
 
+  '@hono/node-server@2.1.0(hono@4.13.0)':
+    dependencies:
+      hono: 4.13.0
+
   '@types/node@26.1.2':
     dependencies:
       undici-types: 8.3.0
@@ -332,6 +353,8 @@ snapshots:
       function-bind: 1.1.2
 
   he@1.2.0: {}
+
+  hono@4.13.0: {}
 
   html-encoding-sniffer@3.0.0:
     dependencies:
