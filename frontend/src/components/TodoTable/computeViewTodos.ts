@@ -57,7 +57,7 @@ export function isCloseToDeadline(d: ValidDeadline, thresholdDays: number = DEAD
 
 // array.prototype.filter() に渡す評価関数の keyMap
 const todosFiltererMap = {
-  all: (t) => true,
+  all: (_t) => true,
   priorityHigh: (t) => (t.priority === 'high' ? true : false),
   incomplete: (t) => !t.isDone,
   closeToDeadline: (t) => isCloseToDeadline(t.deadline)

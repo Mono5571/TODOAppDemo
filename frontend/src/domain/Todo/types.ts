@@ -1,4 +1,4 @@
-import type { Branded } from '../../types/branded.js';
+import type { Branded } from '@shared/types';
 
 /**
  * '000001' から '999999' までの連番文字列

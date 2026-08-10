@@ -8,12 +8,15 @@
     // "noImplicitReturns": true,
     // "noImplicitOverride": true,
     // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
+    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
+    "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
     "strict": true,
+
+    "rootDir": "${configDir}/src",
+    "outDir": "${configDir}/dist",
 
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
@@ -25,7 +28,7 @@
     // "allowSyntheticDefaultImports": true
 
     "paths": {
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/src/*"]
     }
   }
 }

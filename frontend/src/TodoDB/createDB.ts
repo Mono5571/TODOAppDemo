@@ -5,6 +5,7 @@ import { createStorageDB } from './storageDB.js';
 export const DBFactory: { [L in DBLabel]: (config: ConfigFor<L>) => TodoDataBase } = {
   mock: createMockDB,
   storage: createStorageDB
+  // api: createApiDB
 };
 
 export const createDB = <L extends DBLabel>(config: ConfigFor<L>): TodoDataBase => {
