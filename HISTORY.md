@@ -322,6 +322,8 @@ db.save() に常にすべての Todo[] が渡されているが、これは最�
 
 #### Stateful Observer
 
+> [] createDiffs() を実装する (2026-08-08 追記)
+
 ```TypeScript
 type Diff<T> = {
   before: T;
@@ -335,7 +337,7 @@ type TodoDiffs = {
 };
 
 // こんなイメージ？
-const createDiffs((): => {
+const createDiffs = (() => {
   // Map 化による高速化 (O(N * M) -> O(N + M))
   // key: id, value: Todo の Map インスタンス
   let prev: Map<string, Todo> = new Map([]);
@@ -369,7 +371,7 @@ const createDiffs((): => {
 
     return { added, removed, updated };
   }
-}
+})()
 ```
 
 #### 役割分担
@@ -709,9 +711,12 @@ createErrors() などほぼ共通の関数なので、共通化する。
 
 ### 今後の展望
 
+TODO:
+
 - [x] 自動テスト・単体テストが書けるように環境構築 (Jest / Vitest ? Node.js 標準の node:test という選択肢も)
-- バックエンドの構築 (Hono を採用)
-- DB とつなぎこむ (Docker 経由)
+- [x] Hono フレームワークの導入
+- [] バックエンドの構築
+- [] DB とつなぎこむ (Docker 経由)
 
 ### node:test 導入
 
@@ -729,10 +734,10 @@ package.json に `"type": "module"` と `"scripts": { ..., "test": "node --exper
 
 pnpm test run 実行時に、`import { ... } from '\{file_path}.js'` としているテストコードの ts ファイルが ERROR を発生させた。コンパイル前の ts ファイルから、パスがコンパイル後のものを想定している js のモジュールを読み込むことはできない。
 
-tsconfig.json に --allowImportingTsExtensions オプションを設定すれば防げるようだ。
-allowImportingTsExtensions オプションを有効化するには、 --noEmit または --emitDeclarationOnly オプションの有効化が前提となるらしい。これらのオプションを有効化すると、`$ tsc` コマンドで dist/ に js ファイルを出力することができなくなる。
+tsconfig.json に `--allowImportingTsExtensions` オプションを設定すれば防げるようだ。
+`--allowImportingTsExtensions` オプションを有効化するには、 `--noEmit` または `--emitDeclarationOnly` オプションの有効化が前提となるらしい。これらのオプションを有効化すると、`$ tsc` コマンドで dist/ に js ファイルを出力することができなくなる。
 
-暫定的な措置として、package.json を修正。 `"scripts": { ..., "test": "node --experimental-strip-types --test dist/__test__/*.js" }` として、ビルド後の js ファイルをテスト対象にするように。
+暫定的な措置として、package.json を修正。 `"scripts": { ..., "test": "node --test dist/__test__/*.js" }` として、ビルド後の js ファイルをテスト対象にするように。
 
 ## 2026-08-02
 
@@ -750,11 +755,11 @@ domain/Todo/validators 内の各種の関数のテストコードを書いた。
 
 モック DB の初期データを検証する関数のテストコードを書く。
 
-> テスト対象：
->
-> - [x] matchTodoIdFormat()
-> - [x] isFirstOf()
-> - [x] validateMockDataSingular()
+テスト対象：
+
+- [x] matchTodoIdFormat()
+- [x] isFirstOf()
+- [x] validateMockDataSingular()
 
 ### Date オブジェクトの扱い
 
@@ -778,7 +783,7 @@ domain/Todo/validators 内の各種の関数のテストコードを書いた。
 
 ### computeViewTodos.ts 内の比較ロジックのテスト
 
-未着手なので書きたい。
+未着手なので書きたい。 -> 書いた。
 
 ## 2026-08-05
 
@@ -786,6 +791,7 @@ domain/Todo/validators 内の各種の関数のテストコードを書いた。
 
 #### 現状
 
+- 外から引数として Date オブジェクトを渡せるように、一部の関数にデフォルト引数を設定している
 - テスト実行時の N 日前の日付について、関数で数値タプルや日付文字列を作成している。
 
 ```TypeScript
@@ -832,8 +838,6 @@ export function getDateTupleBefore(date: Date, days: -1 | 0 | 1 | 2): [number, n
 }
 ```
 
-- 外から引数として Date オブジェクトを渡せるように、一部の関数にデフォルト引数を設定している
-
 #### 問題
 
 - 現状のふたつのアプローチはテストのためだけのもので、アプリケーションの本質的なロジックではない。
@@ -866,9 +870,9 @@ pnpm-workspace.yaml を root/ 直下に作成し、全体をワークスペー�
 
 ### リファクタリング案
 
-1. frontend/src/components/ 内のコンポーネントについて、
-   <button> 要素など共通のコンポーネントを別関数に切り出して、
-   components/common/ ディレクトリ下に置いて export する。
+1. ~~frontend/src/components/ 内のコンポーネントについて、
+   \<button> 要素など共通のコンポーネントを別関数に切り出して、
+   components/common/ ディレクトリ下に置いて export する。~~
 
    ```TypeScript
    // e.g. ボタンコンポーネント
@@ -892,27 +896,67 @@ pnpm-workspace.yaml を root/ 直下に作成し、全体をワークスペー�
    > REJECT:
    > たいしてコード量が削減できない
 
-2. [] components/ 内のコールバック関数を `onChange: $functionName` の
-   形から `onChange: ($param) => $functionName($param)` の形に。
+2. > [] components/ 内のコールバック関数を `onChange: $functionName` の
+   > 形から `onChange: ($param) => $functionName($param)` の形に。
 
-   -- なぜこうするのか？
+   -- なぜそうするのか？
 
    関数名だけを書く、つまり「引数を明示せずに関数オブジェクトを直接渡す」記法を Point-free style という。関数型言語において広く用いられる記法だが、様々な問題がある。
 
-   cf. [TypeScriptでPoint-free styleが非推奨とされる理由](https://zenn.dev/aldagram_tech/articles/00c849a61f5e86)
+   cf. [Zenn | TypeScriptでPoint-free styleが非推奨とされる理由](https://zenn.dev/aldagram_tech/articles/00c849a61f5e86)
 
-### Hono.js の導入
+3. > [] isCloseToDeadline() の移植
 
-root/ で次の CLI コマンドを実行：
+   components/TodoTable/computeViewTodos.ts 内の isCloseToDeadline() はかなりドメインロジック寄り。プレゼンテーション層がドメイン知識をもつべきではない。
 
-```
-pnpm add hono @hono/node-server --filter backend
+### Hono の導入
 
-```
+root/ で次の CLI コマンドを実行：`pnpm add hono @hono/node-server --filter backend`
 
-backend/tsconfig.json に --allowImportingTsExtensions を設定。
+backend/tsconfig.json に `--allowImportingTsExtensions` を設定。
 TS ファイルを直接 import できるようにした。node:24 の機能を使って直接 TS ファイルを実行している方針にマッチしている。
 
 backend/ で空のディレクトリをいくつか作成。将来的な設計を見据えた構成の下準備をする。
 
 `curl http://localhost:3000/health` でヘルスチェックができるようにした。
+
+### Why Hono?
+
+#### ほかの候補の検討
+
+- Ruby on Rails や PHP Laravel、 Python Flask / Django / FastAPI など、バックエンドフレームワークには魅力的な選択肢はたくさんあるものの、練習用の TODO アプリ開発のために別の言語をこれから習得するのは、現実問題としてやりすぎ
+- よしんば別言語を習得するにしても、MVC アーキテクチャががっつりビルトインされている Ruby on Rails はこのプロジェクトでやりたいことと合わない（でもバックエンドの入門には非常に良さそう）
+- Next.js や Nest.js などは特定のフロントエンドライブラリやフレームワークを前提としている雰囲気があるし、どうせなら React / Vue.js + Vite などのスタックで挑戦したい
+- Next.js は **初心者向けではない** (SSR などを学ぶには良いかも、今はスキルが足りない)
+- とはいえフレームワークなしで Node.js の標準機能のみでバックエンドを開発するのはしんどい
+- 同じようにミニマルな JS / TS バックエンドフレームワークの Express は Node.js を前提にしているため、ほかのランタイム -- Deno, Bun や AWS Lambda, Cloudflare のエッジサーバ -- で動かないことがある
+
+#### Hono を採用する利点
+
+- TypeScript で書くことができるため、別の言語を習得する手間がない
+- 外部依存がない：ミニマルな現在のプロジェクトにピッタリ
+- 必要なものがほぼそろっているため、追加でパッケージをインストールする必要がない
+- 上記二つの利点の結果として、**JS パッケージサプライチェーン攻撃へのリスクも低減できる**
+- 開発者が日本人なので、日本語のドキュメントが充実している
+- **流行っててカッコいい**
+
+## 2026-08-09
+
+### 環境変数
+
+何番のポートを開放するか、ハードコーディングから環境変数へ分離するために config/ ディレクトリを作成。
+
+backend/ に .env を作成し、 `PORT="3000"` を追加した。package.json の dev, start スクリプトに `--env-file-if-exists=".env"` を追記し、`$ pnpm --filter backend run start` -> `$ curl http://localhosst:3000` -> { status: ok } を確認
+
+### HonoRequest API
+
+backend/src/routes/todos.ts に仮の /todos への GET, POST, PUT メソッドのハンドリングを書く。
+
+curl コマンドでの HTTP リクエスト `-XPOST` や `-XPUT` のほか、 `-H "ContentType: application/json"` オプションなどをつかってテストした。
+
+### TypeScript Project References
+
+shared/ に frontend/ と backend/ 共通の型やユーティリティ関数をまとめる。
+
+tsconfig.json をこねくりまわしてエラーと格闘した結果、なんとか IDE 上でのエラーは解決できた。
+sharad/tsconfig.json の include, exclude が悪さをしていたらしい？

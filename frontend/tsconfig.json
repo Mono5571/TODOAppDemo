@@ -3,9 +3,6 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
-    "outDir": "./dist",
-
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "esnext",
@@ -15,11 +12,21 @@
     // "lib": ["esnext"],
     "types": ["node"], // and npm install -D @types/node
 
+    "rootDir": "./src",
+    "outDir": "./dist",
+
     // Other Outputs
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
 
     "jsx": "react-jsx"
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules"],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
 }

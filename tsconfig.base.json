@@ -19,9 +19,13 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
 
     // Manually Added Options
     // "allowSyntheticDefaultImports": true
+
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
   }
 }

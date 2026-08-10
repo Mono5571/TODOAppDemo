@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, it, mock, type TestContext } from 'nod
 import { matchTodoIdFormat, createIsFirstOf, validateMockDataSingular } from '../context/mock/validator.js';
 import type { MaybeTodo } from '../context/mock/types.js';
 import { TASK_MAX_LENGTH, type TodoKey } from '../domain/Todo/types.js';
-import type { Failure } from '../types/result.js';
+import type { Failure } from '@shared/types';
 
 describe('matchTodoIdFormat() のテスト', () => {
   it('フォーマットに沿っているなら成功', (t: TestContext) => {

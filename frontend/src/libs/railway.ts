@@ -1,4 +1,4 @@
-import type { Success } from '../types/result.js';
+import type { Success } from '@shared/types';
 import { createResult } from './result.js';
 
 // --- 必要な下準備 ---

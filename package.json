@@ -1,5 +1,7 @@
 {
-  "name": "todo-app-demo",
+  "name": "@todo-app-demo",
+  "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@11.18.0"
+  "packageManager": "pnpm@11.18.0",
+  "type": "module"
 }

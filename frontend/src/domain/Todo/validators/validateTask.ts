@@ -1,5 +1,5 @@
 import { type ValidTask, TASK_MAX_LENGTH } from '../types.js';
-import type { Result } from '../../../types/result.js';
+import type { Result } from '@shared/types';
 import { createResult } from '../../../libs/result.js';
 import { cast } from './castBranded.js';
 
