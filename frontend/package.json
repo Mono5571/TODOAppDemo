@@ -1,6 +1,7 @@
 {
-  "name": "@todo-app-demo/frontend",
+  "name": "@todo/frontend",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "type": "module",
   "main": "./src/main.ts",
@@ -18,5 +19,8 @@
     "@types/node": "^26.1.2",
     "http-server": "^14.1.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@todo/shared": "workspace:*"
   }
 }

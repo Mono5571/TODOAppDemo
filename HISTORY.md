@@ -959,4 +959,4 @@ curl コマンドでの HTTP リクエスト `-XPOST` や `-XPUT` のほか、 `
 shared/ に frontend/ と backend/ 共通の型やユーティリティ関数をまとめる。
 
 tsconfig.json をこねくりまわしてエラーと格闘した結果、なんとか IDE 上でのエラーは解決できた。
-sharad/tsconfig.json の include, exclude が悪さをしていたらしい？
+sharad/tsconfig.json の `"include": ["src/**/*"], "exclude": ["node_modules"]` が悪さをしていたらしい？

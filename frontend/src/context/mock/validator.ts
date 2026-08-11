@@ -1,5 +1,5 @@
 import { createResult, resultifyValidator } from '../../libs/result.js';
-import type { Result } from '@shared/types';
+import type { Result } from '@todo/shared';
 import { todoKeyList, type Todo, type TodoId, type TodoKey, type ValidDeadline } from '../../domain/Todo/types.js';
 import { isValidDateNums, parseLocalDateNums } from '../../utils/dateStringValidator.js';
 import { validatePriority } from '../../domain/Todo/validators/validatePriority.js';

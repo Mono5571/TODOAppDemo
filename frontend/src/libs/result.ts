@@ -1,4 +1,4 @@
-import type { Result, Success, Failure } from '@shared/types';
+import type { Result, Success, Failure } from '@todo/shared';
 
 export const createResult = <D, E>() => {
   const createSuccess = (data: D): Success<D> => ({ ok: true, data });

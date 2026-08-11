@@ -3,6 +3,8 @@ dist/
 
 node_modules/
 
+*.tsbuildinfo
+
 # セキュリティ関連
 .env
 

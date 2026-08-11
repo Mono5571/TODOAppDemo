@@ -1,12 +1,11 @@
 {
-  "name": "@todo",
+  "name": "@todo/shared",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@11.18.0",
   "type": "module",
-  "scripts": {
-    "build": "tsc --build"
-  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "packageManager": "pnpm@11.18.0",
   "devDependencies": {
     "typescript": "^5.9.3"
   }

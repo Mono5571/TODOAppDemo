@@ -1,4 +1,4 @@
-import type { Result } from '@shared/types';
+import type { Result } from '@todo/shared';
 import { isElement } from '../../../utils/utils.js';
 import { priorityList, type Priority } from '../types.js';
 

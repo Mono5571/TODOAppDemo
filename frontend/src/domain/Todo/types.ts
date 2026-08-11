@@ -1,4 +1,4 @@
-import type { Branded } from '@shared/types';
+import type { Branded } from '@todo/shared';
 
 /**
  * '000001' から '999999' までの連番文字列

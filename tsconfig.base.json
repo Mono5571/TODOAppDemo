@@ -28,7 +28,7 @@
     // "allowSyntheticDefaultImports": true
 
     "paths": {
-      "@shared/*": ["./shared/src/*"]
+      "@todo/shared/*": ["./shared/src/*"]
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@todo-app-demo/frontend",
+  "name": "@todo/backend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.0",
-    "hono": "^4.13.0"
+    "hono": "^4.13.0",
+    "@todo/shared": "workspace:*"
   }
 }

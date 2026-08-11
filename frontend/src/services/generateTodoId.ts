@@ -1,5 +1,5 @@
 import { createResult } from '../libs/result.js';
-import type { Result } from '@shared/types';
+import type { Result } from '@todo/shared';
 import { type TodoId, TODO_ID_COUNT_MAX } from '../domain/Todo/types.js';
 import { cast } from '../domain/Todo/validators/castBranded.js';
 

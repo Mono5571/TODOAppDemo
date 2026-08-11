@@ -6,7 +6,7 @@ import { generateTodoId } from '../../services/generateTodoId.js';
 import { formActions, formStore, todoActions } from '../../context/index.js';
 import { createElement } from '../../libs/createElement/index.js';
 import type { Priority } from '../../domain/Todo/types.js';
-import type { Result } from '@shared/types';
+import type { Result } from '@todo/shared';
 import { refreshContainer } from '../../utils/refreshContainer.js';
 
 export function initTodoForm(formContainer: HTMLElement) {
