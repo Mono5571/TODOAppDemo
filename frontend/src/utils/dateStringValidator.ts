@@ -34,5 +34,3 @@ export function isFutureOrToday(year: number, month: number, day: number): boole
 
   return targetDate >= today;
 }
-
-/*  */
