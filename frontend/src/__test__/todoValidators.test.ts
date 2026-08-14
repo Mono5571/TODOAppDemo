@@ -3,7 +3,7 @@ import { isFutureOrToday } from '../utils/dateStringValidator.js';
 import { validateDeadline } from '../domain/Todo/validators/validateDeadline.js';
 import { validatePriority } from '../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../domain/Todo/validators/validateTask.js';
-import { TASK_MAX_LENGTH } from '../domain/Todo/types.js';
+import { TASK_MAX_LENGTH } from '@todo/shared';
 
 describe('isFutureOrToday() のテスト', () => {
   beforeEach(() => {

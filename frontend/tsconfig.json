@@ -20,7 +20,7 @@
     "declaration": true,
     "declarationMap": true,
 
-    "paths": { "@todo/shared": ["../shared/src/index.ts"] },
+    "paths": { "@todo/shared": ["../shared/src/index.js"] },
     "jsx": "react-jsx"
   },
   "include": ["src/**/*"],

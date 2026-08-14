@@ -1,4 +1,4 @@
-import type { TodoId, ValidDeadline, ValidTask } from '../types.js';
+import type { TodoId, ValidDeadline, ValidTask } from '@todo/shared';
 
 export const cast = {
   todoId: (id: string) => id as TodoId,

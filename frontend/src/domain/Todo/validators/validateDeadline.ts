@@ -1,6 +1,5 @@
 import { createResult } from '../../../libs/result.js';
-import type { Result } from '@todo/shared';
-import type { ValidDeadline } from '../types.js';
+import type { Result, ValidDeadline } from '@todo/shared';
 import { cast } from './castBranded.js';
 import { isFutureOrToday, isValidDateNums, parseLocalDateNums } from '../../../utils/dateStringValidator.js';
 

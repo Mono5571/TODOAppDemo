@@ -936,7 +936,7 @@ backend/ で空のディレクトリをいくつか作成。将来的な設計�
 - TypeScript で書くことができるため、別の言語を習得する手間がない
 - 外部依存がない：ミニマルな現在のプロジェクトにピッタリ
 - 必要なものがほぼそろっているため、追加でパッケージをインストールする必要がない
-- 上記二つの利点の結果として、**JS パッケージサプライチェーン攻撃へのリスクも低減できる**
+- 上記二つの利点の結果として、JS パッケージサプライチェーン攻撃へのリスクも低減できる
 - 開発者が日本人なので、日本語のドキュメントが充実している
 - **流行っててカッコいい**
 
@@ -946,13 +946,13 @@ backend/ で空のディレクトリをいくつか作成。将来的な設計�
 
 何番のポートを開放するか、ハードコーディングから環境変数へ分離するために config/ ディレクトリを作成。
 
-backend/ に .env を作成し、 `PORT="3000"` を追加した。package.json の dev, start スクリプトに `--env-file-if-exists=".env"` を追記し、`$ pnpm --filter backend run start` -> `$ curl http://localhosst:3000` -> { status: ok } を確認
+backend/ に .env を作成し、 `PORT="3000"` を追加した。package.json の dev, start スクリプトに `--env-file-if-exists=".env"` を追記し、`$ pnpm --filter backend run start` -> `$ curl http://localhosst:3000` -> `{ status: ok }` を確認
 
 ### HonoRequest API
 
 backend/src/routes/todos.ts に仮の /todos への GET, POST, PUT メソッドのハンドリングを書く。
 
-curl コマンドでの HTTP リクエスト `-XPOST` や `-XPUT` のほか、 `-H "ContentType: application/json"` オプションなどをつかってテストした。
+curl コマンドでの HTTP リクエスト `-X POST` や `-X PUT` のほか、 `-H "ContentType: application/json"` オプションなどをつかってテストした。
 
 ### TypeScript Project References
 
@@ -960,3 +960,29 @@ shared/ に frontend/ と backend/ 共通の型やユーティリティ関数を
 
 tsconfig.json をこねくりまわしてエラーと格闘した結果、なんとか IDE 上でのエラーは解決できた。
 sharad/tsconfig.json の `"include": ["src/**/*"], "exclude": ["node_modules"]` が悪さをしていたらしい？
+
+## 2026-08-11
+
+### pnpm workspace
+
+typescript project reference を導入して shared/ から共通の型や関数をエクスポートする準備はできた。しかしこれでは、TS のコンパイラにファイルのインポート・エクスポート関係を伝えることはできても、Node.js がコードの依存関係を解釈できず実行することができない。
+
+そこで、pnpm-workspace.yaml を作成してプロジェクト全体を pnpm workspace とし、frontend/ backend/ sharad/ をワークスペース内のパッケージにする。こうすることで、shared/ をローカルのオリジナルパッケージとして認識させ、Hono や node:test などと同じように `import { ... } from '@${projectName}/${packageName}';` でインポートできるようにする。
+
+## 2026-08-14
+
+### Todo Types の shared/ への移植
+
+とりあえずコードを移植してインポートを書き換えると、IDE の上ではエラーなし。しかし、ビルドコマンドを実行すると TS1295 エラーが発生。
+
+> - error TS1295:
+>
+> ECMAScript imports and exports cannot be written in a CommonJS file under 'verbatimModuleSyntax'.
+>
+> Adjust the 'type' field in the nearest 'package.json' to make this file an ECMAScript module, or adjust your 'verbatimModuleSyntax', 'module', and 'moduleResolution' settings in TypeScript.
+
+shared/tsconfig.json に `"compilerOption": { "module": "nodenext", "moduleResolution": "nodenext" }` を追記したことでこのエラーを回避してビルドできるようになった。
+
+しかし、これまで frontend/ の実行時に外部依存がなかったことが、ここにきて思わぬ落とし穴に。無事ビルドできたコードをもとに `pnpm --filter frontend run build` して開発サーバを立ち上げると、 `Uncaught Type Error` となった。実行時には `import { ... } from '@todo/shared';` を解決できないためである。
+
+### 実行時エラーの解決策

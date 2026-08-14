@@ -1,5 +1,5 @@
 import type { ValidInputs } from '../../types/inputs.js';
-import type { Todo, TodoId } from './types.js';
+import type { Todo, TodoId } from '@todo/shared';
 
 export function createTodo({
   id,

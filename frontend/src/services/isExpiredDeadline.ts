@@ -1,4 +1,4 @@
-import type { ValidDeadline } from '../domain/Todo/types.js';
+import type { ValidDeadline } from '@todo/shared';
 import { isFutureOrToday, parseLocalDateNums } from '../utils/dateStringValidator.js';
 
 export function isExpiredDeadline(deadline: ValidDeadline): boolean /* deadline is expired */ {

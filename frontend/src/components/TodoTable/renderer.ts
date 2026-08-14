@@ -1,4 +1,4 @@
-import type { Priority, Todo, TodoKey } from '../../domain/Todo/types.js';
+import type { Priority, Todo, TodoKey } from '@todo/shared';
 import { createElement } from '../../libs/createElement/index.js';
 import { todoActions } from '../../context/index.js';
 import { isExpiredDeadline } from '../../services/isExpiredDeadline.js';

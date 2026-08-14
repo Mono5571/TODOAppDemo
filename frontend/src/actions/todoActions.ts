@@ -1,5 +1,5 @@
 import type { FilterState, SortState, TodoState } from '../types/todoState.js';
-import type { Todo, TodoKey } from '../domain/Todo/types.js';
+import type { Todo, TodoKey } from '@todo/shared';
 import type { Store } from '../libs/createStore.js';
 import type { TodoDataBase } from '../TodoDB/types.js';
 import type { RemoveAllMode } from '../types/uiState.js';

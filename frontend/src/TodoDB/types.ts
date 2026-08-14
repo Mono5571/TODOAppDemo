@@ -1,4 +1,4 @@
-import type { Todo } from '../domain/Todo/types.js';
+import type { Todo } from '@todo/shared';
 
 const dbLabelList = ['mock', 'storage'] as const; // 必要になったら 'api' を追加
 export type DBLabel = (typeof dbLabelList)[number];

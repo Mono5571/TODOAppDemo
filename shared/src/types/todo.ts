@@ -1,4 +1,4 @@
-import type { Branded } from '@todo/shared';
+import type { Branded } from './branded.js';
 
 /**
  * '000001' から '999999' までの連番文字列

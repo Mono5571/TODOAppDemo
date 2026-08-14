@@ -1,4 +1,4 @@
-import type { TodoKey } from '../../domain/Todo/types.js';
+import type { TodoKey } from '@todo/shared';
 
 export type MaybeTodo = {
   readonly id: string;

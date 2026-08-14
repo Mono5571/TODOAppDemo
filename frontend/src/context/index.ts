@@ -1,4 +1,4 @@
-import type { Todo } from '../domain/Todo/types.js';
+import type { Todo } from '@todo/shared';
 import { createDB } from '../TodoDB/createDB.js';
 import { mockInitialData } from './mock/mockData.js';
 import type { TodoState } from '../types/todoState.js';

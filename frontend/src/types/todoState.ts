@@ -1,4 +1,4 @@
-import type { Todo, TodoKey } from '../domain/Todo/types.js';
+import type { Todo, TodoKey } from '@todo/shared';
 
 export const filterStateList = [`all`, 'priorityHigh', 'closeToDeadline', 'incomplete'] as const;
 export type FilterState = (typeof filterStateList)[number];

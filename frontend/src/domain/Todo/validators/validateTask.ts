@@ -1,5 +1,5 @@
-import { type ValidTask, TASK_MAX_LENGTH } from '../types.js';
-import type { Result } from '@todo/shared';
+import { TASK_MAX_LENGTH } from '@todo/shared';
+import type { ValidTask, Result } from '@todo/shared';
 import { createResult } from '../../../libs/result.js';
 import { cast } from './castBranded.js';
 

@@ -1,4 +1,4 @@
-import type { Todo } from '../../domain/Todo/types.js';
+import type { Todo } from '@todo/shared';
 import type { MaybeTodo } from './types.js';
 import { validateMockData } from './validator.js';
 

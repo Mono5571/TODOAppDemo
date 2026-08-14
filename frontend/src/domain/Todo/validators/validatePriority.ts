@@ -1,6 +1,6 @@
-import type { Result } from '@todo/shared';
+import { priorityList } from '@todo/shared';
+import type { Priority, Result } from '@todo/shared';
 import { isElement } from '../../../utils/utils.js';
-import { priorityList, type Priority } from '../types.js';
 
 const isPriority = (str: string): str is Priority => isElement<string, Priority>(str, priorityList);
 

@@ -1,4 +1,4 @@
-import type { Todo } from '../domain/Todo/types.js';
+import type { Todo } from '@todo/shared';
 import type { ConfigFor, TodoDataBase } from './types.js';
 
 export const createMockDB = (config: ConfigFor<'mock'>): TodoDataBase => {

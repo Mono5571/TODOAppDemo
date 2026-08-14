@@ -1,11 +1,6 @@
 import type { FilterState, TodoState } from '../../types/todoState.js';
-import {
-  type Priority,
-  type Todo,
-  type TodoKey,
-  type ValidDeadline,
-  DEADLINE_THRESHOLD_DAYS
-} from '../../domain/Todo/types.js';
+import { DEADLINE_THRESHOLD_DAYS } from '@todo/shared';
+import type { Priority, Todo, TodoKey, ValidDeadline } from '@todo/shared';
 
 // sort
 // ---

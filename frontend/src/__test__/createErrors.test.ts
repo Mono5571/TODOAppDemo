@@ -1,7 +1,7 @@
 import { describe, it, type TestContext } from 'node:test';
 import { createErrors, type ValidationResults } from '../domain/Todo/validators/validateInputValues.js';
 import { inputKeyList, type ValidInputs } from '../types/inputs.js';
-import { TASK_MAX_LENGTH } from '../domain/Todo/types.js';
+import { TASK_MAX_LENGTH } from '@todo/shared';
 import { validateTask } from '../domain/Todo/validators/validateTask.js';
 import { validatePriority } from '../domain/Todo/validators/validatePriority.js';
 import { validateDeadline } from '../domain/Todo/validators/validateDeadline.js';

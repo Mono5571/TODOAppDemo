@@ -1,6 +1,6 @@
 import { createResult } from '../libs/result.js';
-import type { Result } from '@todo/shared';
-import { type TodoId, TODO_ID_COUNT_MAX } from '../domain/Todo/types.js';
+import { TODO_ID_COUNT_MAX } from '@todo/shared';
+import type { TodoId, Result } from '@todo/shared';
 import { cast } from '../domain/Todo/validators/castBranded.js';
 
 /**
