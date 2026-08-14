@@ -8,7 +8,9 @@
 
     // 変数や関数を ESModule の記法でエクスポート、インポートするための設定
     "module": "nodenext",
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+
+    "target": "esnext"
   }
   // "include": ["src/**/*"],
   // "exclude": ["dist", "node_modules"]

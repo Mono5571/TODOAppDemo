@@ -954,6 +954,28 @@ backend/src/routes/todos.ts に仮の /todos への GET, POST, PUT メソッド�
 
 curl コマンドでの HTTP リクエスト `-X POST` や `-X PUT` のほか、 `-H "ContentType: application/json"` オプションなどをつかってテストした。
 
+```bash
+// ヘルスチェック
+$ curl http://localhost:3000/health
+// expected response
+'{ "status": "ok" }'
+
+// GET リクエスト
+$ curl http://localhost:3000/todos
+// expected response
+'{ "todos": { "state": [] } }'
+
+// POST リクエスト
+$ curl -X POST http://localhost:3000/todos -H "ContentType: application/json" -d '{ "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12" }'
+// expected response
+'{ "todos": { "state": [{ "id": "000001", "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12", "isDone": false }] } }'
+
+// PUT リクエスト
+$ curl -X PUT http://localhost:3000/todos/000001 -H "ContentType: application/json" -d '{ "isDone": true }'
+// expected response
+'{ "todos": { "state": [{ "id": "000001", "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12", "isDone": true }] } }'
+```
+
 ### TypeScript Project References
 
 shared/ に frontend/ と backend/ 共通の型やユーティリティ関数をまとめる。
@@ -985,4 +1007,25 @@ shared/tsconfig.json に `"compilerOption": { "module": "nodenext", "moduleResol
 
 しかし、これまで frontend/ の実行時に外部依存がなかったことが、ここにきて思わぬ落とし穴に。無事ビルドできたコードをもとに `pnpm --filter frontend run build` して開発サーバを立ち上げると、 `Uncaught Type Error` となった。実行時には `import { ... } from '@todo/shared';` を解決できないためである。
 
-### 実行時エラーの解決策
+#### バックエンドの todos への変更
+
+Todo のプロパティは readonly なので、従来の `testTodos[targetId].completed = completed` コードはそのままでは使えない。そこで、Factory 関数を作成して todos をその戻り値とし、簡易なクラスとして管理することにした。
+
+また、shared/ から const 変数や型をインポートするにあたってエラーが発生したため、shared/package.json から `"export": { ... }` を削除した。
+
+### 実行時エラーの解決策：Vite の導入
+
+#### Vite とは
+
+モダンフロントエンドにおいて事実上のデファクトスタンダードになっているバンドラー。開発者は Vue.js を世に送り出した Evan You その人。
+
+バンドラーといっても、単に JS / TS ファイルの依存関係を解決してバンドルするだけでなく、開発サーバの起動や HMR (Hot Module Replacement) によるリアルタイム更新、本番環境へのリリース用のビルドまでをおこなう、一体型の開発ツールになっている。
+
+内部では Go 言語でかかれた高速なバンドラーの esbuild や、より成熟したバンドラーの一つである Rollup をソースコードのビルドに使っている。
+開発時には差分を検知し変更箇所に限って更新するため、よどみのない開発体験を実現するほか、本番用には高度なコードの分割や、必要のない部分をそぎ落とす Tree Shaking という機能をそなえており、ユーザにアプリケーションの軽快な使用感を提供することができる。
+
+現在フロントエンドで主流となっている React や Vue、TypeScript といった技術スタックにもデフォルトで対応しており、細かな設定を必要としないことも魅力の一つ。
+
+従来の同様のツールである Webpack では、コード量が増えるにしたがってビルドに要する時間が増え、必要な設定項目が多岐にわたったことなどから、先んじて使われ続けてきた中で育ってきたエコシステムという魅力がありながらも、多くのエンジニアが Vite を選択している。
+
+Vite での開発を念頭に置いた JS / TS のテストフレームワークとして Vitest があり、こちらも先発の Jest を駆逐して Web フロントエンドのテストツールのベストプラクティスになっている。
