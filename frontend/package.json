@@ -6,10 +6,12 @@
   "type": "module",
   "main": "./src/main.ts",
   "scripts": {
-    "build": "tsc && cp public/index.html dist/index.html && cp public/style.css dist/style.css",
-    "serve": "pnpm exec http-server dist -p 8080",
-    "dev": "pnpm run build && pnpm run serve",
-    "test": "node --test dist/__test__/*.js"
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/__test__/*.js",
+    "clean": "rm -rf dist"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +20,8 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "http-server": "^14.1.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.2.1"
   },
   "dependencies": {
     "@todo/shared": "workspace:*"
