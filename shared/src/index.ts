@@ -2,7 +2,7 @@ export type { Branded } from './types/branded.js';
 
 export type { Result, Success, Failure } from './types/result.js';
 
-export type {
+export {
   todoKeyList,
   TODO_ID_COUNT_MAX,
   TASK_MAX_LENGTH,

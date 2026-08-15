@@ -5,7 +5,9 @@
   "packageManager": "pnpm@11.21.0",
   "type": "module",
   "scripts": {
-    "build": "tsc --build"
+    "build:shared": "pnpm --filter shared run build",
+    "build:frontend": "pnpm --filter frontend run build",
+    "build": "pnpm run build:shared && pnpm run build:frontend"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
