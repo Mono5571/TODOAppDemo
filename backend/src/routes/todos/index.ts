@@ -47,7 +47,7 @@ todosRoute.post('/todos', async (c) => {
   return c.json({ todos });
 });
 
-todosRoute.put('/todos/:id', async (c) => {
+todosRoute.patch('/todos/:id', async (c) => {
   const { id } = c.req.param();
   const { isDone }: { isDone: unknown } = await c.req.json();
 
@@ -59,11 +59,27 @@ todosRoute.put('/todos/:id', async (c) => {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  if (!todos.find(id)) {
+  if (!todos.hasId(id)) {
     return c.notFound();
   }
 
   todos.update(id, isDone);
+
+  return c.json({ todos });
+});
+
+todosRoute.delete('/todos/:id', async (c) => {
+  const { id } = c.req.param();
+
+  if (!isTodoId(id)) {
+    return c.json({ error: 'invalid request body' }, 400);
+  }
+
+  if (!todos.hasId(id)) {
+    return c.notFound();
+  }
+
+  todos.remove(id);
 
   return c.json({ todos });
 });

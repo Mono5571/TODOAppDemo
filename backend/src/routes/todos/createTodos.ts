@@ -1,24 +1,24 @@
 import type { Todo, TodoId } from '@todo/shared';
 
 export function createTodos(initial: Todo[]) {
-  let state = initial;
+  let list = initial;
   const add = (todo: Todo) => {
-    state = [...state, todo];
+    list = [...list, todo];
   };
-  const find = (id: TodoId) => state.some((t) => t.id === id);
+  const hasId = (id: TodoId) => list.some((t) => t.id === id);
   const update = (id: TodoId, isDone: boolean) => {
-    state = state.map((t) => (t.id === id ? { ...t, ['isDone']: isDone } : t));
+    list = list.map((t) => (t.id === id ? { ...t, ['isDone']: isDone } : t));
   };
   const remove = (id: TodoId) => {
-    state = state.filter((t) => t.id !== id);
+    list = list.filter((t) => t.id !== id);
   };
 
   return {
-    get state() {
-      return state;
+    get list() {
+      return list;
     },
     add,
-    find,
+    hasId,
     update,
     remove
   };

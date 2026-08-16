@@ -1,5 +1,5 @@
 import { mock, describe, it, type TestContext, beforeEach, afterEach } from 'node:test';
-import { isFutureOrToday } from '../utils/dateStringValidator.js';
+import { isFutureOrToday } from '@todo/shared';
 import { validateDeadline } from '../domain/Todo/validators/validateDeadline.js';
 import { validatePriority } from '../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../domain/Todo/validators/validateTask.js';

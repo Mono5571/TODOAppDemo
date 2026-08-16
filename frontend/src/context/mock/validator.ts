@@ -1,7 +1,7 @@
 import { createResult, resultifyValidator } from '../../libs/result.js';
 import { todoKeyList } from '@todo/shared';
 import type { Todo, TodoId, TodoKey, ValidDeadline, Result } from '@todo/shared';
-import { isValidDateNums, parseLocalDateNums } from '../../utils/dateStringValidator.js';
+import { isValidDateNums, parseLocalDateNums } from '@todo/shared';
 import { validatePriority } from '../../domain/Todo/validators/validatePriority.js';
 import { validateTask } from '../../domain/Todo/validators/validateTask.js';
 import type { MaybeTodo } from './types.js';

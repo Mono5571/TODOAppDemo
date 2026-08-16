@@ -1,7 +1,7 @@
 import { createResult } from '../../../libs/result.js';
 import type { Result, ValidDeadline } from '@todo/shared';
 import { cast } from './castBranded.js';
-import { isFutureOrToday, isValidDateNums, parseLocalDateNums } from '../../../utils/dateStringValidator.js';
+import { isFutureOrToday, isValidDateNums, parseLocalDateNums } from '@todo/shared';
 
 /**
  * 文字列が "適正な締め切りの日付" かを検証する関数

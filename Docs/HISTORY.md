@@ -960,20 +960,25 @@ $ curl http://localhost:3000/health
 // expected response
 '{ "status": "ok" }'
 
-// GET リクエスト
+// GET method
 $ curl http://localhost:3000/todos
 // expected response
-'{ "todos": { "state": [] } }'
+'{ "todos": { "list": [] } }'
 
-// POST リクエスト
+// POST method
 $ curl -X POST http://localhost:3000/todos -H "ContentType: application/json" -d '{ "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12" }'
 // expected response
-'{ "todos": { "state": [{ "id": "000001", "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12", "isDone": false }] } }'
+'{ "todos": { "list": [{ "id": "000001", "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12", "isDone": false }] } }'
 
-// PUT リクエスト
-$ curl -X PUT http://localhost:3000/todos/000001 -H "ContentType: application/json" -d '{ "isDone": true }'
+// PATCH method (2026-08-16 変更)
+$ curl -X PATCH http://localhost:3000/todos/000001 -H "ContentType: application/json" -d '{ "isDone": true }'
 // expected response
-'{ "todos": { "state": [{ "id": "000001", "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12", "isDone": true }] } }'
+'{ "todos": { "list": [{ "id": "000001", "task": "chattering and flattering", "priority": "low", "deadline": "2029-06-12", "isDone": true }] } }'
+
+// DELETE method (2026-08-16 追加)
+$ curl -X DELETE http://localhost:3000/todos/000001
+// expected response
+'{ "todos": { "list": [] } }'
 ```
 
 ### TypeScript Project References
@@ -1029,3 +1034,53 @@ Todo のプロパティは readonly なので、従来の `testTodos[targetId].c
 従来の同様のツールである Webpack では、コード量が増えるにしたがってビルドに要する時間が増え、必要な設定項目が多岐にわたったことなどから、先んじて使われ続けてきた中で育ってきたエコシステムという魅力がありながらも、多くのエンジニアが Vite を選択している。
 
 Vite での開発を念頭に置いた JS / TS のテストフレームワークとして Vitest があり、こちらも先発の Jest を駆逐して Web フロントエンドのテストツールのベストプラクティスになっている。
+
+## 2026-08-15
+
+### Vite の導入完了
+
+素直に `$ pnpm add -D vite` したあと、 `$ pnpm --filter frontend run build` (中身は `$ tsc --build &&vite build`) を試みると失敗。表示された `Exit status 3221226505` で検索すると、名前に 2 バイト文字の使われた親・祖ディレクトリが存在すると、 Windows + Vite の構成では実行ができないらしい。「.../javascript\_練習用/文系大学生のためのJavaScript入門/14」という名前に別れを告げてすべて英数字に置き換えると、問題なくビルドして開発サーバを立ち上げることができた。
+
+バンドルは非常に高速なうえ、そこそこ量を書いてきたと思っていたコードが 1 ファイルに凝縮されている様は壮観だった。
+
+### shared/ にうつすコードの検討
+
+従前 frontend/Domain/Todo/ 下に置いていたコードには、View の都合に左右されない Todo に関する **契約 contract** -- まさに Domain そのもの -- が含まれていた。これは frontend/ で管理すべきものではもちろんない。
+
+Todo のバリデーション関数の中には、Zod や Valibot のようなライブラリを導入したうえで共通のスキーマとした方が筋がいいものもある。ちょうど Hono の開発者 Yusuke Wada のつくった hono/zod-validator が提供されているので、これを追加したい。
+
+そのほか、dateStringValidator() のようなコンテキストを選ばない関数や、createResult() のような shared/ で管理されている型にまつわるユーティリティ関数も shared/ へ移動させる。
+
+### shared/ にうつさないもの
+
+ユーザ入力に関係する型は Todo から切り離して、たとえば PreTodo や InputtedTodo のような型を新しく作る。当然これらを管理する責務は frontend/ に属しているので、shared/ には置かない。
+
+また、View の描画にかかわる状態 TodoState や UIState も frontend/ の管理下である。
+
+## 2026-08-16
+
+- frontend/ から shared/ への共通ロジックの引っ越しの続き
+- backend/src/app.ts に CORS 設定を追加、localhost:5173 からの接続を許可することで、Vite で起動した開発サーバからの API 呼び出しを可能に
+- isDone の更新処理を PUT メソッドから PATCH メソッドに
+- DELETE メソッドで サーバの todo の削除ができるように
+- DB や id の採番に関する Gemini との会話ログを markdown にしてローカルに保存
+
+### frontend/: DB Manager から TodoRepository へ
+
+今の todo[] を単位とする DB Manager インターフェイスでは、API とのやり取りにそぐわない。つぎのような TodoRepository インターフェイスでフロントエンドのデータアクセスをまかなう。
+
+```ts
+// shared/
+type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> & Partial<Omit<T, K>> }> = U[keyof U];
+
+// frontend/
+type inputTodo = Pick<Todo, InputKey>;
+type UpdateTodo = AtLeastOne<Omit<Todo, 'id'>>;
+
+interface TodoRepository {
+  findAll(): Promise<readonly Todo[]>;
+  create(input: InputTodo): Promise<Todo>;
+  update(id: TodoId, input: UpdateTodo): Promise<Todo>;
+  remove(id: TodoId): Promise<void>;
+}
+```
