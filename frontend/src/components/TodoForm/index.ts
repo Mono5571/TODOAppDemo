@@ -1,4 +1,4 @@
-import type { InputKey, FormState, ValidInputs } from '../../types/inputs.js';
+import type { InputKey, InputTodo } from '../../types/inputs.js';
 import { shallowObjectEqual } from '../../utils/utils.js';
 import { validateInputValues } from '../../domain/Todo/validators/validateInputValues.js';
 import { createTodo } from '../../domain/Todo/createTodo.js';
@@ -7,6 +7,7 @@ import { formActions, formStore, todoActions } from '../../context/index.js';
 import { createElement } from '../../libs/createElement/index.js';
 import type { Priority, Result } from '@todo/shared';
 import { refreshContainer } from '../../utils/refreshContainer.js';
+import type { FormState } from '../../types/formState.js';
 
 export function initTodoForm(formContainer: HTMLElement) {
   const handleInput = (key: InputKey, e?: Event) => {
@@ -55,7 +56,7 @@ export function initTodoForm(formContainer: HTMLElement) {
   }: {
     el: HTMLInputElement | HTMLSelectElement;
     key: InputKey;
-    result: Result<ValidInputs, Partial<Record<'task' | 'priority' | 'deadline', string>>>;
+    result: Result<InputTodo, Partial<Record<'task' | 'priority' | 'deadline', string>>>;
     touched: Set<InputKey>;
     hasAttemptedSubmit: boolean;
   }): { textContent: ''; isVisible: false } | { textContent: string; isVisible: true } => {
@@ -74,7 +75,7 @@ export function initTodoForm(formContainer: HTMLElement) {
   };
 
   const renderForm = (
-    result: Result<ValidInputs, Partial<Record<InputKey, string>>>,
+    result: Result<InputTodo, Partial<Record<InputKey, string>>>,
     { values, touched, hasAttemptedSubmit }: FormState
   ) => {
     try {

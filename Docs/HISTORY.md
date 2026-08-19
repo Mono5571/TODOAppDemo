@@ -1074,7 +1074,7 @@ Todo のバリデーション関数の中には、Zod や Valibot のような�
 type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> & Partial<Omit<T, K>> }> = U[keyof U];
 
 // frontend/
-type inputTodo = Pick<Todo, InputKey>;
+type InputTodo = Pick<Todo, InputKey>;
 type UpdateTodo = AtLeastOne<Omit<Todo, 'id'>>;
 
 interface TodoRepository {
@@ -1084,3 +1084,8 @@ interface TodoRepository {
   remove(id: TodoId): Promise<void>;
 }
 ```
+
+## 2026-08-19
+
+- shared/ に ApiResponse の型が欲しい
+- frontend/ の TodoRepository, ApiClient と backend/ の レスポンスに型の食い違いがある

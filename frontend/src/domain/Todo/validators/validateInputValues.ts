@@ -1,4 +1,4 @@
-import { type InputValues, type InputKey, type ValidInputs, inputKeyList } from '../../../types/inputs.js';
+import { type InputValues, type InputKey, type InputTodo, inputKeyList } from '../../../types/inputs.js';
 import type { Result } from '@todo/shared';
 import { createResult } from '../../../libs/result.js';
 import { validateTask } from './validateTask.js';
@@ -24,10 +24,10 @@ export function validateInputValues({
   task,
   priority,
   deadline
-}: InputValues): Result<ValidInputs, Partial<Record<InputKey, string>>> {
-  const { createSuccess, createFailure } = createResult<ValidInputs, Partial<Record<InputKey, string>>>();
+}: InputValues): Result<InputTodo, Partial<Record<InputKey, string>>> {
+  const { createSuccess, createFailure } = createResult<InputTodo, Partial<Record<InputKey, string>>>();
 
-  const results: ValidationResults<ValidInputs, Error> = {
+  const results: ValidationResults<InputTodo, Error> = {
     task: validateTask(task),
     priority: validatePriority(priority),
     deadline: validateDeadline(deadline)
@@ -41,7 +41,7 @@ export function validateInputValues({
     });
   }
 
-  const errors: Partial<Record<InputKey, string>> = createErrors<ValidInputs, Error>(inputKeyList, results);
+  const errors: Partial<Record<InputKey, string>> = createErrors<InputTodo, Error>(inputKeyList, results);
 
   return createFailure(errors);
 }

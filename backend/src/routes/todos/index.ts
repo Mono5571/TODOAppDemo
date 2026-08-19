@@ -1,6 +1,14 @@
-import { Hono } from 'hono';
+import { Hono, type TypedResponse } from 'hono';
 import { priorityList } from '@todo/shared';
-import type { TodoId, ValidTask, Priority, ValidDeadline, Todo } from '@todo/shared';
+import type {
+  TodoId,
+  ValidTask,
+  Priority,
+  ValidDeadline,
+  Todo,
+  FindAllTodosResponse,
+  CreateTodoResponse
+} from '@todo/shared';
 import { createTodos } from './createTodos.ts';
 import { isTodoId, validateDeadline, validateTask } from './validator.ts';
 import { generateTodoId } from './generateTodoId.ts';
@@ -9,7 +17,7 @@ const todos = createTodos([]);
 
 export const todosRoute = new Hono();
 
-todosRoute.get('/todos', (c) => c.json({ todos }));
+todosRoute.get('/todos', (c) => c.json(todos.list satisfies FindAllTodosResponse));
 
 todosRoute.post('/todos', async (c) => {
   const { task, priority, deadline }: { task: unknown; priority: unknown; deadline: unknown } = await c.req.json();
@@ -44,7 +52,7 @@ todosRoute.post('/todos', async (c) => {
   };
   todos.add(newTodo);
 
-  return c.json({ todos });
+  return c.json(newTodo satisfies CreateTodoResponse);
 });
 
 todosRoute.patch('/todos/:id', async (c) => {
@@ -65,9 +73,10 @@ todosRoute.patch('/todos/:id', async (c) => {
 
   todos.update(id, isDone);
 
-  return c.json({ todos });
+  return c.json(todos.list);
 });
 
+// PUT メソッドで複数まとめて削除する方向に改善する
 todosRoute.delete('/todos/:id', async (c) => {
   const { id } = c.req.param();
 
@@ -81,5 +90,5 @@ todosRoute.delete('/todos/:id', async (c) => {
 
   todos.remove(id);
 
-  return c.json({ todos });
+  return c.json(todos.list);
 });

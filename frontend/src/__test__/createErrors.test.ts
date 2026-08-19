@@ -1,6 +1,6 @@
 import { describe, it, type TestContext } from 'node:test';
 import { createErrors, type ValidationResults } from '../domain/Todo/validators/validateInputValues.js';
-import { inputKeyList, type ValidInputs } from '../types/inputs.js';
+import { inputKeyList, type InputTodo } from '../types/inputs.js';
 import { TASK_MAX_LENGTH } from '@todo/shared';
 import { validateTask } from '../domain/Todo/validators/validateTask.js';
 import { validatePriority } from '../domain/Todo/validators/validatePriority.js';
@@ -8,7 +8,7 @@ import { validateDeadline } from '../domain/Todo/validators/validateDeadline.js'
 
 describe('createErrors() のテスト：入力値の検証', () => {
   it('すべて成功なら errors は空', (t: TestContext) => {
-    const results: ValidationResults<ValidInputs, Error> = {
+    const results: ValidationResults<InputTodo, Error> = {
       task: validateTask('犬の散歩'),
       priority: validatePriority('middle'),
       deadline: validateDeadline('2029-10-11')
@@ -19,7 +19,7 @@ describe('createErrors() のテスト：入力値の検証', () => {
   });
 
   it('task 失敗なら errors is { task: string }', (t: TestContext) => {
-    const results: ValidationResults<ValidInputs, Error> = {
+    const results: ValidationResults<InputTodo, Error> = {
       task: validateTask(
         Array.from({ length: TASK_MAX_LENGTH + 1 })
           .fill('a')
@@ -35,7 +35,7 @@ describe('createErrors() のテスト：入力値の検証', () => {
   });
 
   it('priority 失敗なら error is { priority: string }', (t: TestContext) => {
-    const results: ValidationResults<ValidInputs, Error> = {
+    const results: ValidationResults<InputTodo, Error> = {
       task: validateTask('猫のごはんを買う'),
       priority: validatePriority('extra high'),
       deadline: validateDeadline('2031-09-14')
@@ -47,7 +47,7 @@ describe('createErrors() のテスト：入力値の検証', () => {
   });
 
   it('deadline 失敗なら error is { deadline: string }', (t: TestContext) => {
-    const results: ValidationResults<ValidInputs, Error> = {
+    const results: ValidationResults<InputTodo, Error> = {
       task: validateTask('朝顔の水やり'),
       priority: validatePriority('high'),
       deadline: validateDeadline('2026/08/01')

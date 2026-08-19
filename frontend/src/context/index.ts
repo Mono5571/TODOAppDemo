@@ -3,7 +3,7 @@ import { createDB } from '../TodoDB/createDB.js';
 import { mockInitialData } from './mock/mockData.js';
 import type { TodoState } from '../types/todoState.js';
 import { createStore } from '../libs/createStore.js';
-import type { FormState } from '../types/inputs.js';
+import type { FormState } from '../types/formState.js';
 import { createTodoActions } from '../actions/todoActions.js';
 import { createFormActions } from '../actions/formActions.js';
 import type { UIState } from '../types/uiState.js';
