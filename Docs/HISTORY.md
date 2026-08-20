@@ -1089,3 +1089,9 @@ interface TodoRepository {
 
 - shared/ に ApiResponse の型が欲しい
 - frontend/ の TodoRepository, ApiClient と backend/ の レスポンスに型の食い違いがある
+
+## 2026-08-20
+
+- クライアントとサーバのつなぎこみに成功！
+- 初回読み込みはまだ -> 一応コードは書いたがチェックしていない
+- 次はバックエンドのオブジェクトから DB へ移す

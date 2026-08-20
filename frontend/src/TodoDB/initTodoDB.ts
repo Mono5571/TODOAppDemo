@@ -1,7 +1,7 @@
-import type { TodoDataBase } from '../TodoDB/types.js';
+import type { TodoDataBase } from './types.js';
 import { generateTodoId } from '../services/generateTodoId.js';
 import type { Todo } from '@todo/shared';
-import { todoStore } from './index.js';
+import { todoStore } from '../context/index.js';
 
 /**
  * ロードしたデータがあれば、id 順に並べなおして新しい id を振る

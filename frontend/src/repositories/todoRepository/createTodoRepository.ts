@@ -1,4 +1,4 @@
-import type { CreateTodoResponse, FindAllTodosResponse, Todo, TodoId } from '@todo/shared';
+import type { CreateTodoResponse, FindAllTodosResponse, RemoveAllTodoResponse, Todo, TodoId } from '@todo/shared';
 import type { ApiClient } from '../../api/types/ApiClient.js';
 import type { InputTodo, UpdateTodo } from '../../types/inputs.js';
 import type { TodoRepository } from './types.js';
@@ -7,10 +7,12 @@ import type { TodoRepository } from './types.js';
 export function createTodoRepository(apiClient: ApiClient): TodoRepository {
   const path = '/todos';
   return {
-    findAll: () => apiClient.get<FindAllTodosResponse>(path, (data): data is Todo[] => true /* isTodoArray */),
+    findAll: () => apiClient.get<FindAllTodosResponse>(path, (_data): _data is Todo[] => true /* isTodoArray */),
     create: (input: InputTodo) =>
-      apiClient.post<CreateTodoResponse>(path, input, (data): data is Todo => true /* isTodo */),
+      apiClient.post<CreateTodoResponse>(path, input, (_data): _data is Todo => true /* isTodo */),
     update: (id: TodoId, input: UpdateTodo) => apiClient.patch(`${path}/${id}`, input),
-    remove: (id: TodoId) => apiClient.remove(`${path}/${id}`)
+    remove: (id: TodoId) => apiClient.remove(`${path}/${id}`),
+    removeAll: (ids: TodoId[]) =>
+      apiClient.put<RemoveAllTodoResponse>(path, { ids: ids }, (_data): _data is Todo[] => true /* isTodoArray */)
   };
 }

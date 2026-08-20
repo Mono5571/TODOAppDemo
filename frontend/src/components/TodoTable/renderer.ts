@@ -24,7 +24,10 @@ const createTodoRow = (todo: Todo): HTMLTableRowElement | undefined => {
       type: 'checkbox',
       checked: `${todo.isDone}`,
       className: 'todo-check',
-      onChange: () => todoActions.toggleDone(todo.id)
+      onChange: (e) => {
+        const target = e?.currentTarget as typeof checkbox;
+        todoActions.update(todo.id, { isDone: target.checked });
+      }
     });
 
     // タスクを削除するボタン要素の生成

@@ -1,4 +1,4 @@
-import { Hono, type TypedResponse } from 'hono';
+import { Hono } from 'hono';
 import { priorityList } from '@todo/shared';
 import type {
   TodoId,
@@ -7,7 +7,8 @@ import type {
   ValidDeadline,
   Todo,
   FindAllTodosResponse,
-  CreateTodoResponse
+  CreateTodoResponse,
+  RemoveAllTodoResponse
 } from '@todo/shared';
 import { createTodos } from './createTodos.ts';
 import { isTodoId, validateDeadline, validateTask } from './validator.ts';
@@ -73,10 +74,9 @@ todosRoute.patch('/todos/:id', async (c) => {
 
   todos.update(id, isDone);
 
-  return c.json(todos.list);
+  return c.json({ success: true });
 });
 
-// PUT メソッドで複数まとめて削除する方向に改善する
 todosRoute.delete('/todos/:id', async (c) => {
   const { id } = c.req.param();
 
@@ -90,5 +90,19 @@ todosRoute.delete('/todos/:id', async (c) => {
 
   todos.remove(id);
 
-  return c.json(todos.list);
+  return c.json({ success: true });
+});
+
+todosRoute.put('/todos', async (c) => {
+  const { ids }: { ids: unknown } = await c.req.json();
+
+  if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => !isTodoId(id) || !todos.hasId(id))) {
+    return c.json({ error: 'invalid request body' }, 400);
+  }
+
+  ids.forEach((id) => {
+    todos.remove(id);
+  });
+
+  return c.json(todos.list satisfies RemoveAllTodoResponse);
 });

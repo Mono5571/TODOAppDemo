@@ -34,12 +34,12 @@ export function createApiClient(deps: ApiClientDependencies): ApiClient {
     }
   };
 
-  const resToData = (res: Response): Promise<unknown> => res.json();
+  const resToUnknown = (res: Response): Promise<unknown> => res.json();
 
   return {
-    get: <T>(path: string, validate: Validator<T>) => request<T>(path, resToData, validate, { method: 'GET' }),
+    get: <T>(path: string, validate: Validator<T>) => request<T>(path, resToUnknown, validate, { method: 'GET' }),
     post: <T>(path: string, body: unknown, validate: Validator<T>) =>
-      request<T>(path, resToData, validate, { method: 'POST', body: JSON.stringify(body) }),
+      request<T>(path, resToUnknown, validate, { method: 'POST', body: JSON.stringify(body) }),
     patch: (path: string, body: unknown) =>
       request<void>(
         path,
@@ -53,6 +53,8 @@ export function createApiClient(deps: ApiClientDependencies): ApiClient {
         () => undefined,
         (data) => data === undefined,
         { method: 'DELETE' }
-      )
+      ),
+    put: <T>(path: string, body: unknown, validate: Validator<T>) =>
+      request(path, resToUnknown, validate, { method: 'PUT', body: JSON.stringify(body) })
   };
 }

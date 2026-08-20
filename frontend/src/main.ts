@@ -2,8 +2,9 @@ import { initFilterSelect } from './components/FilterSelect/index.js';
 import { initRemoveAllDialog } from './components/RemoveAllDialog/index.js';
 import { initTodoForm } from './components/TodoForm/index.js';
 import { initTodoTable } from './components/TodoTable/index.js';
-import { db } from './context/index.js';
-import { initTodoDB } from './context/initTodoDB.js';
+import { todoRepository, todoStore } from './context/index.js';
+import { initTodoRepository } from './repositories/todoRepository/initTodoRepository.js';
+// import { initTodoDB } from './TodoDB/initTodoDB.js';
 
 const main = () => {
   const filterSlectContainer = document.getElementById('filter-select-container');
@@ -32,7 +33,7 @@ const main = () => {
 
   initTodoForm(formContainer);
 
-  initTodoDB(db);
+  initTodoRepository(todoRepository, todoStore);
 };
 
 document.addEventListener('DOMContentLoaded', main);

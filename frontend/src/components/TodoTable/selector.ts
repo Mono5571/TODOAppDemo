@@ -10,7 +10,7 @@ import { computeViewTodos } from './computeViewTodos.js';
  */
 export const selectViewTodos = (() => {
   // memoize
-  let prevTodos: Todo[] | undefined;
+  let prevTodos: readonly Todo[] | undefined;
   let prevFilter: FilterState | undefined;
   let prevSort: SortState | undefined;
   let result: Todo[] = [];

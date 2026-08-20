@@ -16,6 +16,8 @@ export type { TodoKey, TodoId, ValidTask, Priority, ValidDeadline, Todo } from '
 
 export { parseLocalDateNums, isValidDateNums, isFutureOrToday } from './utils/dateStringValidator.js';
 
+export { isValidUrlString } from './utils/isValidUrlString.js';
+
 export type { Validator } from './types/validator_T.js';
 
-export type { FindAllTodosResponse, CreateTodoResponse } from './api/TodosResponse.js';
+export type { FindAllTodosResponse, CreateTodoResponse, RemoveAllTodoResponse } from './api/TodosResponse.js';

@@ -10,7 +10,7 @@ export type SortState = {
 };
 
 export type TodoState = {
-  todos: Todo[];
+  todos: readonly Todo[];
   sort: SortState;
   filter: FilterState;
 };

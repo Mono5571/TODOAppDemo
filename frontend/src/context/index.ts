@@ -1,6 +1,3 @@
-import type { Todo } from '@todo/shared';
-import { createDB } from '../TodoDB/createDB.js';
-import { mockInitialData } from './mock/mockData.js';
 import type { TodoState } from '../types/todoState.js';
 import { createStore } from '../libs/createStore.js';
 import type { FormState } from '../types/formState.js';
@@ -8,8 +5,13 @@ import { createTodoActions } from '../actions/todoActions.js';
 import { createFormActions } from '../actions/formActions.js';
 import type { UIState } from '../types/uiState.js';
 import { createUIActions } from '../actions/uiActions.js';
+import { createTodoRepository } from '../repositories/todoRepository/createTodoRepository.js';
+import { createApiClient } from '../api/createApiClient.js';
+import { env } from '../config/env.js';
 
-export const db = createDB({ label: 'mock', initialData: mockInitialData });
+export const todoRepository = createTodoRepository(
+  createApiClient({ apiBaseUrl: env.apiBaseUrl, fetchClient: (...args) => window.fetch(...args) })
+);
 
 export const todoStore = createStore<TodoState>({ todos: [], sort: { type: 'id', order: 'ascend' }, filter: 'all' });
 
@@ -26,6 +28,6 @@ export const uiStore = createStore<UIState>({
   removeDialogOpen: false
 });
 
-export const todoActions = createTodoActions({ todoStore, db });
+export const todoActions = createTodoActions({ todoStore, todoRepository });
 export const formActions = createFormActions({ formStore, initialInputValues });
 export const uiActions = createUIActions(uiStore);

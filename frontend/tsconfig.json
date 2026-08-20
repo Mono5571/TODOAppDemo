@@ -23,7 +23,7 @@
     "paths": { "@todo/shared": ["../shared/src/index.js"] },
     "jsx": "react-jsx"
   },
-  "include": ["src/**/*", "../shared/src/utils/dateStringValidator.ts"],
+  "include": ["src/**/*", "vite-env.d.ts"],
   "exclude": ["dist", "node_modules"],
   "references": [
     {
