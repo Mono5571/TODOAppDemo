@@ -42,7 +42,6 @@ export function createTodoActions({
   const renderError = (error: Error) => {
     console.error(error);
   };
-  // const transaction = createTodoTransaction({ todoStore, db });
 
   return {
     // todos の変更 -> todoRepository 経由

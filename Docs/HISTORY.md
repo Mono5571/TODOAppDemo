@@ -56,7 +56,7 @@ save(), load() はそれぞれ Promise<void>, Promise<Todo[]> を返す。
 
 ## 2026-05-21
 
-ConfigFor<L extends DBLabel> という型を追加することで、Mapped Types による FactoryMap Pattern と discriminated union を両立するように変更。
+`ConfigFor<L extends DBLabel>` という型を追加することで、Mapped Types による FactoryMap Pattern と discriminated union を両立するように変更。
 
 ## 2026-05-24
 

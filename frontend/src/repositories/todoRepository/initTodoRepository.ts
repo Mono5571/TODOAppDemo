@@ -9,5 +9,5 @@ export async function initTodoRepository(repo: TodoRepository, todoStore: Store<
     return;
   }
 
-  if (result.data.length >= 1) todoStore.dispatch((s) => ({ ...s, todos: [...result.data] }));
+  if (result.data.length >= 1) todoStore.dispatch((s) => ({ ...s, todos: result.data }));
 }
