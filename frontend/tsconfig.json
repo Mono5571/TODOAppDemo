@@ -1,0 +1,33 @@
+{
+  "extends": "../tsconfig.base.json",
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "esnext",
+    "target": "es2024",
+    // "types": [],
+    // For nodejs:
+    // "lib": ["esnext"],
+    "types": ["node"], // and npm install -D @types/node
+
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    "paths": { "@todo/shared": ["../shared/src/index.js"] },
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*", "vite-env.d.ts"],
+  "exclude": ["dist", "node_modules"],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
+}

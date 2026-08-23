@@ -1,0 +1,15 @@
+{
+  "name": "@todo/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "packageManager": "pnpm@11.18.0",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

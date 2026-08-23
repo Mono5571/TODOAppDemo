@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+
+    "rootDir": "${configDir}/src",
+    "outDir": "${configDir}/dist",
+
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+
+    // Manually Added Options
+    // "allowSyntheticDefaultImports": true
+
+    "paths": {
+      "@todo/shared/*": ["./shared/src/*"]
+    }
+  }
+}

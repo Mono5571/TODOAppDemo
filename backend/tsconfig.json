@@ -1,0 +1,28 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
+    "strict": true,
+
+    "rootDir": "./src",
+
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+
+    "allowImportingTsExtensions": true,
+
+    "types": ["node"],
+
+    "paths": { "@todo/shared": ["../shared/src/index.ts"] }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
+}

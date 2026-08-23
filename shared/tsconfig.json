@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // 変数や関数を ESModule の記法でエクスポート、インポートするための設定
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
+    "target": "esnext"
+  }
+  // "include": ["src/**/*"],
+  // "exclude": ["dist", "node_modules"]
+}
