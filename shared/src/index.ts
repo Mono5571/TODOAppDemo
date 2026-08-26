@@ -14,6 +14,9 @@ export {
 
 export type { TodoKey, TodoId, ValidTask, Priority, ValidDeadline, Todo } from './Todo/types.js';
 
+export { inputKeyList } from './InputTodo/constants.js';
+export type { InputTodoKey, InputTodo, InputValues, UpdateTodo } from './InputTodo/types.js';
+
 export { parseLocalDateNums, isValidDateNums, isFutureOrToday } from './utils/dateStringValidator.js';
 
 export { isValidUrlString } from './utils/isValidUrlString.js';

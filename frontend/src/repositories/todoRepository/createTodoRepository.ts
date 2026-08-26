@@ -1,6 +1,6 @@
 import type { CreateTodoResponse, FindAllTodosResponse, RemoveAllTodoResponse, Todo, TodoId } from '@todo/shared';
 import type { ApiClient } from '../../api/types/ApiClient.js';
-import type { InputTodo, UpdateTodo } from '../../types/inputs.js';
+import type { InputTodo, UpdateTodo } from '@todo/shared';
 import type { TodoRepository } from './types.js';
 
 // とりあえずバックエンドから Response として渡された値への検証はしない

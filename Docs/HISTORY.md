@@ -1119,3 +1119,15 @@ class PrismaTodoRepository implements TodoRepository {
   // ...
 }
 ```
+
+## 2026-08-26
+
+メモ：
+
+- フロントから TodoDB 関連のコードは消していい
+- TodoDB を前提にしている mock も消す
+
+TODO:
+
+- [] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
+- [] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす

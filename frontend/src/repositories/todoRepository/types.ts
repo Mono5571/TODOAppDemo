@@ -1,5 +1,5 @@
 import type { Result, Todo, TodoId } from '@todo/shared';
-import type { InputTodo, UpdateTodo } from '../../types/inputs';
+import type { InputTodo, UpdateTodo } from '@todo/shared';
 
 export interface TodoRepository {
   findAll: () => Promise<Result<readonly Todo[], Error>>;

@@ -1,11 +1,10 @@
 import type { FilterState, SortState, TodoState } from '../types/todoState.js';
-import type { Todo, TodoId, TodoKey } from '@todo/shared';
+import type { Todo, TodoId, TodoKey, InputTodo, UpdateTodo } from '@todo/shared';
 import type { Store } from '../libs/createStore.js';
 // import type { TodoDataBase } from '../TodoDB/types.js';
 import type { RemoveAllMode } from '../types/uiState.js';
 import { isExpiredDeadline } from '../services/isExpiredDeadline.js';
 import type { TodoRepository } from '../repositories/todoRepository/types.js';
-import type { InputTodo, UpdateTodo } from '../types/inputs.js';
 
 /**
  * toggleSort の補助関数

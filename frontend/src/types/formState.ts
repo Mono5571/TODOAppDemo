@@ -1,7 +1,7 @@
-import type { InputKey, InputValues } from './inputs';
+import type { InputTodoKey, InputValues } from '@todo/shared';
 
 export interface FormState {
   readonly values: InputValues;
-  readonly touched: Set<InputKey>;
+  readonly touched: Set<InputTodoKey>;
   readonly hasAttemptedSubmit: boolean;
 }

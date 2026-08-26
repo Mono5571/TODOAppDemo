@@ -1,6 +1,6 @@
 import type { Store } from '../libs/createStore.js';
 import type { FormState } from '../types/formState.js';
-import type { InputValues } from '../types/inputs.js';
+import type { InputValues } from '@todo/shared';
 
 export function createFormActions({
   formStore,
