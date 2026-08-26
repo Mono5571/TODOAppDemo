@@ -1095,3 +1095,27 @@ interface TodoRepository {
 - クライアントとサーバのつなぎこみに成功！
 - 初回読み込みはまだ -> 一応コードは書いたがチェックしていない
 - 次はバックエンドのオブジェクトから DB へ移す
+
+## 2026-08-23
+
+### DB 導入の方針策定
+
+- Repository の設計
+- OOP でやっていく？
+- ORM どうする？ -- 学習コストなどを勘案すると Prisma が妥当か
+
+#### TodoRepository のインターフェイス
+
+```ts
+interface TodoRepository {
+  create(newTodo: Pick<Todo, InputKey>): Promise<Todo>;
+  findAll(): Promise<Todo[]>;
+  findById(id: TodoId): Promise<Todo | null>;
+  updateIsDone(id: TodoId, isDone: boolean): Promise<void | null>;
+  deleteById(id: TodoId): Promise<boolean>;
+}
+
+class PrismaTodoRepository implements TodoRepository {
+  // ...
+}
+```

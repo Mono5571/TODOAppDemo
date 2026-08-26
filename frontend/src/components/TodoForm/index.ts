@@ -1,8 +1,6 @@
 import type { InputKey, InputTodo } from '../../types/inputs.js';
 import { shallowObjectEqual } from '../../utils/utils.js';
 import { validateInputValues } from '../../domain/Todo/validators/validateInputValues.js';
-import { createTodo } from '../../domain/Todo/createTodo.js';
-import { generateTodoId } from '../../services/generateTodoId.js';
 import { formActions, formStore, todoActions } from '../../context/index.js';
 import { createElement } from '../../libs/createElement/index.js';
 import type { Priority, Result } from '@todo/shared';
@@ -23,7 +21,6 @@ export function initTodoForm(formContainer: HTMLElement) {
   const handleSubmit = () => {
     const currentInputValues = formStore.state.values;
     const result = validateInputValues(currentInputValues);
-    const idResult = generateTodoId();
 
     // 入力値が不正な場合
     // 本当はちゃんと書くべき
@@ -32,16 +29,7 @@ export function initTodoForm(formContainer: HTMLElement) {
       return;
     }
 
-    // generateTodId() が失敗したとき
-    // 本当はちゃんと書くべき
-    // たとえば... submitError を作る
-    if (!idResult.ok) {
-      console.error(idResult.err);
-      return;
-    }
-
-    const newTodo = createTodo({ id: idResult.data, validData: result.data });
-    todoActions.add(newTodo);
+    todoActions.add(result.data);
 
     formActions.reset();
   };

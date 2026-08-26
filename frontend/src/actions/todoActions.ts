@@ -39,7 +39,7 @@ export function createTodoActions({
   todoRepository: TodoRepository;
 }) {
   // 仮置き
-  const renderError = (error: Error) => {
+  const handleError = (error: Error) => {
     console.error(error);
   };
 
@@ -48,7 +48,7 @@ export function createTodoActions({
     add: async (input: InputTodo) => {
       const result = await todoRepository.create(input);
       if (!result.ok) {
-        renderError(result.err);
+        handleError(result.err);
         return;
       }
       todoStore.dispatch((s) => ({ ...s, todos: [...s.todos, result.data] }));
@@ -63,23 +63,27 @@ export function createTodoActions({
       todoStore.dispatch((s) => ({ ...s, todos: s.todos.map((t) => (t.id === id ? { ...t, ...input } : t)) }));
     },
     remove: async (id: TodoId) => {
-      const result = await todoRepository.remove(id);
+      const result = await todoRepository.delete(id);
       if (!result.ok) {
-        renderError(result.err);
+        handleError(result.err);
         return;
       }
       todoStore.dispatch((s) => ({ ...s, todos: s.todos.filter((t) => t.id !== id) }));
     },
     removeAll: async (mode: RemoveAllMode) => {
-      const ids = todoStore.state.todos
-        .filter((t) => (mode.removeDone && t.isDone) || (mode.removeExpired && isExpiredDeadline(t.deadline)))
-        .map((t) => t.id);
+      // .filter(t => <if() の条件>).map(t => t.id) と同じ
+      const deleteIds = todoStore.state.todos.reduce<TodoId[]>((acc, todo) => {
+        if ((mode.removeDone && todo.isDone) || (mode.removeExpired && isExpiredDeadline(todo.deadline))) {
+          acc.push(todo.id);
+        }
+        return acc;
+      }, []);
 
-      if (ids.length === 0) return;
+      if (deleteIds.length === 0) return;
 
-      const result = await todoRepository.removeAll(ids);
+      const result = await todoRepository.deleteAll(deleteIds);
       if (!result.ok) {
-        renderError(result.err);
+        handleError(result.err);
         return;
       }
 

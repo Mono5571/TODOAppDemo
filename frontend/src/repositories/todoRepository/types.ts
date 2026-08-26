@@ -8,6 +8,6 @@ export interface TodoRepository {
 
   // ひとつずつリクエストを送って削除するのはパフォーマンスの問題がある
   // TodoId[] を引数にとり、一括削除できるように改善する
-  remove: (id: TodoId) => Promise<Result<void, Error>>;
-  removeAll: (ids: TodoId[]) => Promise<Result<readonly Todo[], Error>>;
+  delete: (id: TodoId) => Promise<Result<void, Error>>;
+  deleteAll: (ids: TodoId[]) => Promise<Result<readonly Todo[], Error>>;
 }
