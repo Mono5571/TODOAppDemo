@@ -1,0 +1,17 @@
+services:
+  pgsql_db:
+    image: postgres:18
+    container_name: todo_db
+    hostname: todo_host
+    ports:
+      - '5432:5432'
+    restart: always
+    environment:
+      - POSTGRES_USER=${PG_USER_NAME}
+      - POSTGRES_PASSWORD=${PG_USER_PASS}
+      - TZ: 'Asia/Tokyo'
+    volumes:
+      - db_vol:/var/lib/postgresql
+
+volumes:
+  db_vol:
