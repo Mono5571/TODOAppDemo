@@ -23,7 +23,7 @@ id_rsa
 Thumbs.db
 
 # prisma
-/generated/prisma
+backend/generated/prisma
 
 # prisma に付属したエージェントスキルの md ファイル
 skills/

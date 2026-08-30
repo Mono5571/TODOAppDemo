@@ -1133,7 +1133,7 @@ TODO:
 - [] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
 
 - [x] postgresSQL を docker で立ち上げられるようにする
-- [] Prisma を導入する
+- [x] Prisma を導入する
 - [] フロントエンドの Dockerfile を書き直す
 - [] バックエンドの Dockerfile を書く
 - [] `$ docker compose up` で DB / バックエンド / フロントエンドがすべて立ち上がるようにする
@@ -1165,3 +1165,20 @@ TODO:
 - PostgreSQL のログを見る
 
   `$ docker compose logs db`
+
+### Prisma 導入
+
+#### 達成したこと
+
+1. Docker
+   PostgreSQL コンテナ起動
+2. DATABASE_URL
+   Prisma から DB に接続できる状態にする
+3. schema.prisma
+   Todo の DB モデルを定義
+4. migrate dev
+   PostgreSQL にテーブルを作成
+5. prisma generate
+   TypeScript 用 Client を生成
+6. prisma studio
+   DB の状態を確認
