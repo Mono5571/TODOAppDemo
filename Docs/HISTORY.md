@@ -1132,7 +1132,7 @@ TODO:
 - [] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
 - [] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
 
-- [] postgresSQL を docker で立ち上げられるようにする
+- [x] postgresSQL を docker で立ち上げられるようにする
 - [] Prisma を導入する
 - [] フロントエンドの Dockerfile を書き直す
 - [] バックエンドの Dockerfile を書く
@@ -1147,5 +1147,21 @@ TODO:
 
 TODO:
 
-- [] ルート直下に compose.yaml を作成する（docker-compose.yml への対応は後方互換のために残されている状況）
-- [] compose.yaml には `services: db: ...` を作成し、posgreSQL を起動できるようにする
+- [x] ルート直下に compose.yaml を作成する（docker-compose.yml への対応は後方互換のために残されている状況）
+- [x] compose.yaml には `services: db: ...` を作成し、posgreSQL を起動できるようにする
+
+### PostgreSQL の導入
+
+導入成功！
+
+### コンテナ起動時のコマンド
+
+- コンテナに入って psql (PostgreSQL の対話型 CLI クライアント) を立ち上げる:
+
+  `$ docker exec -it todo_db psql -U postgres -d tododb`
+
+  -> SQL を書いて DB を操作できる
+
+- PostgreSQL のログを見る
+
+  `$ docker compose logs db`
