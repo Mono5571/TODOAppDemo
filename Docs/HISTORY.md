@@ -1108,7 +1108,7 @@ interface TodoRepository {
 
 ```ts
 interface TodoRepository {
-  create(newTodo: Pick<Todo, InputKey>): Promise<Todo>;
+  create(newTodo: Omit<Todo, 'id'>): Promise<Todo>;
   findAll(): Promise<Todo[]>;
   findById(id: TodoId): Promise<Todo | null>;
   updateIsDone(id: TodoId, isDone: boolean): Promise<void | null>;
@@ -1122,7 +1122,7 @@ class PrismaTodoRepository implements TodoRepository {
 
 ## 2026-08-26
 
-メモ：
+メモ:
 
 - フロントから TodoDB 関連のコードは消していい
 - TodoDB を前提にしている mock も消す
@@ -1131,3 +1131,21 @@ TODO:
 
 - [] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
 - [] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
+
+- [] postgresSQL を docker で立ち上げられるようにする
+- [] Prisma を導入する
+- [] フロントエンドの Dockerfile を書き直す
+- [] バックエンドの Dockerfile を書く
+- [] `$ docker compose up` で DB / バックエンド / フロントエンドがすべて立ち上がるようにする
+
+検討事項:
+
+- ざっくりプレゼンテーション層にあたるフロントエンドが、ユーザの「完了済み Todo を削除する」というユースケースに対して、「フロント側の State から削除する Todo の id を割り出す」アプリケーションロジックを担っているのはどうなのか。
+- バックエンドといいつつ、API を介してフロントエンドに RDBMS との接点を提供しているだけになっている。
+
+## 2026-08-30
+
+TODO:
+
+- [] ルート直下に compose.yaml を作成する（docker-compose.yml への対応は後方互換のために残されている状況）
+- [] compose.yaml には `services: db: ...` を作成し、posgreSQL を起動できるようにする
