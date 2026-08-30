@@ -5,7 +5,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -21,7 +21,7 @@ model Todo {
 }
 
 enum Priority {
-  LOW
-  MIDDLE
-  HIGH
+  low
+  middle
+  high
 }

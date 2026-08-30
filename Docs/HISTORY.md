@@ -1132,6 +1132,8 @@ TODO:
 - [] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
 - [] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
 
+- [] shared/ のドメインを変更: TodoId を number に
+
 - [x] postgresSQL を docker で立ち上げられるようにする
 - [x] Prisma を導入する
 - [] フロントエンドの Dockerfile を書き直す
@@ -1155,6 +1157,10 @@ TODO:
 導入成功！
 
 ### コンテナ起動時のコマンド
+
+- DB コンテナが正常に起動しているか確認（ヘルスチェック）
+
+  `$ docker compose ps`
 
 - コンテナに入って psql (PostgreSQL の対話型 CLI クライアント) を立ち上げる:
 
@@ -1182,3 +1188,21 @@ TODO:
    TypeScript 用 Client を生成
 6. prisma studio
    DB の状態を確認
+
+### Prisma 関連のコマンド
+
+- マイグレーション（schema.prisma 変更後に backend/ で実行）
+
+  `$ pnpm prisma migrate dev --name <migration_name>`
+
+- Prisma Client の生成（マイグレーション後におこなう）
+
+  `$ pnpm prisma generate`
+
+- ブラウザ上で DB を確認する
+
+  `$ pnpm prisma studio`
+
+- マイグレーションの状態を確認する
+
+  `$ pnpm prisma migrate status`
