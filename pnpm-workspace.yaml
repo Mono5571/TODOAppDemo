@@ -2,3 +2,9 @@ packages:
   - 'frontend'
   - 'backend'
   - 'shared'
+allowBuilds:
+  '@prisma/engines': true
+  # esbuild: false
+  # msgpackr-extract: false
+  prisma: true
+  # workerd: false

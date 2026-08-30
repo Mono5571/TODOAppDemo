@@ -21,3 +21,13 @@ id_rsa
 
 # サムネイルなど
 Thumbs.db
+
+# prisma
+/generated/prisma
+
+# prisma に付属したエージェントスキルの md ファイル
+skills/
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
