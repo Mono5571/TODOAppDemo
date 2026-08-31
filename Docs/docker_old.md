@@ -35,9 +35,9 @@ CMD ["pnpm", "run", "serve"]
 
 ### 変更すべき点
 
-- EXPOSE は Vite にあわせて 5173 にする
-- `CMD ["pnpm", "run", "dev"]` に変更
-- frontend/package.json に以下の変更を加える
+- [ ] EXPOSE は Vite にあわせて 5173 にする
+- [ ] `CMD ["pnpm", "run", "dev"]` に変更
+- [ ] frontend/package.json に以下の変更を加える
 
   ```json
   "scripts": {
@@ -72,8 +72,8 @@ services:
 
 ## 変更すべき点
 
-- web -> frontend
-- context: frontend (パスを現在のディレクトリ構成に合わせる)
-- container_name: todo_frontend
-- ports: - '5173:5173'
-- バインドマウントの設定は見直す
+- [ ] web -> frontend
+- [ ] context: frontend (パスを現在のディレクトリ構成に合わせる)
+- [ ] container_name: todo_frontend
+- [ ] ports: - '5173:5173'
+- [ ] バインドマウントの設定は見直す

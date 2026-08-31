@@ -3,6 +3,7 @@ import type { TodoRepository } from './type.ts';
 import type { PrismaClient } from '../../generated/prisma/client.ts';
 
 /*
+// class で書くのはどうなのか？
 class PrismaTodoRepository implements TodoRepository {
   private prisma: PrismaClient;
   constructor(prisma: PrismaClient) {

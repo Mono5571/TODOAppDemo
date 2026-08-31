@@ -1129,16 +1129,18 @@ class PrismaTodoRepository implements TodoRepository {
 
 TODO:
 
-- [] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
-- [] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
+- [ ] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
+- [ ] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
 
-- [] shared/ のドメインを変更: TodoId を number に
+- [ ] shared/ のドメインを変更: TodoId を number に
 
 - [x] postgresSQL を docker で立ち上げられるようにする
 - [x] Prisma を導入する
-- [] フロントエンドの Dockerfile を書き直す
-- [] バックエンドの Dockerfile を書く
-- [] `$ docker compose up` で DB / バックエンド / フロントエンドがすべて立ち上がるようにする
+- [ ] フロントエンドの Dockerfile を書き直す
+- [ ] バックエンドの Dockerfile を書く
+- [ ] `$ docker compose up` で DB / バックエンド / フロントエンドがすべて立ち上がるようにする
+
+- [ ] README.md を書き直す
 
 検討事項:
 
@@ -1152,7 +1154,15 @@ TODO:
 - [x] ルート直下に compose.yaml を作成する（docker-compose.yml への対応は後方互換のために残されている状況）
 - [x] compose.yaml には `services: db: ...` を作成し、posgreSQL を起動できるようにする
 
-### PostgreSQL の導入
+### コンテナ化への道のり
+
+プロジェクト全体を `$ docker compose up` で立ち上げるには
+
+- compose.yaml に `depends_on` を追記し、
+  `backend` が `db: condition: service-healthy` になってから、
+  `frontend` が `backend` が立ち上がってから、それぞれ起動するようにする
+
+## PostgreSQL の導入
 
 導入成功！
 
@@ -1172,9 +1182,15 @@ TODO:
 
   `$ docker compose logs db`
 
-### Prisma 導入
+### psql の主要なコマンド
 
-#### 達成したこと
+TODO:
+
+- [ ] この項目に覚えたいコマンドを書く
+
+## Prisma 導入
+
+### 達成したこと
 
 1. Docker
    PostgreSQL コンテナ起動
