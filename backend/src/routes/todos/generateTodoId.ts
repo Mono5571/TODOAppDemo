@@ -10,8 +10,7 @@ export const generateTodoId = (() => {
 
     if (count >= TODO_ID_COUNT_MAX + 1) return { ok: false, err: new Error('タスクの登録数が上限に達しています。') };
 
-    if (count >= 1 && count <= TODO_ID_COUNT_MAX)
-      return { ok: true, data: count.toString().padStart(6, '0') as TodoId };
+    if (count >= 1 && count <= TODO_ID_COUNT_MAX) return { ok: true, data: count as TodoId };
 
     return { ok: false, err: new Error('unexpeted error occurred on generateTodoId()') };
   };

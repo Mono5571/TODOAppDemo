@@ -1,46 +1,66 @@
 import type { Todo, TodoId } from '@todo/shared';
 import type { TodoRepository } from './type.ts';
 import type { PrismaClient } from '../../generated/prisma/client.ts';
+import { toDeadline, toTask, toTodoId } from './prismaTodoParsers.ts';
 
-/*
-// class で書くのはどうなのか？
-class PrismaTodoRepository implements TodoRepository {
-  private prisma: PrismaClient;
-  constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
-  }
+function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
+  return {
+    async create(newTodo: Omit<Todo, 'id'>): Promise<Todo> {
+      const created = await prisma.todo.create({
+        data: newTodo
+      });
 
-  async create(newTodo: Omit<Todo, 'id'>): Promise<Todo> {
-    // id, isDone: false は Repository が持つべき知識ではない
-    return await this.prisma.todo.create({
-      data: newTodo
-    });
-  }
+      return {
+        id: toTodoId(created.id),
+        task: toTask(created.task),
+        priority: created.priority,
+        deadline: toDeadline(created.deadline),
+        isDone: created.isDone
+      };
+    },
 
-  async findAll(): Promise<Todo[]> {
-    return await this.prisma.todo.findMany();
-  }
+    async findAll(): Promise<Todo[]> {
+      const founds = await prisma.todo.findMany();
+      return founds.map((found) => ({
+        id: toTodoId(found.id),
+        task: toTask(found.task),
+        priority: found.priority,
+        deadline: toDeadline(found.deadline),
+        isDone: found.isDone
+      }));
+    },
 
-  async findById(id: TodoId): Promise<Todo | null> {
-    return await this.prisma.todo.findFirst({
-      where: { id: parseInt(id, 10) }
-    });
-  }
+    async findById(id: TodoId): Promise<Todo | null> {
+      const found = await prisma.todo.findUnique({
+        where: { id }
+      });
 
-  async updateIsDone(id: TodoId, isDone: boolean): Promise<void | null> {
-    return await this.prisma.todo.update({
-      where: { id: parseInt(id, 10) },
-      data: { isDone: isDone }
-    });
-  }
+      if (found === null) return null;
+      return {
+        id: toTodoId(found.id),
+        task: toTask(found.task),
+        priority: found.priority,
+        deadline: toDeadline(found.deadline),
+        isDone: found.isDone
+      };
+    },
 
-  async deleteById(id: TodoId): Promise<boolean> {
-    const deleted = await this.prisma.todo.delete({
-      where: { id: parseInt(id, 10) }
-    });
+    async updateIsDone(id: TodoId, isDone: boolean): Promise<void | null> {
+      const updated = await prisma.todo.update({
+        where: { id },
+        data: { isDone: isDone }
+      });
 
-    if (!deleted) return false;
-    return true;
-  }
+      if (updated == null) return null;
+    },
+
+    async deleteById(id: TodoId): Promise<boolean> {
+      const deleted = await prisma.todo.delete({
+        where: { id }
+      });
+
+      if (deleted == null) return false;
+      return true;
+    }
+  };
 }
-*/

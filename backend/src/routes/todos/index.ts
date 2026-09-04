@@ -11,7 +11,7 @@ import type {
   RemoveAllTodoResponse
 } from '@todo/shared';
 import { createTodos } from './createTodos.ts';
-import { isTodoId, validateDeadline, validateTask } from './validator.ts';
+import { validateDeadline, validateTask } from './validator.ts';
 import { generateTodoId } from './generateTodoId.ts';
 
 const todos = createTodos([]);
@@ -64,15 +64,14 @@ todosRoute.patch('/todos/:id', async (c) => {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  if (!isTodoId(id)) {
-    return c.json({ error: 'invalid request body' }, 400);
-  }
+  const idNum = parseInt(id, 10);
+  if (Number.isNaN(idNum)) return c.json({ error: 'invalid request body' }, 400);
 
-  if (!todos.hasId(id)) {
+  if (!todos.hasId(idNum as TodoId)) {
     return c.notFound();
   }
 
-  todos.update(id, isDone);
+  todos.update(idNum as TodoId, isDone);
 
   return c.json({ success: true });
 });
@@ -80,15 +79,14 @@ todosRoute.patch('/todos/:id', async (c) => {
 todosRoute.delete('/todos/:id', async (c) => {
   const { id } = c.req.param();
 
-  if (!isTodoId(id)) {
-    return c.json({ error: 'invalid request body' }, 400);
-  }
+  const idNum = parseInt(id, 10);
+  if (Number.isNaN(idNum)) return c.json({ error: 'invalid request body' }, 400);
 
-  if (!todos.hasId(id)) {
+  if (!todos.hasId(idNum as TodoId)) {
     return c.notFound();
   }
 
-  todos.remove(id);
+  todos.remove(idNum as TodoId);
 
   return c.json({ success: true });
 });
@@ -96,7 +94,11 @@ todosRoute.delete('/todos/:id', async (c) => {
 todosRoute.put('/todos', async (c) => {
   const { ids }: { ids: unknown } = await c.req.json();
 
-  if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => !isTodoId(id) || !todos.hasId(id))) {
+  if (
+    !Array.isArray(ids) ||
+    ids.length === 0 ||
+    ids.some((id) => typeof id !== 'number' || todos.hasId(id as TodoId))
+  ) {
     return c.json({ error: 'invalid request body' }, 400);
   }
 

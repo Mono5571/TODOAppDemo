@@ -322,7 +322,7 @@ db.save() に常にすべての Todo[] が渡されているが、これは最�
 
 #### Stateful Observer
 
-> [] createDiffs() を実装する (2026-08-08 追記)
+> [ ] createDiffs() を実装する (2026-08-08 追記)
 
 ```TypeScript
 type Diff<T> = {
@@ -715,8 +715,8 @@ TODO:
 
 - [x] 自動テスト・単体テストが書けるように環境構築 (Jest / Vitest ? Node.js 標準の node:test という選択肢も)
 - [x] Hono フレームワークの導入
-- [] バックエンドの構築
-- [] DB とつなぎこむ (Docker 経由)
+- [x] バックエンドの構築
+- [x] DB とつなぎこむ (Docker 経由)
 
 ### node:test 導入
 
@@ -896,8 +896,7 @@ pnpm-workspace.yaml を root/ 直下に作成し、全体をワークスペー�
    > REJECT:
    > たいしてコード量が削減できない
 
-2. > [] components/ 内のコールバック関数を `onChange: $functionName` の
-   > 形から `onChange: ($param) => $functionName($param)` の形に。
+2. [ ] components/ 内のコールバック関数を `onChange: $functionName` の形から `onChange: ($param) => $functionName($param)` の形に。
 
    -- なぜそうするのか？
 
@@ -905,7 +904,7 @@ pnpm-workspace.yaml を root/ 直下に作成し、全体をワークスペー�
 
    cf. [Zenn | TypeScriptでPoint-free styleが非推奨とされる理由](https://zenn.dev/aldagram_tech/articles/00c849a61f5e86)
 
-3. > [] isCloseToDeadline() の移植
+3. [ ] isCloseToDeadline() の移植
 
    components/TodoTable/computeViewTodos.ts 内の isCloseToDeadline() はかなりドメインロジック寄り。プレゼンテーション層がドメイン知識をもつべきではない。
 
@@ -1222,3 +1221,20 @@ TODO:
 - マイグレーションの状態を確認する
 
   `$ pnpm prisma migrate status`
+
+## 2026-08-31
+
+### 森さんからのアドバイス
+
+- ディレクトリが増えプロジェクトが複雑になってきたので、どの層にどの機能があるのかがぱっと見でわかるような、 **全体像の概略図** があるとよい
+- テスト: GitHub Actions をつかえば、リモートにプッシュした時点でテストが走るような CI を組める
+- テストの種類:
+  1. 単体テスト: ソースコードの中で閉じる、ひとつの関数やひとつのクラスなど、各部品のみを対象としたテスト
+  2. 結合テスト: 画面を実際に動かしておこなう、部品を組み合わせて一連の機能を提供できているかを確認するテスト
+  3. 総合テスト: 実際に顧客がアプリケーションを使用する想定の、ユースケースシナリオを組んで実施するテスト
+
+## 2026-09-04
+
+TODO:
+
+- [ ] Deadline の型、もしくはスキーマ定義を検討する

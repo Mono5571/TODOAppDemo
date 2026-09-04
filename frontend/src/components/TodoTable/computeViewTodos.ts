@@ -21,7 +21,7 @@ function compareDeadline(a: ValidDeadline, b: ValidDeadline) {
 
 // array.prototype.toSorted() に渡す評価関数の keyMap
 export const todosComparerMap = {
-  id: (a, b) => parseInt(a.id, 10) - parseInt(b.id, 10),
+  id: (a, b) => a.id - b.id,
   task: (a, b) => a.task.localeCompare(b.task), // もう少し厳密に
   priority: (a, b) => priorityNumberMap[b.priority] - priorityNumberMap[a.priority],
   deadline: (a, b) => compareDeadline(a.deadline, b.deadline),

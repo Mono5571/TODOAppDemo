@@ -1,10 +1,6 @@
 import { isFutureOrToday, isValidDateNums, parseLocalDateNums, TASK_MAX_LENGTH } from '@todo/shared';
 import type { Result, TodoId, ValidDeadline, ValidTask } from '@todo/shared';
 
-export function isTodoId(str: string): str is TodoId {
-  return /^(?!000000$)[0-9]{6}$/.test(str);
-}
-
 // --- delete later ---
 export const validateDeadline = (date: string): Result<ValidDeadline, Error> => {
   if (date === '') return { ok: false, err: new Error('期日を入力してください') };
