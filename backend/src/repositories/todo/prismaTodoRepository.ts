@@ -1,17 +1,16 @@
 import type { Todo, TodoId } from '@todo/shared';
 import type { TodoRepository } from './type.ts';
 import type { PrismaClient } from '../../generated/prisma/client.ts';
-import { toDeadline, toTask, toTodoId } from './prismaTodoParsers.ts';
+import { deadlineToDate, dateToDeadline, toTask, toTodoId } from './prismaTodoParsers.ts';
 
 function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
   return {
-    async create(newTodo: Omit<Todo, 'id'>): Promise<Todo> {
+    async create(newTodo: Omit<Todo, 'id' | 'isDone'>): Promise<Todo> {
       const created = await prisma.todo.create({
         data: {
           task: newTodo.task,
           priority: newTodo.priority,
-          deadline: new Date(newTodo.deadline),
-          isDone: newTodo.isDone
+          deadline: deadlineToDate(newTodo.deadline)
         }
       });
 
@@ -19,7 +18,7 @@ function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
         id: toTodoId(created.id),
         task: toTask(created.task),
         priority: created.priority,
-        deadline: toDeadline(created.deadline),
+        deadline: dateToDeadline(created.deadline),
         isDone: created.isDone
       };
     },
@@ -30,7 +29,7 @@ function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
         id: toTodoId(found.id),
         task: toTask(found.task),
         priority: found.priority,
-        deadline: toDeadline(found.deadline),
+        deadline: dateToDeadline(found.deadline),
         isDone: found.isDone
       }));
     },
@@ -45,7 +44,7 @@ function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
         id: toTodoId(found.id),
         task: toTask(found.task),
         priority: found.priority,
-        deadline: toDeadline(found.deadline),
+        deadline: dateToDeadline(found.deadline),
         isDone: found.isDone
       };
     },

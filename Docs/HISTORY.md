@@ -1187,6 +1187,8 @@ TODO:
 
 - [ ] この項目に覚えたいコマンドを書く
 
+- \dt: データベース内のテーブル一覧を表示
+
 ## Prisma 導入
 
 ### 達成したこと
@@ -1206,7 +1208,9 @@ TODO:
 
 ### Prisma 関連のコマンド
 
-- マイグレーション（schema.prisma 変更後に backend/ で実行）
+postgres のコンテナを起動中に backend/ で実行
+
+- マイグレーション（schema.prisma 変更後に）
 
   `$ pnpm prisma migrate dev --name <migration_name>`
 
@@ -1237,7 +1241,7 @@ TODO:
 
 TODO:
 
-- [ ] Deadline の型、もしくはスキーマ定義を検討する
+- [x] Deadline の型、もしくはスキーマ定義を検討する
 
 ### 変更点
 
@@ -1251,3 +1255,36 @@ TODO:
 
 - Prisma の Date スキーマはデフォルトでは UTC 以外のタイムゾーンをサポートしていない
 - したがって、現在のローカルタイムゾーンを基準にするアプリと整合性を保つには、9 時間のオフセットの加減算が必要である
+
+## 2026-09-06
+
+- prisma.schema を変更：
+  - deadline を DateTime @db.Date に
+  - isDone を Boolean @default(false) に
+- prisma:
+
+  ```
+  Todo {
+    id: number;
+    task: string;
+    priority: Priority; // 'low', 'middle', 'high'
+    deadline: Date;
+    isDone: boolean;
+  }
+  ```
+
+- postges:
+
+  ```
+  CREATE TYPE "Priority" AS ENUM ('low', 'middle', 'high');
+
+  CREATE TABLE "Todo" (
+      "id" SERIAL NOT NULL,
+      "task" TEXT NOT NULL,
+      "priority" "Priority" NOT NULL,
+      "deadline" DATE NOT NULL,
+      "isDone" BOOLEAN NOT NULL DEFAULT false,
+
+      CONSTRAINT "Todo_pkey" PRIMARY KEY ("id")
+  );
+  ```
