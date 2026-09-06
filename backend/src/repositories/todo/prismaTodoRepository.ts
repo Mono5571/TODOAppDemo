@@ -7,7 +7,12 @@ function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
   return {
     async create(newTodo: Omit<Todo, 'id'>): Promise<Todo> {
       const created = await prisma.todo.create({
-        data: newTodo
+        data: {
+          task: newTodo.task,
+          priority: newTodo.priority,
+          deadline: new Date(newTodo.deadline),
+          isDone: newTodo.isDone
+        }
       });
 
       return {

@@ -1131,7 +1131,7 @@ TODO:
 - [ ] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
 - [ ] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
 
-- [ ] shared/ のドメインを変更: TodoId を number に
+- [x] shared/ のドメインを変更: TodoId を number に
 
 - [x] postgresSQL を docker で立ち上げられるようにする
 - [x] Prisma を導入する
@@ -1238,3 +1238,16 @@ TODO:
 TODO:
 
 - [ ] Deadline の型、もしくはスキーマ定義を検討する
+
+### 変更点
+
+- バックエンドの TodoRepository の実装をひとまず書いた
+- フロント側の DB オブジェクトを前提としたモックに関するコードを削除した
+- TodoId の型定義を変更：ブランド型の文字列からブランド型の数値に
+
+## 2026-09-05
+
+### 考慮すべき点
+
+- Prisma の Date スキーマはデフォルトでは UTC 以外のタイムゾーンをサポートしていない
+- したがって、現在のローカルタイムゾーンを基準にするアプリと整合性を保つには、9 時間のオフセットの加減算が必要である
