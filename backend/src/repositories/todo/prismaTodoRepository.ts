@@ -1,7 +1,7 @@
 import type { Todo, TodoId } from '@todo/shared';
 import type { TodoRepository } from './type.ts';
 import type { PrismaClient } from '../../generated/prisma/client.ts';
-import { deadlineToDate, dateToDeadline, toTask, toTodoId } from './prismaTodoParsers.ts';
+import { deadlineToDate, dateToDeadline, toTask, toTodoId } from './parsers.ts';
 
 function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
   return {

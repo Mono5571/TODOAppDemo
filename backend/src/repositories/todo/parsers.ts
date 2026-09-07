@@ -1,11 +1,10 @@
 import { parseLocalDateNums, type TodoId, type ValidDeadline, type ValidTask } from '@todo/shared';
 
 // 暫定的なもの
-
 export function toTodoId(id: number): TodoId {
   return id as TodoId;
 }
-
+// 暫定的なもの
 export function toTask(task: string): ValidTask {
   return task as ValidTask;
 }
