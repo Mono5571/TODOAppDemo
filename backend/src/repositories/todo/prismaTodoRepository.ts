@@ -1,70 +1,77 @@
-import type { Todo, TodoId } from '@todo/shared';
-import type { TodoRepository } from './type.ts';
+import type { Result, Todo, InputTodo, TodoId } from '@todo/shared';
+import type { TodoRepository, TodoRepositoryError } from './type.ts';
 import type { PrismaClient } from '../../generated/prisma/client.ts';
-import { deadlineToDate, dateToDeadline, toTask, toTodoId } from './parsers.ts';
+import { deadlineToDate, toDomainTodo } from './parsers.ts';
+import { isRecordNotFoundError } from './errors/isRecordNotFoundError.ts';
+import { toRepositoryError } from './errors/toRepositoryError.ts';
 
 function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
   return {
-    async create(newTodo: Omit<Todo, 'id' | 'isDone'>): Promise<Todo> {
-      const created = await prisma.todo.create({
-        data: {
-          task: newTodo.task,
-          priority: newTodo.priority,
-          deadline: deadlineToDate(newTodo.deadline)
-        }
-      });
+    async create(newTodo: InputTodo): Promise<Result<Todo, TodoRepositoryError>> {
+      try {
+        const created = await prisma.todo.create({
+          data: {
+            task: newTodo.task,
+            priority: newTodo.priority,
+            deadline: deadlineToDate(newTodo.deadline)
+          }
+        });
 
-      return {
-        id: toTodoId(created.id),
-        task: toTask(created.task),
-        priority: created.priority,
-        deadline: dateToDeadline(created.deadline),
-        isDone: created.isDone
-      };
+        return {
+          ok: true,
+          data: toDomainTodo(created)
+        };
+      } catch (e) {
+        return { ok: false, err: toRepositoryError(e) };
+      }
     },
 
-    async findAll(): Promise<Todo[]> {
-      const founds = await prisma.todo.findMany();
-      return founds.map((found) => ({
-        id: toTodoId(found.id),
-        task: toTask(found.task),
-        priority: found.priority,
-        deadline: dateToDeadline(found.deadline),
-        isDone: found.isDone
-      }));
+    async findAll(): Promise<Result<Todo[], TodoRepositoryError>> {
+      try {
+        const founds = await prisma.todo.findMany();
+        return { ok: true, data: founds.map((found) => toDomainTodo(found)) };
+      } catch (e) {
+        return { ok: false, err: toRepositoryError(e) };
+      }
     },
 
-    async findById(id: TodoId): Promise<Todo | null> {
-      const found = await prisma.todo.findUnique({
-        where: { id }
-      });
+    async findById(id: TodoId): Promise<Result<Todo | null, TodoRepositoryError>> {
+      try {
+        const found = await prisma.todo.findUnique({
+          where: { id }
+        });
 
-      if (found === null) return null;
-      return {
-        id: toTodoId(found.id),
-        task: toTask(found.task),
-        priority: found.priority,
-        deadline: dateToDeadline(found.deadline),
-        isDone: found.isDone
-      };
+        return { ok: true, data: found === null ? null : toDomainTodo(found) };
+      } catch (e) {
+        return { ok: false, err: toRepositoryError(e) };
+      }
     },
 
-    async updateIsDone(id: TodoId, isDone: boolean): Promise<void | null> {
-      const updated = await prisma.todo.update({
-        where: { id },
-        data: { isDone: isDone }
-      });
+    async updateIsDone(id: TodoId, isDone: boolean): Promise<Result<Todo | null, TodoRepositoryError>> {
+      try {
+        const updated = await prisma.todo.update({
+          where: { id },
+          data: { isDone: isDone }
+        });
 
-      if (updated == null) return null;
+        return { ok: true, data: toDomainTodo(updated) };
+      } catch (e) {
+        if (isRecordNotFoundError(e)) return { ok: true, data: null };
+        return { ok: false, err: toRepositoryError(e) };
+      }
     },
 
-    async deleteById(id: TodoId): Promise<boolean> {
-      const deleted = await prisma.todo.delete({
-        where: { id }
-      });
+    async deleteById(id: TodoId): Promise<Result<boolean, TodoRepositoryError>> {
+      try {
+        await prisma.todo.delete({
+          where: { id }
+        });
 
-      if (deleted == null) return false;
-      return true;
+        return { ok: true, data: true };
+      } catch (e) {
+        if (isRecordNotFoundError(e)) return { ok: true, data: false };
+        return { ok: false, err: toRepositoryError(e) };
+      }
     }
   };
 }

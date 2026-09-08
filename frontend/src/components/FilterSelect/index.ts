@@ -1,7 +1,7 @@
 import { todoActions } from '../../context/index.js';
 import { createElement } from '../../libs/createElement/index.js';
 import { filterStateList, type FilterState } from '../../types/todoState.js';
-import { isElement } from '../../utils/utils.js';
+import { isElement } from '@todo/shared';
 
 // option 要素の value と textContent のタプルの配列
 const filterOptionsValueTextList: [FilterState, string][] = [

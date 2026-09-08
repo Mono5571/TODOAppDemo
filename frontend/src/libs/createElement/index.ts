@@ -1,4 +1,4 @@
-import { isElement } from '../../utils/utils.js';
+import { isElement } from '@todo/shared';
 import {
   allowedEventKeys,
   allowedPropsKeys,

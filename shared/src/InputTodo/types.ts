@@ -1,8 +1,7 @@
-import type { Todo } from '../Todo/types.js';
+import type { Todo, TodoKey } from '../Todo/types.js';
 import type { AtLeastOne } from '../types/atLeastOne.js';
-import type { inputKeyList } from './constants.js';
 
-export type InputTodoKey = (typeof inputKeyList)[number];
+export type InputTodoKey = Exclude<TodoKey, 'id' | 'isDone'>;
 
 export type InputValues = { [key in InputTodoKey]: string };
 

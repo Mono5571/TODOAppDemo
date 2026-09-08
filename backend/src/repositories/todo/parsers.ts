@@ -1,11 +1,13 @@
 import { parseLocalDateNums, type TodoId, type ValidDeadline, type ValidTask } from '@todo/shared';
+import type { TodoRepositoryError } from './type.ts';
+import type { Priority } from '../../generated/prisma/enums.ts';
 
 // 暫定的なもの
-export function toTodoId(id: number): TodoId {
+function toTodoId(id: number): TodoId {
   return id as TodoId;
 }
 // 暫定的なもの
-export function toTask(task: string): ValidTask {
+function toTask(task: string): ValidTask {
   return task as ValidTask;
 }
 
@@ -16,6 +18,16 @@ export function deadlineToDate(deadline: ValidDeadline): Date {
   return new Date(Date.UTC(year, month - 1, date));
 }
 
-export function dateToDeadline(date: Date): ValidDeadline {
+function dateToDeadline(date: Date): ValidDeadline {
   return date.toISOString().slice(0, 10) as ValidDeadline;
+}
+
+export function toDomainTodo(data: { id: number; task: string; priority: Priority; deadline: Date; isDone: boolean }) {
+  return {
+    id: toTodoId(data.id),
+    task: toTask(data.task),
+    priority: data.priority,
+    deadline: dateToDeadline(data.deadline),
+    isDone: data.isDone
+  };
 }

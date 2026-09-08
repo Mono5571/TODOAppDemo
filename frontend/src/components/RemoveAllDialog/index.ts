@@ -1,8 +1,9 @@
+import { isElement } from '@todo/shared';
 import { todoActions, uiActions, uiStore } from '../../context/index.js';
 import { createElement } from '../../libs/createElement/index.js';
 import { removeAllModeKeys, type RemoveAllMode, type UIState } from '../../types/uiState.js';
 import { refreshContainer } from '../../utils/refreshContainer.js';
-import { existsTrueVal, isElement } from '../../utils/utils.js';
+import { existsTrueVal } from '../../utils/utils.js';
 
 export function initRemoveAllDialog(container: HTMLElement) {
   // モード切替のチェックボックスに設置するイベントリスナ

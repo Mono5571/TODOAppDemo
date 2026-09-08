@@ -1288,3 +1288,14 @@ TODO:
       CONSTRAINT "Todo_pkey" PRIMARY KEY ("id")
   );
   ```
+
+## 2026-09-08
+
+### 達成状況
+
+- backend/todoService を進める
+- Domain にかかわる型定義や関数の一部を frontend/ から shared/ へ
+- InputTodo を実体 (inputTodoKeyList) 依存から Todo 型依存に変更: Todo の変更に追従しやすくなった
+- inputTodoKeyList を InputTodo に依存させるように逆転
+- TodoRepository を書き換えて Result 型の戻り値を返すようにした
+- レコードが見つからなかったのか、それともDB との接続などほかの問題が起きているのか、を切り分けられるようなエラーハンドリングにした
