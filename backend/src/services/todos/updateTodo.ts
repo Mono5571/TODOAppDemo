@@ -11,6 +11,7 @@ export async function updateIsDone(
     // validate id, isDone
     if (id == null || typeof id !== 'number' || Number.isNaN(id) || !Number.isInteger(id))
       return { ok: false, err: { type: 'invalid-todo-id' } };
+
     if (isDone == null || typeof isDone !== 'boolean') return { ok: false, err: { type: 'invalid-is-done' } };
 
     const result = await repositoriy.updateIsDone(id as TodoId, isDone);
