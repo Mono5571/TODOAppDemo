@@ -1355,3 +1355,87 @@ TODO:
 - inputTodoKeyList を InputTodo に依存させるように逆転
 - TodoRepository を書き換えて Result 型の戻り値を返すようにした
 - レコードが見つからなかったのか、それともDB との接続などほかの問題が起きているのか、を切り分けられるようなエラーハンドリングにした
+
+## 2026-09-11
+
+### 考慮事項
+
+- Prisma/PostgreSQL 側の制約 (e.g. VARCHAR(32)) と、[...str].length によるアプリケーション側の文字数制限では、Unicode に関して完全に同じ意味になるとは限らない。この点は、現在検討している Prisma の Repository 設計とも関係するので、TASK_MAX_LENGTH をアプリと PostgreSQL でどう一致させるかは一度明確にしておく価値がある。
+
+c.f. Don't Do This - PostgreSQL wiki
+
+> デフォルトでvarchar(n)型を使用しないでください。代わりにvarchar(長さ制限なし)またはtextを考慮してください。
+
+引用元: [Zenn | PostgreSQLでしない方がいいことリスト](https://zenn.dev/uta_mory/scraps/5e0b03c9b3478b)
+
+- varchar(n) よりも varchar または text をカラム定義として使用し、文字数制限などについては `CHECK()` 制約をつかう
+
+  なお、この場合 schema.prisma のモデル定義時点では `CHECK()` 制約を設けることはできない。別途 DB サーバを起動して psql CLI を経由して `ALTER TABLE` する必要がある。
+
+#### 文字数のカウントについて
+
+絵文字や一部の漢字（サロゲートペア）など、「人間が数える一文字」と「システム・プログラム上の一文字」が一致しない例はしばしば存在する。また、「システム・プログラム上の一文字」の数え方も、JS の `string.length` と `Array.from(string).length` が一致しなかったり、 postgreSQL の `char_length(string)` の戻り値がさらに違ったりと、文字数のカウントというのは意外と難しい。
+
+この TODO アプリでは、ユーザにとって直感的な文字数カウントについては妥協し、postgresSQL における文字数カウントをアプリケーション上での文字数の数え方として採用する（つまり下記）。
+
+```ts
+const strLength = [...string].length;
+```
+
+c.f. それぞれ何を単位としてカウントしているか
+
+```ts
+// Unicode (UTF-16) code unit 単位
+const length_A = 'あ'.length; // -> 1
+const length_emoji_1 = '👨'.length; // -> 2
+
+// Unicode code point 単位
+const length_emoji_2 = [...'👨'].length; // -> 1
+const length_emoji_joined_1 = [...'👨‍👩‍👧‍👦'].lenght; // -> 7
+
+// 書記素 grapheme 単位
+const segmenterJa = new Intl.Segmenter('ja', { granularity: 'grapheme' });
+const length_emoji_joined_2 = [...segmenterJa.segment('👨‍👩‍👧‍👦')].length; // -> 1
+```
+
+> ## 2. サロゲートペアと JavaScript
+>
+> Unicode は現代で使われる文字体系ほとんどに対応していて、U+0000 から U+FFFF までの約65,536の Code Point によく使う基本的な文字・記号が含まれています。 この範囲を BMP (Basic Multilingual Plane, 基本多言語面)と言います。
+>
+> BMP は多くの文字が 1 Code Point を 1 Code Unit で表現できます。
+>
+> | 文字 | Code Point | UTF-16 Code Unit (HEX) |
+> | ---- | ---------- | ---------------------- |
+> | A    | U+0041     | 0x0041 (1 Code Unit)   |
+> | あ   | U+3042     | 0x3042 (1 Code Unit)   |
+> | 가   | U+AC00     | 0xAC00 (1 Code Unit)   |
+>
+> Unicode が作られた当時（1991年ごろ）はこれで充分だったと思いますが、ときが経つにつれて文字はどんどん増えてきました。1990年代の人は絵文字とかが出てくるとは思ってなかったでしょう。
+>
+> 結局 BMP だけでは増えていく文字を全部表現することはできず、BMP を超えた領域まで拡張して新しい文字を対応することになりました。その新しい範囲をSMP（Supplementary Multilingual Plane, 追加多言語面）と言います。
+>
+> ただ、1 Code Point を 1 Code Unit で表現できるのは BMP までで、その範囲を超えた SMP だと 2 Code Unit 以上が必要になります。
+>
+> それで誕生したものが2個の Code Unit を組み合わせて1個の Code Point を表現した仕組み、サロゲートペアです。
+>
+> | 文字 | Code Point | UTF-16 Code Unit (HEX)      |
+> | ---- | ---------- | --------------------------- |
+> | 😆   | U+1F606    | 0xD83D 0xDE06 (2 Code Unit) |
+> | 𓀀    | U+13000    | 0xD80C 0xDC00 (2 Code Unit) |
+> | 𠮷   | U+20BB7    | 0xD842 0xDFB7 (2 Code Unit) |
+
+引用元: [Zenn | JavaScript で人と同じように文字数を数える](https://zenn.dev/luvmini511/articles/b5ea4d537081c2)
+
+なぜ `const length_emoji_joined_1 = [...'👨‍👩‍👧‍👦'].lenght; // -> 7` なのか？
+
+--> 絵文字と絵文字の間に挟まれる **接合子** を数えてしまうから
+
+> 実は複数の Code Point をくっつけて新しい文字を作ることもできます。
+>
+> そのとき文字と文字をくっつけるのりみたいな役割をする特殊な制御文字を ZWJ（Zero Width Joiner、ゼロ幅接合子）と言い、ZWJ で複数の文字を結合して作られた文字はZWJシーケンス（ZWJ Sequence）と言います。
+>
+> 👨‍👩‍👧‍👦 はZWJシーケンスの一例で、以下のように構成されています。
+>
+> 👨 + ZWJ + 👩 + ZWJ + 👧 + ZWJ + 👦
+
+引用元: [Zenn | JavaScript で人と同じように文字数を数える](https://zenn.dev/luvmini511/articles/b5ea4d537081c2)
