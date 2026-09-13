@@ -72,6 +72,19 @@ export function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository
         if (isRecordNotFoundError(e)) return { ok: true, data: false };
         return { ok: false, err: toRepositoryError(e) };
       }
+    },
+
+    async deleteManyByIds(ids: TodoId[]): Promise<Result<number, TodoRepositoryError>> {
+      try {
+        const result = await prisma.todo.deleteMany({
+          where: { id: { in: ids } }
+        });
+
+        return { ok: true, data: result.count };
+      } catch (e) {
+        if (isRecordNotFoundError(e)) return { ok: true, data: 0 };
+        return { ok: false, err: toRepositoryError(e) };
+      }
     }
   };
 }

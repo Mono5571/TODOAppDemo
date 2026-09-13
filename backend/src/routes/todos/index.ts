@@ -7,6 +7,8 @@ import { createTodo } from '../../services/todos/createTodo.ts';
 import { updateTodoIsDone } from '../../services/todos/updateTodoIsDone.ts';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { deleteTodo } from '../../services/todos/deleteTodo.ts';
+import { isNumberArray } from '../../utils/isNumberArray.ts';
+import { deleteTodosMany } from '../../services/todos/deleteTodosMany.ts';
 
 // 別の箇所に移すべきコード
 const prisma = new PrismaClient({
@@ -82,18 +84,17 @@ todosRoute.put('/todos', async (c) => {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  if (ids.some((id) => typeof id !== 'number')) {
+  if (!isNumberArray(ids)) {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  // あとで deleteMany() に変更
-  (ids as number[]).forEach(async (id) => {
-    const result = await deleteTodo(id, repository);
-    if (!result.ok) return c.json({ error: 'internal error' }, 500);
-  });
+  const deleteManyResult = await deleteTodosMany(ids, repository);
+  if (!deleteManyResult.ok) {
+    return deleteManyResult.err.type === 'todo-not-found' ? c.notFound() : c.json({ error: 'internal error' });
+  }
 
-  const result = await findTodos(repository);
-  if (!result.ok) return c.json({ error: 'internal error' }, 500);
+  const findResult = await findTodos(repository);
+  if (!findResult.ok) return c.json({ error: 'internal error' }, 500);
 
-  return c.json(result.data satisfies RemoveAllTodoResponse);
+  return c.json(findResult.data satisfies RemoveAllTodoResponse);
 });

@@ -1,6 +1,14 @@
 import { Prisma } from '../../../generated/prisma/client.ts';
 import type { TodoRepositoryError } from '../type.ts';
 
+/**
+ * try catch syntax の catch (e) 以下で使用する
+ *
+ * - Prisma から渡ってきた既知のリクエストエラーで、エラーコードがデータベースの制約違反を表すなら、その情報を含むオブジェクトを返す
+ * - それ以外の場合、データベースエラーであることを示すオブジェクトを返す
+ * @param e try ... catch で catch する
+ * @returns
+ */
 export function toRepositoryError(e: unknown): TodoRepositoryError {
   if (e instanceof Prisma.PrismaClientKnownRequestError) {
     switch (e.code) {

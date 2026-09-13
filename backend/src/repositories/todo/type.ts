@@ -6,6 +6,7 @@ export interface TodoRepository {
   findById(id: TodoId): Promise<Result<Todo | null, TodoRepositoryError>>;
   updateIsDone(id: TodoId, isDone: boolean): Promise<Result<Todo | null, TodoRepositoryError>>;
   deleteById(id: TodoId): Promise<Result<boolean, TodoRepositoryError>>;
+  deleteManyByIds(ids: TodoId[]): Promise<Result<number, TodoRepositoryError>>;
 }
 
 export type TodoRepositoryError =
