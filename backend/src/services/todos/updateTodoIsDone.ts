@@ -3,18 +3,18 @@ import type { TodoRepository } from '../../repositories/todo/type.ts';
 import { createUnknownError, type UpdateTodoIsDoneError } from './types/errors.ts';
 import { toTodoPersistenceError } from './errors/toTodoPersistenceError.ts';
 
-export async function updateIsDone(
-  { id, isDone }: { id: unknown; isDone: unknown },
-  repositoriy: TodoRepository
+export async function updateTodoIsDone(
+  { id, isDone }: { id: number; isDone: boolean },
+  repository: TodoRepository
 ): Promise<Result<Todo, UpdateTodoIsDoneError>> {
   try {
     // validate id, isDone
-    if (id == null || typeof id !== 'number' || Number.isNaN(id) || !Number.isInteger(id))
-      return { ok: false, err: { type: 'invalid-todo-id' } };
+    if (Number.isNaN(id)) return { ok: false, err: { type: 'invalid-todo-id' } };
+    if (!Number.isSafeInteger(id)) return { ok: false, err: { type: 'invalid-todo-id' } };
 
-    if (isDone == null || typeof isDone !== 'boolean') return { ok: false, err: { type: 'invalid-is-done' } };
+    if (isDone !== true && isDone !== false) return { ok: false, err: { type: 'invalid-is-done' } };
 
-    const result = await repositoriy.updateIsDone(id as TodoId, isDone);
+    const result = await repository.updateIsDone(id as TodoId, isDone);
 
     if (!result.ok) return { ok: false, err: toTodoPersistenceError(result.err) };
 

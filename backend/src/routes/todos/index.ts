@@ -1,77 +1,62 @@
 import { Hono } from 'hono';
-import { priorityList } from '@todo/shared';
-import type {
-  TodoId,
-  ValidTask,
-  Priority,
-  ValidDeadline,
-  Todo,
-  FindAllTodosResponse,
-  CreateTodoResponse,
-  RemoveAllTodoResponse
-} from '@todo/shared';
-import { createTodos } from './createTodos.ts';
-import { validateDeadline, validateTask } from './validator.ts';
-import { generateTodoId } from './generateTodoId.ts';
+import type { FindAllTodosResponse, CreateTodoResponse, RemoveAllTodoResponse } from '@todo/shared';
+import { findTodos } from '../../services/todos/findTodos.ts';
+import { createPrismaTodoRepository } from '../../repositories/todo/prismaTodoRepository.ts';
+import { PrismaClient } from '../../generated/prisma/client.ts';
+import { createTodo } from '../../services/todos/createTodo.ts';
+import { updateTodoIsDone } from '../../services/todos/updateTodoIsDone.ts';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { deleteTodo } from '../../services/todos/deleteTodo.ts';
 
-const todos = createTodos([]);
+// 別の箇所に移すべきコード
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: `${process.env['DATABASE_URL']}` })
+});
+const repository = createPrismaTodoRepository(prisma);
 
 export const todosRoute = new Hono();
 
-todosRoute.get('/todos', (c) => c.json(todos.list satisfies FindAllTodosResponse));
+todosRoute.get('/todos', async (c) => {
+  const result = await findTodos(repository);
+  if (!result.ok) {
+    return c.json({ error: 'internal error' }, 500);
+  }
+
+  return c.json(result.data satisfies FindAllTodosResponse);
+});
 
 todosRoute.post('/todos', async (c) => {
   const { task, priority, deadline }: { task: unknown; priority: unknown; deadline: unknown } = await c.req.json();
 
+  if (task == null || priority == null || deadline == null) {
+    return c.json({ error: 'invalid request body' }, 400);
+  }
   if (typeof task !== 'string' || typeof priority !== 'string' || typeof deadline !== 'string') {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  const idResult = generateTodoId();
-  if (!idResult.ok) {
-    return c.json({ error: idResult.err }, 400);
-  }
+  const result = await createTodo({ task, priority, deadline }, repository);
 
-  const taskResult = validateTask(task);
-  if (!taskResult.ok) {
-    return c.json({ error: 'invalid request body' }, 400);
-  }
+  if (!result.ok) return c.json({ error: 'internal error' }, 500);
 
-  if (!priorityList.some((p) => p === priority)) return c.json({ error: 'invalid request body' }, 400);
-
-  const deadlineResult = validateDeadline(deadline);
-  if (!deadlineResult.ok) {
-    return c.json({ error: 'invalid request body' }, 400);
-  }
-
-  const newTodo: Todo = {
-    id: idResult.data,
-    task: taskResult.data,
-    priority: priority as Priority,
-    deadline: deadlineResult.data,
-    isDone: false
-  };
-  todos.add(newTodo);
-
-  return c.json(newTodo satisfies CreateTodoResponse);
+  return c.json(result.data satisfies CreateTodoResponse);
 });
 
 todosRoute.patch('/todos/:id', async (c) => {
   const { id } = c.req.param();
   const { isDone }: { isDone: unknown } = await c.req.json();
 
+  if (id == null) return c.json({ error: 'invalid request body' }, 400);
+  if (typeof id !== 'number') return c.json({ error: 'invalid request body' }, 400);
+
+  if (isDone == null) return c.json({ error: 'invalid request body' }, 400);
   if (typeof isDone !== 'boolean') {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  const idNum = parseInt(id, 10);
-  if (Number.isNaN(idNum)) return c.json({ error: 'invalid request body' }, 400);
+  const result = await updateTodoIsDone({ id, isDone }, repository);
 
-  if (!todos.hasId(idNum as TodoId)) {
-    return c.notFound();
-  }
-
-  todos.update(idNum as TodoId, isDone);
+  if (!result.ok) return c.json({ error: 'internal error' }, 500);
 
   return c.json({ success: true });
 });
@@ -79,14 +64,13 @@ todosRoute.patch('/todos/:id', async (c) => {
 todosRoute.delete('/todos/:id', async (c) => {
   const { id } = c.req.param();
 
-  const idNum = parseInt(id, 10);
-  if (Number.isNaN(idNum)) return c.json({ error: 'invalid request body' }, 400);
+  if (id == null) return c.json({ error: 'invalid request body' }, 400);
+  if (typeof id !== 'number') return c.json({ error: 'invalid request body' }, 400);
 
-  if (!todos.hasId(idNum as TodoId)) {
-    return c.notFound();
+  const result = await deleteTodo(id, repository);
+  if (!result.ok) {
+    return result.err.type === 'todo-not-found' ? c.notFound() : c.json({ error: 'internal error' }, 500);
   }
-
-  todos.remove(idNum as TodoId);
 
   return c.json({ success: true });
 });
@@ -94,17 +78,22 @@ todosRoute.delete('/todos/:id', async (c) => {
 todosRoute.put('/todos', async (c) => {
   const { ids }: { ids: unknown } = await c.req.json();
 
-  if (
-    !Array.isArray(ids) ||
-    ids.length === 0 ||
-    ids.some((id) => typeof id !== 'number' || todos.hasId(id as TodoId))
-  ) {
+  if (ids == null || !Array.isArray(ids) || ids.length === 0) {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  ids.forEach((id) => {
-    todos.remove(id);
+  if (ids.some((id) => typeof id !== 'number')) {
+    return c.json({ error: 'invalid request body' }, 400);
+  }
+
+  // あとで deleteMany() に変更
+  (ids as number[]).forEach(async (id) => {
+    const result = await deleteTodo(id, repository);
+    if (!result.ok) return c.json({ error: 'internal error' }, 500);
   });
 
-  return c.json(todos.list satisfies RemoveAllTodoResponse);
+  const result = await findTodos(repository);
+  if (!result.ok) return c.json({ error: 'internal error' }, 500);
+
+  return c.json(result.data satisfies RemoveAllTodoResponse);
 });

@@ -5,7 +5,7 @@ import { deadlineToDate, toDomainTodo } from './parsers.ts';
 import { isRecordNotFoundError } from './errors/isRecordNotFoundError.ts';
 import { toRepositoryError } from './errors/toRepositoryError.ts';
 
-function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
+export function createPrismaTodoRepository(prisma: PrismaClient): TodoRepository {
   return {
     async create(newTodo: InputTodo): Promise<Result<Todo, TodoRepositoryError>> {
       try {
