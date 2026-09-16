@@ -49,14 +49,14 @@ todosRoute.patch('/todos/:id', async (c) => {
   const { isDone }: { isDone: unknown } = await c.req.json();
 
   if (id == null) return c.json({ error: 'invalid request body' }, 400);
-  if (typeof id !== 'number') return c.json({ error: 'invalid request body' }, 400);
+  if (id === '') return c.json({ error: 'invalid request body' }, 400);
 
   if (isDone == null) return c.json({ error: 'invalid request body' }, 400);
   if (typeof isDone !== 'boolean') {
     return c.json({ error: 'invalid request body' }, 400);
   }
 
-  const result = await updateTodoIsDone({ id, isDone }, repository);
+  const result = await updateTodoIsDone({ id: parseInt(id, 10), isDone }, repository);
 
   if (!result.ok) return c.json({ error: 'internal error' }, 500);
 
@@ -67,9 +67,9 @@ todosRoute.delete('/todos/:id', async (c) => {
   const { id } = c.req.param();
 
   if (id == null) return c.json({ error: 'invalid request body' }, 400);
-  if (typeof id !== 'number') return c.json({ error: 'invalid request body' }, 400);
+  if (id === '') return c.json({ error: 'invalid request body' }, 400);
 
-  const result = await deleteTodo(id, repository);
+  const result = await deleteTodo(parseInt(id, 10), repository);
   if (!result.ok) {
     return result.err.type === 'todo-not-found' ? c.notFound() : c.json({ error: 'internal error' }, 500);
   }

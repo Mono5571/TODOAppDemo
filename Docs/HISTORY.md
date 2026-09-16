@@ -1439,3 +1439,8 @@ const length_emoji_joined_2 = [...segmenterJa.segment('👨‍👩‍👧‍👦
 > 👨 + ZWJ + 👩 + ZWJ + 👧 + ZWJ + 👦
 
 引用元: [Zenn | JavaScript で人と同じように文字数を数える](https://zenn.dev/luvmini511/articles/b5ea4d537081c2)
+
+## 2026-09-16
+
+- docker compose で DB を立ち上げ、backend のサーバをローカルホストで起動、curl で CRUD を確認した
+- /todos/index.ts のミスを修正: パスパラメータは `string` として渡されるので、`if (typeof id !== 'number') return` で早期リターンするとすべて失敗になる -> `parseInt(id, 10)` で変換する
