@@ -1187,7 +1187,12 @@ TODO:
 
 - [ ] この項目に覚えたいコマンドを書く
 
-- \dt: データベース内のテーブル一覧を表示
+**大文字のテーブル名などを使用する場合、ダブルクォーテーションでくくる必要あり**
+
+- `\dt` : データベース内のテーブル一覧を表示
+- `\d ${table_name}` : Todo テーブルの構造やカラム定義を表示する
+- `SELECT * FROM ${table_name};` : テーブル内のすべてのデータを表示する (ほかのクエリも同じように実行できる)
+- `ALTER SEQUENCE ${seq_name} RESTART WITH 1;` : id 採番をリセットする
 
 ## Prisma 導入
 
@@ -1444,3 +1449,8 @@ const length_emoji_joined_2 = [...segmenterJa.segment('👨‍👩‍👧‍👦
 
 - docker compose で DB を立ち上げ、backend のサーバをローカルホストで起動、curl で CRUD を確認した
 - /todos/index.ts のミスを修正: パスパラメータは `string` として渡されるので、`if (typeof id !== 'number') return` で早期リターンするとすべて失敗になる -> `parseInt(id, 10)` で変換する
+
+## 2026-09-18
+
+- docker で todo_db を立ち上げ、フロントとバックのサーバをローカルホストで起動し、ブラウザ (Chrome シークレットモード) で Todo を追加、更新、読み取り、削除、一括削除ができることを確認した
+- psql で id 採番をリセットした
