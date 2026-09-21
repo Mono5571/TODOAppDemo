@@ -1454,3 +1454,22 @@ const length_emoji_joined_2 = [...segmenterJa.segment('👨‍👩‍👧‍👦
 
 - docker で todo_db を立ち上げ、フロントとバックのサーバをローカルホストで起動し、ブラウザ (Chrome シークレットモード) で Todo を追加、更新、読み取り、削除、一括削除ができることを確認した
 - psql で id 採番をリセットした
+
+## 2026-09-21
+
+### pnpm のアップデートに伴う不整合
+
+別プロジェクトで pnpm self-update と pnpm setup を実行したところ、 shim が循環参照になり pnpm が使用不能になった。その後、GPT の手助けを得て復帰するが、pnpm のバージョンが 12.5.1 にあがり、このプロジェクトの pnpm@11.21.0 と齟齬をきたしている。
+
+### pnpm アップデートのプロジェクトへの適用
+
+- frontend/, shared/ 下の package.json から `"packageManager": "pnpm@11.18.0"` の記述を削除した。
+
+- root/ の package.json の記述を変更
+
+```diff
+- "packageManager": "pnpm@11.21.0"
++ "packageManager": "pnpm@12.5.1"
+```
+
+- あらためて `pnpm install` を実行。pnpm に関する設定が pnpm-lock.yaml に新たに追加される。

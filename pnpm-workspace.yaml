@@ -4,6 +4,7 @@ packages:
   - 'shared'
 allowBuilds:
   '@prisma/engines': true
+  esbuild: false
   # esbuild: false
   # msgpackr-extract: false
   prisma: true

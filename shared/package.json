@@ -8,7 +8,6 @@
   "scripts": {
     "build": "tsc -b"
   },
-  "packageManager": "pnpm@11.18.0",
   "devDependencies": {
     "typescript": "^5.9.3"
   }
