@@ -1,8 +1,5 @@
-import { priorityList } from '@todo/shared';
 import type { Priority, Result } from '@todo/shared';
-import { isElement } from '../../../utils/utils.js';
-
-const isPriority = (str: string): str is Priority => isElement<string, Priority>(str, priorityList);
+import { isPriority } from '@todo/shared';
 
 export const validatePriority = (str: string): Result<Priority, Error> =>
   isPriority(str)

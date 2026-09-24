@@ -47,7 +47,7 @@ export function createApiClient(deps: ApiClientDependencies): ApiClient {
         (data) => data === undefined,
         { method: 'PATCH', body: JSON.stringify(body) }
       ),
-    remove: (path: string) =>
+    delete: (path: string) =>
       request<void>(
         path,
         () => undefined,

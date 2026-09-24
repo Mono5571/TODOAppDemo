@@ -322,7 +322,7 @@ db.save() に常にすべての Todo[] が渡されているが、これは最�
 
 #### Stateful Observer
 
-> [] createDiffs() を実装する (2026-08-08 追記)
+> [ ] createDiffs() を実装する (2026-08-08 追記)
 
 ```TypeScript
 type Diff<T> = {
@@ -715,8 +715,8 @@ TODO:
 
 - [x] 自動テスト・単体テストが書けるように環境構築 (Jest / Vitest ? Node.js 標準の node:test という選択肢も)
 - [x] Hono フレームワークの導入
-- [] バックエンドの構築
-- [] DB とつなぎこむ (Docker 経由)
+- [x] バックエンドの構築
+- [x] DB とつなぎこむ (Docker 経由)
 
 ### node:test 導入
 
@@ -896,8 +896,7 @@ pnpm-workspace.yaml を root/ 直下に作成し、全体をワークスペー�
    > REJECT:
    > たいしてコード量が削減できない
 
-2. > [] components/ 内のコールバック関数を `onChange: $functionName` の
-   > 形から `onChange: ($param) => $functionName($param)` の形に。
+2. [ ] components/ 内のコールバック関数を `onChange: $functionName` の形から `onChange: ($param) => $functionName($param)` の形に。
 
    -- なぜそうするのか？
 
@@ -905,7 +904,7 @@ pnpm-workspace.yaml を root/ 直下に作成し、全体をワークスペー�
 
    cf. [Zenn | TypeScriptでPoint-free styleが非推奨とされる理由](https://zenn.dev/aldagram_tech/articles/00c849a61f5e86)
 
-3. > [] isCloseToDeadline() の移植
+3. [ ] isCloseToDeadline() の移植
 
    components/TodoTable/computeViewTodos.ts 内の isCloseToDeadline() はかなりドメインロジック寄り。プレゼンテーション層がドメイン知識をもつべきではない。
 
@@ -1095,3 +1094,382 @@ interface TodoRepository {
 - クライアントとサーバのつなぎこみに成功！
 - 初回読み込みはまだ -> 一応コードは書いたがチェックしていない
 - 次はバックエンドのオブジェクトから DB へ移す
+
+## 2026-08-23
+
+### DB 導入の方針策定
+
+- Repository の設計
+- OOP でやっていく？
+- ORM どうする？ -- 学習コストなどを勘案すると Prisma が妥当か
+
+#### TodoRepository のインターフェイス
+
+```ts
+interface TodoRepository {
+  create(newTodo: Omit<Todo, 'id'>): Promise<Todo>;
+  findAll(): Promise<Todo[]>;
+  findById(id: TodoId): Promise<Todo | null>;
+  updateIsDone(id: TodoId, isDone: boolean): Promise<void | null>;
+  deleteById(id: TodoId): Promise<boolean>;
+}
+
+class PrismaTodoRepository implements TodoRepository {
+  // ...
+}
+```
+
+## 2026-08-26
+
+メモ:
+
+- フロントから TodoDB 関連のコードは消していい
+- TodoDB を前提にしている mock も消す
+
+TODO:
+
+- [ ] frontend の ApiClient に渡す url を文字列型から URL オブジェクトに
+- [ ] backend/ の routes/todos/ にまとめているリクエスト処理を services/ にうつす
+
+- [x] shared/ のドメインを変更: TodoId を number に
+
+- [x] postgresSQL を docker で立ち上げられるようにする
+- [x] Prisma を導入する
+- [ ] フロントエンドの Dockerfile を書き直す
+- [ ] バックエンドの Dockerfile を書く
+- [ ] `$ docker compose up` で DB / バックエンド / フロントエンドがすべて立ち上がるようにする
+
+- [ ] README.md を書き直す
+
+検討事項:
+
+- ざっくりプレゼンテーション層にあたるフロントエンドが、ユーザの「完了済み Todo を削除する」というユースケースに対して、「フロント側の State から削除する Todo の id を割り出す」アプリケーションロジックを担っているのはどうなのか。
+- バックエンドといいつつ、API を介してフロントエンドに RDBMS との接点を提供しているだけになっている。
+
+## 2026-08-30
+
+TODO:
+
+- [x] ルート直下に compose.yaml を作成する（docker-compose.yml への対応は後方互換のために残されている状況）
+- [x] compose.yaml には `services: db: ...` を作成し、posgreSQL を起動できるようにする
+
+### コンテナ化への道のり
+
+プロジェクト全体を `$ docker compose up` で立ち上げるには
+
+- compose.yaml に `depends_on` を追記し、
+  `backend` が `db: condition: service-healthy` になってから、
+  `frontend` が `backend` が立ち上がってから、それぞれ起動するようにする
+
+## PostgreSQL の導入
+
+導入成功！
+
+### コンテナ起動時のコマンド
+
+- DB コンテナが正常に起動しているか確認（ヘルスチェック）
+
+  `$ docker compose ps`
+
+- コンテナに入って psql (PostgreSQL の対話型 CLI クライアント) を立ち上げる:
+
+  `$ docker exec -it todo_db psql -U postgres -d tododb`
+
+  -> SQL を書いて DB を操作できる
+
+- PostgreSQL のログを見る
+
+  `$ docker compose logs db`
+
+### psql の主要なコマンド
+
+TODO:
+
+- [ ] この項目に覚えたいコマンドを書く
+
+**大文字のテーブル名などを使用する場合、ダブルクォーテーションでくくる必要あり**
+
+- `\dt` : データベース内のテーブル一覧を表示
+- `\d ${table_name}` : Todo テーブルの構造やカラム定義を表示する
+- `SELECT * FROM ${table_name};` : テーブル内のすべてのデータを表示する (ほかのクエリも同じように実行できる)
+- `ALTER SEQUENCE ${seq_name} RESTART WITH 1;` : id 採番をリセットする
+
+## Prisma 導入
+
+### 達成したこと
+
+1. Docker
+   PostgreSQL コンテナ起動
+2. DATABASE_URL
+   Prisma から DB に接続できる状態にする
+3. schema.prisma
+   Todo の DB モデルを定義
+4. migrate dev
+   PostgreSQL にテーブルを作成
+5. prisma generate
+   TypeScript 用 Client を生成
+6. prisma studio
+   DB の状態を確認
+
+### Prisma 関連のコマンド
+
+postgres のコンテナを起動中に backend/ で実行
+
+- マイグレーション（schema.prisma 変更後に）
+
+  `$ pnpm prisma migrate dev --name <migration_name>`
+
+- Prisma Client の生成（マイグレーション後におこなう）
+
+  `$ pnpm prisma generate`
+
+- ブラウザ上で DB を確認する
+
+  `$ pnpm prisma studio`
+
+- マイグレーションの状態を確認する
+
+  `$ pnpm prisma migrate status`
+
+## 2026-08-31
+
+### 森さんからのアドバイス
+
+- ディレクトリが増えプロジェクトが複雑になってきたので、どの層にどの機能があるのかがぱっと見でわかるような、 **全体像の概略図** があるとよい
+- テスト: GitHub Actions をつかえば、リモートにプッシュした時点でテストが走るような CI を組める
+- テストの種類:
+  1. 単体テスト: ソースコードの中で閉じる、ひとつの関数やひとつのクラスなど、各部品のみを対象としたテスト
+  2. 結合テスト: 画面を実際に動かしておこなう、部品を組み合わせて一連の機能を提供できているかを確認するテスト
+  3. 総合テスト: 実際に顧客がアプリケーションを使用する想定の、ユースケースシナリオを組んで実施するテスト
+
+### ホワイトボックステスト
+
+#### 概要
+
+システムの内部構造に重点をおいたテスト手法で、内部構造が外部から観測可能であることを前提とすることから "ホワイトボックス" の名を持つ。クリアボックステスト、または構造テスト (strctural testing) とも。
+
+通常は単体テストの工程でおこなわれるが、統合テストや E2E テストにも応用可能とされる。
+
+プログラムを網羅的に確認するために用いられ、プログラムからの命令文、分岐条件を把握することが必要となる。テスト手法や網羅の基準によって、テストケースの数は変化する。
+
+また、プログラムの内部構造について理解した上でテストを実施する必要があることから、開発担当者がおこなうのが一般的とされる。
+
+#### ホワイトボックステストにおける 4 つの手法
+
+ホワイトボックステストの代表的な手法として、以下の 4 つが挙げられる。
+
+1. 制御フローテスト
+
+   制御フローテストは、行われた処理に対して **プログラムがどう動くか** をフローチャートで示し、意図どおりの動作が行われているかを確かめていく手法。
+
+   考え得るすべてのパターンをテストするのが理想的だが、テストケースが膨大な数になるため、まずは以下のような網羅基準を設ける。
+   - **命令網羅（ステートメントカバレッジ）** ：すべての命令（処理）を1回以上通す。最も粒度が粗い。
+   - **分岐網羅（ブランチカバレッジ）** ：すべての条件分岐を1回以上実行する。
+   - **条件網羅（デシジョンカバレッジ）** ：条件分岐のすべての組み合わせを1回以上実行する。最も粒度が細かい。
+
+   設定した基準に応じてテストケースを作成し、どれくらいのパターンを網羅できたかの指標となる「カバレッジ（網羅率）」を計測する。テスト対象の重要度や複雑度に合った基準を設定した上で、カバレッジが100％になるようテストを実施していく。
+
+2. データフローテスト
+
+   制御フローテストではプログラムの処理の流れを確かめるのに対し、データフローテストでは扱う **データの流れ** に注目する。ある処理を実行した結果、どのような値が返ってくるかをテストし、入力されたデータが順番どおりに正しく処理されているか確認する。
+
+   変数に着目すると、プログラムの処理の流れはその **「定義」 -> 「使用」 -> 「消滅」** のサイクルといえる。データフローテストでは、まずデータの流れを図に起こし、テスト後に未定義・未使用になっている部分がないかを確認する。コーディングのミスによって変数に不正な値が入力されると、必要な処理が行われなかったり、無駄な処理が行われたりすることがある。例えば定義された変数が使用されず、不要になる前に消滅しているといった処理があれば、不具合があると判断される。
+
+3. 同値分割法
+
+   同値分割法は、同じ結果が得られる値同士を集めて **グループ化** し、各グループの **代表的な値（代表値）** を用いてテストを行うことで、テストを効率化する手法のひとつ。まずは仕様書を基に、「代表値でテストした結果が、同じグループのすべての値にも当てはまる」という状態になるように、入力値をグループ分けする。このグループを「同値クラス」という。
+
+   入力値によって正否が決まるシステムの場合、正しい値を集めたグループを「有効同値クラス」、エラーになる値を集めたクラスを「無効同値クラス」と呼ぶ。例えば「6 ~ 10 文字でパスワードを設定する」という状況なら、入力字数が 6 ~ 10 のグループが有効同値クラス、そのほかが無効同値クラスとなる。
+
+   同値分割法では、1 グループにつき最低 1 回はテストが実施されるようにテスト計画を立てる。テストケースを少なく抑えながら広い範囲を網羅することができるため、効率よく不具合を見つけられる点がメリット。
+
+4. 境界値分析
+
+   境界値分析は、 境界付近を重点的にテストする必要があるケースに有効な手法。同値分割法と同様にデータをいくつかの「同値クラス」に分けた後、グループ同士の **境目にあたる値（境界値）** を使ってテストを実行します。
+
+   例えば前述のパスワード字数の例のように、「未満」なのか「以下」なのかといった違いによって処理に影響が出る場合は、境界付近を重点的にテストしなければならない。ソースコードでは 5 文字以下を `x <= 5` 、5 文字未満を `x < 5` というようにわずかな記号の違いで表すことから、境界付近は誤解が起きやすく、ミスが集中するといわれているため。
+
+   境界値分析の場合、有効同値クラスでは各グループの最小値と最大値を、無効同値クラスでは有効同値クラスとの境にあたる値をテストするのが一般的。有効同値クラスのテストは1グループにつき2回となるため、テスト数は同値分割法よりも多くなる。
+
+#### 注意点
+
+- ホワイトボックステストは基本的にモジュール（部品）単位のテストにもちいられるものなので、特にモジュール同士をつなぐインターフェース設計が甘いと、テストケースは膨大な数になり実行難易度が高くなる。
+- ホワイトボックステストでは、書かれているプログラムを基にテスト計画を立て、設計したとおりにシステムが動作するかを確認するため、そもそもプログラムに書かれていない内容については検証がおこなわれない。
+
+  仕様書の記載誤りやプログラミング時の抜け漏れがないか、仕様書には組み込まれていないが実装を検討すべき機能はないか、といった点をチェックするには、別のテストを組み合わせることでカバーしていく必要がある。
+
+## 2026-09-04
+
+TODO:
+
+- [x] Deadline の型、もしくはスキーマ定義を検討する
+
+### 変更点
+
+- バックエンドの TodoRepository の実装をひとまず書いた
+- フロント側の DB オブジェクトを前提としたモックに関するコードを削除した
+- TodoId の型定義を変更：ブランド型の文字列からブランド型の数値に
+
+## 2026-09-05
+
+### 考慮すべき点
+
+- Prisma の Date スキーマはデフォルトでは UTC 以外のタイムゾーンをサポートしていない
+- したがって、現在のローカルタイムゾーンを基準にするアプリと整合性を保つには、9 時間のオフセットの加減算が必要である
+
+## 2026-09-06
+
+- prisma.schema を変更：
+  - deadline を DateTime @db.Date に
+  - isDone を Boolean @default(false) に
+- prisma:
+
+  ```
+  Todo {
+    id: number;
+    task: string;
+    priority: Priority; // 'low', 'middle', 'high'
+    deadline: Date;
+    isDone: boolean;
+  }
+  ```
+
+- postges:
+
+  ```
+  CREATE TYPE "Priority" AS ENUM ('low', 'middle', 'high');
+
+  CREATE TABLE "Todo" (
+      "id" SERIAL NOT NULL,
+      "task" TEXT NOT NULL,
+      "priority" "Priority" NOT NULL,
+      "deadline" DATE NOT NULL,
+      "isDone" BOOLEAN NOT NULL DEFAULT false,
+
+      CONSTRAINT "Todo_pkey" PRIMARY KEY ("id")
+  );
+  ```
+
+## 2026-09-08
+
+### 達成状況
+
+- backend/todoService を進める
+- Domain にかかわる型定義や関数の一部を frontend/ から shared/ へ
+- InputTodo を実体 (inputTodoKeyList) 依存から Todo 型依存に変更: Todo の変更に追従しやすくなった
+- inputTodoKeyList を InputTodo に依存させるように逆転
+- TodoRepository を書き換えて Result 型の戻り値を返すようにした
+- レコードが見つからなかったのか、それともDB との接続などほかの問題が起きているのか、を切り分けられるようなエラーハンドリングにした
+
+## 2026-09-11
+
+### 考慮事項
+
+- Prisma/PostgreSQL 側の制約 (e.g. VARCHAR(32)) と、[...str].length によるアプリケーション側の文字数制限では、Unicode に関して完全に同じ意味になるとは限らない。この点は、現在検討している Prisma の Repository 設計とも関係するので、TASK_MAX_LENGTH をアプリと PostgreSQL でどう一致させるかは一度明確にしておく価値がある。
+
+c.f. Don't Do This - PostgreSQL wiki
+
+> デフォルトでvarchar(n)型を使用しないでください。代わりにvarchar(長さ制限なし)またはtextを考慮してください。
+
+引用元: [Zenn | PostgreSQLでしない方がいいことリスト](https://zenn.dev/uta_mory/scraps/5e0b03c9b3478b)
+
+- varchar(n) よりも varchar または text をカラム定義として使用し、文字数制限などについては `CHECK()` 制約をつかう
+
+  なお、この場合 schema.prisma のモデル定義時点では `CHECK()` 制約を設けることはできない。別途 DB サーバを起動して psql CLI を経由して `ALTER TABLE` する必要がある。
+
+#### 文字数のカウントについて
+
+絵文字や一部の漢字（サロゲートペア）など、「人間が数える一文字」と「システム・プログラム上の一文字」が一致しない例はしばしば存在する。また、「システム・プログラム上の一文字」の数え方も、JS の `string.length` と `Array.from(string).length` が一致しなかったり、 postgreSQL の `char_length(string)` の戻り値がさらに違ったりと、文字数のカウントというのは意外と難しい。
+
+この TODO アプリでは、ユーザにとって直感的な文字数カウントについては妥協し、postgresSQL における文字数カウントをアプリケーション上での文字数の数え方として採用する（つまり下記）。
+
+```ts
+const strLength = [...string].length;
+```
+
+c.f. それぞれ何を単位としてカウントしているか
+
+```ts
+// Unicode (UTF-16) code unit 単位
+const length_A = 'あ'.length; // -> 1
+const length_emoji_1 = '👨'.length; // -> 2
+
+// Unicode code point 単位
+const length_emoji_2 = [...'👨'].length; // -> 1
+const length_emoji_joined_1 = [...'👨‍👩‍👧‍👦'].lenght; // -> 7
+
+// 書記素 grapheme 単位
+const segmenterJa = new Intl.Segmenter('ja', { granularity: 'grapheme' });
+const length_emoji_joined_2 = [...segmenterJa.segment('👨‍👩‍👧‍👦')].length; // -> 1
+```
+
+> ## 2. サロゲートペアと JavaScript
+>
+> Unicode は現代で使われる文字体系ほとんどに対応していて、U+0000 から U+FFFF までの約65,536の Code Point によく使う基本的な文字・記号が含まれています。 この範囲を BMP (Basic Multilingual Plane, 基本多言語面)と言います。
+>
+> BMP は多くの文字が 1 Code Point を 1 Code Unit で表現できます。
+>
+> | 文字 | Code Point | UTF-16 Code Unit (HEX) |
+> | ---- | ---------- | ---------------------- |
+> | A    | U+0041     | 0x0041 (1 Code Unit)   |
+> | あ   | U+3042     | 0x3042 (1 Code Unit)   |
+> | 가   | U+AC00     | 0xAC00 (1 Code Unit)   |
+>
+> Unicode が作られた当時（1991年ごろ）はこれで充分だったと思いますが、ときが経つにつれて文字はどんどん増えてきました。1990年代の人は絵文字とかが出てくるとは思ってなかったでしょう。
+>
+> 結局 BMP だけでは増えていく文字を全部表現することはできず、BMP を超えた領域まで拡張して新しい文字を対応することになりました。その新しい範囲をSMP（Supplementary Multilingual Plane, 追加多言語面）と言います。
+>
+> ただ、1 Code Point を 1 Code Unit で表現できるのは BMP までで、その範囲を超えた SMP だと 2 Code Unit 以上が必要になります。
+>
+> それで誕生したものが2個の Code Unit を組み合わせて1個の Code Point を表現した仕組み、サロゲートペアです。
+>
+> | 文字 | Code Point | UTF-16 Code Unit (HEX)      |
+> | ---- | ---------- | --------------------------- |
+> | 😆   | U+1F606    | 0xD83D 0xDE06 (2 Code Unit) |
+> | 𓀀    | U+13000    | 0xD80C 0xDC00 (2 Code Unit) |
+> | 𠮷   | U+20BB7    | 0xD842 0xDFB7 (2 Code Unit) |
+
+引用元: [Zenn | JavaScript で人と同じように文字数を数える](https://zenn.dev/luvmini511/articles/b5ea4d537081c2)
+
+なぜ `const length_emoji_joined_1 = [...'👨‍👩‍👧‍👦'].lenght; // -> 7` なのか？
+
+--> 絵文字と絵文字の間に挟まれる **接合子** を数えてしまうから
+
+> 実は複数の Code Point をくっつけて新しい文字を作ることもできます。
+>
+> そのとき文字と文字をくっつけるのりみたいな役割をする特殊な制御文字を ZWJ（Zero Width Joiner、ゼロ幅接合子）と言い、ZWJ で複数の文字を結合して作られた文字はZWJシーケンス（ZWJ Sequence）と言います。
+>
+> 👨‍👩‍👧‍👦 はZWJシーケンスの一例で、以下のように構成されています。
+>
+> 👨 + ZWJ + 👩 + ZWJ + 👧 + ZWJ + 👦
+
+引用元: [Zenn | JavaScript で人と同じように文字数を数える](https://zenn.dev/luvmini511/articles/b5ea4d537081c2)
+
+## 2026-09-16
+
+- docker compose で DB を立ち上げ、backend のサーバをローカルホストで起動、curl で CRUD を確認した
+- /todos/index.ts のミスを修正: パスパラメータは `string` として渡されるので、`if (typeof id !== 'number') return` で早期リターンするとすべて失敗になる -> `parseInt(id, 10)` で変換する
+
+## 2026-09-18
+
+- docker で todo_db を立ち上げ、フロントとバックのサーバをローカルホストで起動し、ブラウザ (Chrome シークレットモード) で Todo を追加、更新、読み取り、削除、一括削除ができることを確認した
+- psql で id 採番をリセットした
+
+## 2026-09-21
+
+### pnpm のアップデートに伴う不整合
+
+別プロジェクトで pnpm self-update と pnpm setup を実行したところ、 shim が循環参照になり pnpm が使用不能になった。その後、GPT の手助けを得て復帰するが、pnpm のバージョンが 12.5.1 にあがり、このプロジェクトの pnpm@11.21.0 と齟齬をきたしている。
+
+### pnpm アップデートのプロジェクトへの適用
+
+- frontend/, shared/ 下の package.json から `"packageManager": "pnpm@11.18.0"` の記述を削除した。
+
+- root/ の package.json の記述を変更
+
+```diff
+- "packageManager": "pnpm@11.21.0"
++ "packageManager": "pnpm@12.5.1"
+```
+
+- あらためて `pnpm install` を実行。pnpm に関する設定が pnpm-lock.yaml に新たに追加される。

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Todo" ALTER COLUMN "deadline" SET DATA TYPE DATE,
+ALTER COLUMN "isDone" SET DEFAULT false;

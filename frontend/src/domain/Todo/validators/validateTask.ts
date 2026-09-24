@@ -6,7 +6,7 @@ import { cast } from './castBranded.js';
 export const validateTask = (task: string): Result<ValidTask, Error> => {
   const { createSuccess, createFailure } = createResult<ValidTask, Error>();
 
-  const cleanTask = task.trim().replace(/\n/g, ' ');
+  const cleanTask = task.trim().replace(/\r\n?|\n/g, ' ');
 
   const taskLength = [...cleanTask].length;
   if (taskLength === 0) return createFailure(new Error('タイトルを入力してください'));

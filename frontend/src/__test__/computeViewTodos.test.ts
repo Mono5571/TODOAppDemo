@@ -1,8 +1,15 @@
 import { afterEach, beforeEach, describe, it, mock, type TestContext } from 'node:test';
 import { computeViewTodos, isCloseToDeadline, todosComparerMap } from '../components/TodoTable/computeViewTodos.js';
 import type { FilterState, SortState, TodoState } from '../types/todoState.js';
-import type { MaybeTodo } from '../context/mock/types.js';
-import type { Todo, ValidDeadline } from '@todo/shared';
+import type { Priority, Todo, ValidDeadline } from '@todo/shared';
+
+type MaybeTodo = {
+  id: number;
+  task: string;
+  priority: Priority;
+  deadline: string;
+  isDone: boolean;
+};
 
 function createTestTodo(todo: MaybeTodo): Todo {
   return todo as Todo;
@@ -13,7 +20,7 @@ function createTestTodoState(todos: MaybeTodo[], sort: SortState, filter: Filter
 }
 
 const todo_1 = createTestTodo({
-  id: '000001',
+  id: 1,
   task: 'evergreen planting',
   priority: 'middle',
   deadline: '2028-12-01',
@@ -21,7 +28,7 @@ const todo_1 = createTestTodo({
 });
 
 const todo_2 = createTestTodo({
-  id: '000002',
+  id: 2,
   task: 'chase own shadow',
   priority: 'low',
   deadline: '2027-08-11',
@@ -29,7 +36,7 @@ const todo_2 = createTestTodo({
 });
 
 const todo_3 = createTestTodo({
-  id: '000003',
+  id: 3,
   task: 'acknowledge a handshake',
   priority: 'high',
   deadline: '2027-11-07',
@@ -37,7 +44,7 @@ const todo_3 = createTestTodo({
 });
 
 const todo_4 = createTestTodo({
-  id: '000004',
+  id: 4,
   task: 'fly like a bird',
   priority: 'high',
   deadline: '2030-01-03',
@@ -45,7 +52,7 @@ const todo_4 = createTestTodo({
 });
 
 const todo_5 = createTestTodo({
-  id: '000005',
+  id: 5,
   task: 'dig through the time',
   priority: 'middle',
   deadline: '2029-10-11',
@@ -53,7 +60,7 @@ const todo_5 = createTestTodo({
 });
 
 const todo_6 = createTestTodo({
-  id: '000006',
+  id: 6,
   task: 'bring bang bang',
   priority: 'low',
   deadline: '2027-09-28',
