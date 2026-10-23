@@ -1473,3 +1473,7 @@ const length_emoji_joined_2 = [...segmenterJa.segment('👨‍👩‍👧‍👦
 ```
 
 - あらためて `pnpm install` を実行。pnpm に関する設定が pnpm-lock.yaml に新たに追加される。
+
+## 2026-10-24
+
+- schematic_diagram.md にアーキテクチャ全体図を書いた
