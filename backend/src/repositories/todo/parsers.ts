@@ -1,5 +1,4 @@
 import { parseLocalDateNums, type TodoId, type ValidDeadline, type ValidTask } from '@todo/shared';
-import type { TodoRepositoryError } from './type.ts';
 import type { Priority } from '../../generated/prisma/enums.ts';
 
 // 暫定的なもの
@@ -11,6 +10,11 @@ function toTask(task: string): ValidTask {
   return task as ValidTask;
 }
 
+/**
+ * 適正な Deadline の日付文字列を Prisma を介して DB に保存するため、UTC 基準の Date に変換する
+ * @param deadline
+ * @returns Date オブジェクト（UTC）
+ */
 export function deadlineToDate(deadline: ValidDeadline): Date {
   // ValidDeadline なので、parseLocalDateNums(deadline) は数値タプルにアサーションしていい
   const [year, month, date] = parseLocalDateNums(deadline) as [number, number, number];
@@ -22,6 +26,11 @@ function dateToDeadline(date: Date): ValidDeadline {
   return date.toISOString().slice(0, 10) as ValidDeadline;
 }
 
+/**
+ * DB から 渡ってきたデータを Domain として定義された Todo にキャストする
+ * @param data DB からアプリに受け渡された TODO データ
+ * @returns
+ */
 export function toDomainTodo(data: { id: number; task: string; priority: Priority; deadline: Date; isDone: boolean }) {
   return {
     id: toTodoId(data.id),
