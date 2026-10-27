@@ -1,5 +1,5 @@
 import type { Result, Todo, InputTodo, TodoId } from '@todo/shared';
-import type { TodoRepository, TodoRepositoryError } from '../../../repositories/todo/type.ts';
+import type { TodoRepository, TodoRepositoryError } from './type.ts';
 
 const idCounter = (() => {
   let id = 0;
