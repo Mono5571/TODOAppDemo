@@ -6,7 +6,7 @@ import type { Result, ValidTask } from '@todo/shared';
  *
  * 1. Unicode 正規化
  * 2. 入力された文字列から前後の空白・改行文字を取り除く
- * 3. 文字列中の改行を半角スペースに変換
+ * 3. 文字列中の改行と TAB を半角スペースに変換
  * 4. 空文字、空白のみなら弾く
  * 5. TODO のタスクとして意味のない制御文字を含む文字列は弾く
  * 6. この時点での文字列の長さが、1 以上かつ制限字数以内か検証
@@ -17,7 +17,8 @@ export function parseValidTask(str: string): Result<ValidTask, null> {
   const cleanStr = str
     .normalize('NFC') // Unicode を NFC 正規化
     .trim()
-    .replace(/\r\n?|\n/g, ' '); // CRLF, LF ともに置換
+    .replace(/\t/g, ' ') // TAB を 半角スペースに置換
+    .replace(/\r\n?|\n/g, ' '); // CR, CRLF, LF ともに置換
 
   // 空文字・空白のみ
   if (cleanStr.length === 0) return { ok: false, err: null };
