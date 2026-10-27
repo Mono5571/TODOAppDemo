@@ -13,4 +13,60 @@ describe('parseValidTask() のテスト', { todo: true }, () => {
       data: 'helloこんにちは123１２３'
     });
   });
+
+  describe('前後の空白と改行を除去する', () => {
+    it('半角スペース', (t: TestContext) => {
+      t.assert.deepStrictEqual(parseValidTask(' a'), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask('a '), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask(' a '), { ok: true, data: 'a' });
+    });
+
+    it('全角スペース', (t: TestContext) => {
+      t.assert.deepStrictEqual(parseValidTask('　a'), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask('a　'), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask('　a　'), { ok: true, data: 'a' });
+    });
+
+    it('LF', (t: TestContext) => {
+      t.assert.deepStrictEqual(parseValidTask('\na'), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask('a\n'), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask('\na\n'), { ok: true, data: 'a' });
+    });
+
+    it('CRLF', (t: TestContext) => {
+      t.assert.deepStrictEqual(parseValidTask('\r\na'), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask('a\r\n'), { ok: true, data: 'a' });
+      t.assert.deepStrictEqual(parseValidTask('\r\na\r\n'), { ok: true, data: 'a' });
+    });
+  });
+
+  it('内部の改行を半角スペースに変換する', (t: TestContext) => {
+    // LF
+    t.assert.deepStrictEqual(parseValidTask('a\nb'), { ok: true, data: 'a b' });
+    t.assert.deepStrictEqual(parseValidTask('a\n\nb'), { ok: true, data: 'a  b' });
+    t.assert.deepStrictEqual(parseValidTask('a\n\n\nb'), { ok: true, data: 'a   b' });
+
+    // CRLF
+    t.assert.deepStrictEqual(parseValidTask('a\r\nb'), { ok: true, data: 'a b' });
+    t.assert.deepStrictEqual(parseValidTask('a\r\n\r\nb'), { ok: true, data: 'a  b' });
+    t.assert.deepStrictEqual(parseValidTask('a\r\n\r\n\r\nb'), { ok: true, data: 'a   b' });
+  });
+
+  it('空文字・空白のみを拒否する', (t: TestContext) => {
+    t.assert.strictEqual(parseValidTask('').ok, false);
+    t.assert.strictEqual(parseValidTask(' ').ok, false);
+    t.assert.strictEqual(parseValidTask('　').ok, false);
+    t.assert.strictEqual(parseValidTask('\n').ok, false);
+    t.assert.strictEqual(parseValidTask('\r\n').ok, false);
+    t.assert.strictEqual(parseValidTask(' 　\n\r\n').ok, false);
+  });
+
+  it('NUL、ESC、DEL などの制御文字を拒否する', (t: TestContext) => {
+    // NUL
+    t.assert.strictEqual(parseValidTask('abc\u0000def').ok, false);
+    // ESC
+    t.assert.strictEqual(parseValidTask('abc\u001Bdef').ok, false);
+    // DEL
+    t.assert.strictEqual(parseValidTask('abc\u007Fdef').ok, false);
+  });
 });
