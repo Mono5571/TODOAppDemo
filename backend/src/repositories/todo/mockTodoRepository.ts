@@ -14,7 +14,7 @@ const idCounter = (() => {
 })();
 
 export function createMockSuccessTodoRepository(initialTodos: Todo[]): TodoRepository {
-  let todos = initialTodos;
+  let todos = initialTodos.toSorted((a, b) => a.id - b.id);
 
   const create = async (newTodo: InputTodo): Promise<Result<Todo, TodoRepositoryError>> => ({
     ok: true,
@@ -54,8 +54,13 @@ export function createMockSuccessTodoRepository(initialTodos: Todo[]): TodoRepos
   };
 
   const deleteManyByIds = async (ids: TodoId[]): Promise<Result<number, TodoRepositoryError>> => {
-    const targetCount = todos.filter((t) => ids.some((id) => id === t.id)).length;
-    todos = todos.filter((t) => !ids.some((id) => id === t.id));
+    let targetCount = 0;
+    const idSet = new Set(ids);
+
+    [todos, targetCount] = todos.reduce<[Todo[], number]>(
+      (acc, cur) => (idSet.has(cur.id) ? [acc[0], acc[1] + 1] : [[...acc[0], cur], acc[1]]),
+      [[], 0]
+    );
 
     return {
       ok: true,
