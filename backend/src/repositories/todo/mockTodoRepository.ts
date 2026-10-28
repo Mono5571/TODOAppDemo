@@ -1,7 +1,7 @@
 import type { Result, Todo, InputTodo, TodoId } from '@todo/shared';
 import type { TodoRepository, TodoRepositoryError } from './type.ts';
 
-const idCounter = (() => {
+export function createIdCounter() {
   let id = 0;
 
   return {
@@ -9,17 +9,34 @@ const idCounter = (() => {
       const current = id;
       id++;
       return current as TodoId;
+    },
+
+    reset: () => {
+      id = 0;
     }
   };
-})();
+}
 
-export function createMockSuccessTodoRepository(initialTodos: Todo[]): TodoRepository {
-  let todos = initialTodos.toSorted((a, b) => a.id - b.id);
+/**
+ * 必ず成功する（Ok の Result を返す）TODO Mock Repo を作成する
+ * @param initial id のない TODO
+ * @param idCounter カウンタオブジェクト
+ * @returns Mock Repo
+ */
+export function createMockSuccessTodoRepository(
+  initial: Omit<Todo, 'id'>[],
+  idCounter: ReturnType<typeof createIdCounter>
+): TodoRepository {
+  let todos: Todo[] = initial.map((t) => ({ ...t, id: idCounter.count() }));
 
-  const create = async (newTodo: InputTodo): Promise<Result<Todo, TodoRepositoryError>> => ({
-    ok: true,
-    data: { ...newTodo, id: idCounter.count(), isDone: false }
-  });
+  const create = async (newTodo: InputTodo): Promise<Result<Todo, TodoRepositoryError>> => {
+    const data = { ...newTodo, id: idCounter.count(), isDone: false };
+    todos = [...todos, data];
+    return {
+      ok: true,
+      data
+    };
+  };
 
   const findAll = async (): Promise<Result<Todo[], TodoRepositoryError>> => ({ ok: true, data: todos });
 
@@ -71,6 +88,10 @@ export function createMockSuccessTodoRepository(initialTodos: Todo[]): TodoRepos
   return { create, findAll, findById, updateIsDone, deleteById, deleteManyByIds };
 }
 
+/**
+ * 無条件に失敗する TODO Mock Repo を作成する
+ * @returns Mock Repo
+ */
 export function createMockFailureTodoRepository(): TodoRepository {
   const create = async (_newTodo: InputTodo): Promise<Result<Todo, TodoRepositoryError>> => ({
     ok: false,
