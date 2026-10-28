@@ -17,8 +17,7 @@ export function parseValidTask(str: string): Result<ValidTask, null> {
   const cleanStr = str
     .normalize('NFC') // Unicode を NFC 正規化
     .trim()
-    .replace(/\t/g, ' ') // TAB を 半角スペースに置換
-    .replace(/\r\n?|\n/g, ' '); // CR, CRLF, LF ともに置換
+    .replace(/\t|\r\n?|\n/g, ' '); // TAB, CR, CRLF, LF ともに半角スペースに置換
 
   // 空文字・空白のみ
   if (cleanStr.length === 0) return { ok: false, err: null };

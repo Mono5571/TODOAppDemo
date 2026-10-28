@@ -54,7 +54,12 @@ describe('parseValidTask() のテスト', () => {
     });
   });
 
-  it('内部の改行を半角スペースに変換する', (t: TestContext) => {
+  it('内部の TAB と改行を半角スペースに変換する', (t: TestContext) => {
+    // TAB
+    t.assert.deepStrictEqual(parseValidTask('a\tb'), { ok: true, data: 'a b' });
+    t.assert.deepStrictEqual(parseValidTask('a\t\tb'), { ok: true, data: 'a  b' });
+    t.assert.deepStrictEqual(parseValidTask('a\t\t\tb'), { ok: true, data: 'a   b' });
+
     // LF
     t.assert.deepStrictEqual(parseValidTask('a\nb'), { ok: true, data: 'a b' });
     t.assert.deepStrictEqual(parseValidTask('a\n\nb'), { ok: true, data: 'a  b' });
