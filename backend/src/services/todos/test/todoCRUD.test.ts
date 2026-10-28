@@ -25,14 +25,16 @@ function createTestNoIdTodo(preNoIdTodo: PreNoIdTodo): Omit<Todo, 'id'> {
 const mockFailureRepo = createMockFailureTodoRepository();
 
 describe('Todo Service --ビジネスロジックに基づく入力値検証と、DB の読み書き処理-- の検証', { todo: true }, () => {
-  beforeEach(() => {
-    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
-  });
-  afterEach(() => {
-    mock.timers.reset();
-  });
-  describe('createTodo のテスト', () => {
-    it('正常系: すべての検証をパスし、リポジトリによる書き込みがおこなわれる', async (t: TestContext) => {
+  describe('createTodo() のテスト', () => {
+    // Date をモックする
+    beforeEach(() => {
+      mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+    });
+    afterEach(() => {
+      mock.timers.reset();
+    });
+
+    it('正常系 -> オブジェクトが保存され、返ってくる', async (t: TestContext) => {
       const mockSuccessRepo = createMockSuccessTodoRepository([], createIdCounter());
 
       const testNoIdTodo = createTestNoIdTodo({
@@ -52,5 +54,21 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       t.assert.deepStrictEqual(result.data, expected);
       t.assert.deepStrictEqual(findResult.data, [expected]);
     });
+
+    it('task が不正 -> 検証エラー、書き込みなし', { todo: true });
+
+    it('priority が不正 -> 検証エラー、書き込みなし', { todo: true });
+
+    it('deadline が不正 -> 検証エラー、書き込みなし', { todo: true });
+
+    it('DB エラー -> DB エラーを返す', { todo: true });
   });
+
+  describe('findTodos() のテスト', { todo: true });
+
+  describe('updateTodoIsDone() のテスト', { todo: true });
+
+  describe('deleteTodo() のテスト', { todo: true });
+
+  describe('deleteTodosMany() のテスト', { todo: true });
 });
