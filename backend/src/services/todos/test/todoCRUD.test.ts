@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, mock, describe, it, type TestContext } from 'node:test';
+import { before, after, beforeEach, afterEach, mock, describe, it, type TestContext } from 'node:test';
 import {
   createIdCounter,
   createMockSuccessTodoRepository,
@@ -116,7 +116,56 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
     });
   });
 
-  describe('findTodos() のテスト', { todo: true });
+  describe('findTodos() のテスト', () => {
+    it('正常系: 保存された TODO がすべて返ってくる', async (t: TestContext) => {
+      // Date をモックする
+      before(() => {
+        mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+      });
+      after(() => {
+        mock.timers.reset();
+      });
+      const testTodos: Omit<Todo, 'id'>[] = [
+        {
+          task: 'a',
+          priority: 'middle',
+          deadline: '2026-10-09',
+          isDone: false
+        },
+        {
+          task: 'b',
+          priority: 'middle',
+          deadline: '2026-10-09',
+          isDone: false
+        },
+        {
+          task: 'c',
+          priority: 'middle',
+          deadline: '2026-10-09',
+          isDone: false
+        }
+      ].map((p) => createTestNoIdTodo(p));
+
+      const counter = createIdCounter();
+      const savedTodos: Todo[] = testTodos.map((t) => ({ ...t, id: counter.count() }));
+
+      const repo = createMockSuccessTodoRepository(testTodos, createIdCounter());
+
+      const result = await findTodos(repo);
+      if (!result.ok) throw new Error('findTodo() のテスト: 正常系テストケースでエラー');
+
+      t.assert.deepStrictEqual(result.data, savedTodos);
+    });
+
+    it('異常系: DB エラーが返ってくる', async (t: TestContext) => {
+      const repo = createMockFailureTodoRepository();
+
+      const result = await findTodos(repo);
+      if (result.ok) throw new Error('findTodos() のテスト: 異常系テストケースが成功');
+
+      t.assert.strictEqual(result.err.type, 'persistence-error');
+    });
+  });
 
   describe('updateTodoIsDone() のテスト', { todo: true });
 
