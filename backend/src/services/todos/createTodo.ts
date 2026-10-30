@@ -7,7 +7,6 @@ import { parseValidTask } from './validators/parseValidTask.ts';
 
 /**
  * ユーザ入力を検証して新しい TODO を作成し DB に保存する関数
- *
  * - DB に保存された新しい TODO を返す
  * @param inputValues task, priority, deadline としてクライアントから渡された未検証の文字列
  * @param repository DB との境界

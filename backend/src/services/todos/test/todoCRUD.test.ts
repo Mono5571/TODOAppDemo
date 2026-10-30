@@ -125,6 +125,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       after(() => {
         mock.timers.reset();
       });
+
       const testTodos: Omit<Todo, 'id'>[] = [
         {
           task: 'a',
@@ -167,7 +168,95 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
     });
   });
 
-  describe('updateTodoIsDone() のテスト', { todo: true });
+  describe('updateTodoIsDone() のテスト', () => {
+    describe('正常系と指定した id の TODO が見つからないケース', () => {
+      // Date をモックする
+      before(() => {
+        mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+      });
+      after(() => {
+        mock.timers.reset();
+      });
+
+      const expectedIsDone = true;
+      const targetId = createIdCounter().count();
+
+      const testTodo = createTestNoIdTodo({
+        task: 'test',
+        priority: 'middle',
+        deadline: '2026-10-09',
+        isDone: !expectedIsDone
+      });
+
+      const repo = createMockSuccessTodoRepository([testTodo], createIdCounter());
+
+      it('正常系: TODO の更新が成功し、更新した TODO が返却される', async (t: TestContext) => {
+        // 以下の 3 つが一致する
+        // 1. 手元で isDone を変更したもの
+        // 2. updateTodoIsDone() の戻り値
+        // 3. DB 内の TODO (findTodos() で取り出す)
+
+        const result = await updateTodoIsDone({ id: targetId, isDone: expectedIsDone }, repo);
+        if (!result.ok) throw new Error('正常系テストケースでエラー: updateTodoIsDone() が失敗');
+
+        const findResult = await findTodos(repo);
+        if (!findResult.ok) throw new Error('正常系テストケースでエラー: findTodos() が失敗');
+        const foundTodo = findResult.data.find((t) => t.id === targetId);
+
+        if (foundTodo === undefined)
+          throw new Error('正常系テストケースでエラー: findTodos() で対象の TODO が見つからなかった');
+
+        const expectedTodo: Todo = { ...testTodo, id: targetId, isDone: expectedIsDone };
+        const updatedTodo = result.data;
+
+        t.assert.deepStrictEqual(foundTodo, expectedTodo);
+        t.assert.deepStrictEqual(foundTodo, updatedTodo);
+      });
+
+      it('指定した id の TODO が見つからない -> リポジトリエラー', async (t: TestContext) => {
+        const result = await updateTodoIsDone({ id: targetId + 1, isDone: true }, repo);
+
+        t.assert.deepStrictEqual(result, {
+          ok: false,
+          err: { type: 'todo-not-found' }
+        });
+      });
+    });
+
+    it('id の形式が不正 -> 検証エラー、更新しない', async (t: TestContext) => {
+      const repo = createMockSuccessTodoRepository([], createIdCounter());
+
+      // id として NaN を指定
+      const result = await updateTodoIsDone({ id: parseInt('a'), isDone: true }, repo);
+
+      t.assert.deepStrictEqual(result, {
+        ok: false,
+        err: { type: 'invalid-todo-id' }
+      });
+    });
+
+    it('isDone が不正 -> 検証エラー、更新しない', async (t: TestContext) => {
+      const repo = createMockSuccessTodoRepository([], createIdCounter());
+
+      // isDone として不正な値を指定
+      const result = await updateTodoIsDone({ id: 0, isDone: 'true' as unknown as boolean }, repo);
+
+      t.assert.deepStrictEqual(result, {
+        ok: false,
+        err: { type: 'invalid-is-done' }
+      });
+    });
+
+    it('DB エラー -> DB エラーが返ってくる', async (t: TestContext) => {
+      const repo = createMockFailureTodoRepository();
+      const result = await updateTodoIsDone({ id: 0, isDone: true }, repo);
+
+      t.assert.deepStrictEqual(result, {
+        ok: false,
+        err: { type: 'persistence-error' }
+      });
+    });
+  });
 
   describe('deleteTodo() のテスト', { todo: true });
 

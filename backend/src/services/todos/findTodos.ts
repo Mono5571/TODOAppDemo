@@ -4,7 +4,7 @@ import { createUnknownError, type FindTodosError } from './types/errors.ts';
 import { toTodoPersistenceError } from './errors/toTodoPersistenceError.ts';
 
 /**
- * TodoRepository を介して DB に保存された TODO をすべて取り出す
+ * TodoRepository を介して DB に保存された TODO をすべて取り出す関数
  * @param repository TodoRepository
  * @returns Result 型:
  * 1. 成功 -> data: DB に保存されているすべての TODO
