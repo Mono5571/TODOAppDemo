@@ -4,9 +4,9 @@ import { createUnknownError, type FindTodosError } from './types/errors.ts';
 import { toTodoPersistenceError } from './errors/toTodoPersistenceError.ts';
 
 /**
- * TodoRepository を介して DB に保存された TODO をすべて取り出す関数
- * @param repository TodoRepository
- * @returns Result 型:
+ * DB に保存された TODO をすべて取り出す関数
+ * @param repository TODO の永続化を担う Repository のインスタンス
+ * @returns Promise にラップされた Result 型:
  * 1. 成功 -> data: DB に保存されているすべての TODO
  * 2. 失敗 -> err: { type: 'persistence-error' } | { type: 'unknown-error'; cause: unknown }
  */

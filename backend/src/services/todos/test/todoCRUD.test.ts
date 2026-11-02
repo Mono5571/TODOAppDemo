@@ -15,7 +15,6 @@ type PreNoIdTodo = {
   task: string;
   priority: string;
   deadline: string;
-  isDone: boolean;
 };
 
 function createTestNoIdTodo(preNoIdTodo: PreNoIdTodo): Omit<Todo, 'id'> {
@@ -40,8 +39,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       const testNoIdTodo = createTestNoIdTodo({
         task: 'createTodo() をテストする',
         priority: 'high',
-        deadline: '2026-10-08',
-        isDone: false
+        deadline: '2026-10-08'
       });
 
       const result = await createTodo(testNoIdTodo, mockSuccessRepo);
@@ -50,7 +48,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       const findResult = await mockSuccessRepo.findAll();
       if (!findResult.ok) throw new Error('createTodo() の正常系でエラー: repo.findAll()');
 
-      const expected = { ...testNoIdTodo, id: 0 };
+      const expected = { ...testNoIdTodo, id: 0, isDone: false };
       t.assert.deepStrictEqual(result.data, expected);
       t.assert.deepStrictEqual(findResult.data, [expected]);
     });
@@ -59,8 +57,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       const testNoIdTodo = createTestNoIdTodo({
         task: '', // 空文字列は不受理
         priority: 'high',
-        deadline: '2026-10-08',
-        isDone: false
+        deadline: '2026-10-08'
       });
 
       const result = await createTodo(testNoIdTodo, createMockSuccessTodoRepository([], createIdCounter()));
@@ -74,8 +71,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       const testNoIdTodo = createTestNoIdTodo({
         task: 'a',
         priority: 'aaaaaa', // priority として不正な値
-        deadline: '2026-10-08',
-        isDone: false
+        deadline: '2026-10-08'
       });
 
       const result = await createTodo(testNoIdTodo, createMockSuccessTodoRepository([], createIdCounter()));
@@ -89,8 +85,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       const testNoIdTodo = createTestNoIdTodo({
         task: 'a',
         priority: 'high',
-        deadline: '20261008', // deadline は 'yyyy/mm/dd' 形式の有効かつ過去でない日付文字列
-        isDone: false
+        deadline: '20261008' // deadline は 'yyyy/mm/dd' 形式の有効かつ過去でない日付文字列
       });
 
       const result = await createTodo(testNoIdTodo, createMockSuccessTodoRepository([], createIdCounter()));
@@ -104,8 +99,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       const testNoIdTodo = createTestNoIdTodo({
         task: 'a',
         priority: 'high',
-        deadline: '2026-10-08',
-        isDone: false
+        deadline: '2026-10-08'
       });
 
       const result = await createTodo(testNoIdTodo, mockFailureRepo);
@@ -130,20 +124,17 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
         {
           task: 'a',
           priority: 'middle',
-          deadline: '2026-10-09',
-          isDone: false
+          deadline: '2026-10-09'
         },
         {
           task: 'b',
           priority: 'middle',
-          deadline: '2026-10-09',
-          isDone: false
+          deadline: '2026-10-09'
         },
         {
           task: 'c',
           priority: 'middle',
-          deadline: '2026-10-09',
-          isDone: false
+          deadline: '2026-10-09'
         }
       ].map((p) => createTestNoIdTodo(p));
 
@@ -184,8 +175,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       const testTodo = createTestNoIdTodo({
         task: 'test',
         priority: 'middle',
-        deadline: '2026-10-09',
-        isDone: !expectedIsDone
+        deadline: '2026-10-09'
       });
 
       const repo = createMockSuccessTodoRepository([testTodo], createIdCounter());
@@ -194,14 +184,14 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
         // 以下の 3 つが一致する
         // 1. 手元で isDone を変更したもの
         // 2. updateTodoIsDone() の戻り値
-        // 3. DB 内の TODO (findTodos() で取り出す)
+        // 3. DB 内の TODO (repo.findById() で取り出す)
 
         const result = await updateTodoIsDone({ id: targetId, isDone: expectedIsDone }, repo);
         if (!result.ok) throw new Error('正常系テストケースでエラー: updateTodoIsDone() が失敗');
 
-        const findResult = await findTodos(repo);
-        if (!findResult.ok) throw new Error('正常系テストケースでエラー: findTodos() が失敗');
-        const foundTodo = findResult.data.find((t) => t.id === targetId);
+        const findResult = await repo.findById(targetId);
+        if (!findResult.ok) throw new Error('正常系テストケースでエラー: repo.findById() が失敗');
+        const foundTodo = findResult.data;
 
         if (foundTodo === undefined)
           throw new Error('正常系テストケースでエラー: findTodos() で対象の TODO が見つからなかった');
@@ -258,7 +248,175 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
     });
   });
 
-  describe('deleteTodo() のテスト', { todo: true });
+  describe('deleteTodo() のテスト', () => {
+    const targetId = createIdCounter().count();
+    const testNoIdTodo = createTestNoIdTodo({
+      task: 'a',
+      priority: 'low',
+      deadline: '2026-10-08'
+    });
 
-  describe('deleteTodosMany() のテスト', { todo: true });
+    const testIdCounter = createIdCounter();
+    const repo = createMockSuccessTodoRepository([], testIdCounter);
+
+    beforeEach(async () => {
+      // Date をモックする
+      mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+
+      // mock repository 内にテスト用の TODO を保存しておく
+      const result = await repo.create(testNoIdTodo);
+      if (!result.ok) throw new Error('repo.create() が失敗');
+    });
+    afterEach(async () => {
+      mock.timers.reset();
+      testIdCounter.reset();
+      // 保存された TODO をリセット
+      const result = await repo.deleteById(targetId);
+      if (!result.ok) throw new Error('repo.deleteById() が失敗');
+    });
+
+    it('正常系: 保存済のオブジェクトが削除され、true が data として返ってくる', async (t: TestContext) => {
+      const result = await deleteTodo(targetId, repo);
+      if (!result.ok) throw new Error('deleteTodo() のテスト: 正常系テストケースでエラー');
+
+      t.assert.strictEqual(result.data, true);
+
+      // TODO がきちんと削除されているか
+      const findResult = await repo.findAll();
+      if (!findResult.ok) throw new Error('deleteTodo() のテスト内で repo.findAll() が失敗');
+
+      t.assert.strictEqual(findResult.data.length, 0);
+    });
+
+    it('id が不正', async (t: TestContext) => {
+      const result = await deleteTodo(parseInt('targetId'), repo);
+      if (result.ok) throw new Error('deleteTodo() のテスト: 不正な id を受理');
+
+      t.assert.strictEqual(result.err.type, 'invalid-todo-id');
+
+      // TODO が削除されていないか
+      const findResult = await repo.findAll();
+      if (!findResult.ok) throw new Error('deleteTodo() のテスト内で repo.findAll() が失敗');
+
+      t.assert.strictEqual(findResult.data.length, 1);
+    });
+
+    it('指定した id の TODO が存在しない', async (t: TestContext) => {
+      const result = await deleteTodo(targetId + 1, repo);
+      if (result.ok) throw new Error('deleteTodo() のテスト: 存在しない TODO の削除に成功');
+
+      t.assert.strictEqual(result.err.type, 'todo-not-found');
+
+      // TODO が削除されていないか
+      const findResult = await findTodos(repo);
+      if (!findResult.ok) throw new Error('deleteTodo() のテスト内で findTodos() が失敗');
+
+      t.assert.strictEqual(findResult.data.length, 1);
+    });
+
+    it('DB エラー -> DB エラーが返ってくる', async (t: TestContext) => {
+      const result = await deleteTodo(targetId, mockFailureRepo);
+      if (result.ok) throw new Error('deleteTodo() のテスト: 常に失敗する mock repo が成功');
+
+      t.assert.strictEqual(result.err.type, 'persistence-error');
+
+      // TODO が削除されていないか
+      const findResult = await repo.findAll();
+      if (!findResult.ok) throw new Error('deleteTodo() のテスト内で repo.findAll() が失敗');
+
+      t.assert.strictEqual(findResult.data.length, 1);
+    });
+  });
+
+  describe('deleteTodosMany() のテスト', { todo: true }, () => {
+    const targetIdCounter = createIdCounter();
+    const targetIds = Array.from({ length: 3 }, (_) => targetIdCounter.count());
+    const inputTodos = [
+      {
+        task: 'a',
+        priority: 'low',
+        deadline: '2026-10-08'
+      },
+      {
+        task: 'b',
+        priority: 'middle',
+        deadline: '2026-10-09'
+      },
+      {
+        task: 'c',
+        priority: 'high',
+        deadline: '2026-10-10'
+      }
+    ];
+    const testNoIdTodos = inputTodos.map((t) => createTestNoIdTodo(t));
+
+    const testIdCounter = createIdCounter();
+    const repo = createMockSuccessTodoRepository([], testIdCounter);
+
+    beforeEach(async () => {
+      // Date をモック
+      mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
+      // テスト用の複数の TODO を保存しておく
+      const results = await Promise.all(testNoIdTodos.map((t) => repo.create(t)));
+      if (results.some((r) => !r.ok)) throw new Error('TODO の保存に失敗');
+    });
+
+    afterEach(async () => {
+      mock.timers.reset();
+      testIdCounter.reset();
+      // 保存された TODO をリセット
+      const result = await repo.deleteManyByIds(targetIds);
+      if (!result.ok) throw new Error('TODO の削除に失敗');
+    });
+
+    it('正常系: 保存済みの複数の TODO を削除できる', async (t: TestContext) => {
+      const result = await deleteTodosMany(targetIds, repo);
+      if (!result.ok) throw new Error('正常系テストケースでエラー');
+
+      t.assert.strictEqual(result.data, undefined);
+
+      const findResult = await repo.findAll();
+      if (!findResult.ok) throw new Error('正常系テストケースで repo.findAll() が失敗');
+      t.assert.strictEqual(findResult.data.length, 0);
+    });
+
+    it('ids に不正な値が含まれる', async (t: TestContext) => {
+      const result = await deleteTodosMany([parseInt('a')], repo);
+      if (result.ok) throw new Error('不正な値の ids で成功');
+      t.assert.strictEqual(result.err.type, 'invalid-todo-id');
+
+      const findResult = await repo.findAll();
+      if (!findResult.ok) throw new Error('repo.findAll() が失敗');
+      t.assert.deepStrictEqual(
+        findResult.data,
+        testNoIdTodos.map((t, i) => ({ ...t, id: targetIds[i], isDone: false }))
+      );
+    });
+
+    it('ひとつも TODO を削除できなかった', async (t: TestContext) => {
+      const result = await deleteTodosMany([7], repo);
+      if (result.ok) throw new Error('削除できないはずの TODO を削除できてしまった');
+      t.assert.strictEqual(result.err.type, 'todo-not-found');
+
+      const findResult = await repo.findAll();
+      if (!findResult.ok) throw new Error('repo.findAll() が失敗');
+      t.assert.deepStrictEqual(
+        findResult.data,
+        testNoIdTodos.map((t, i) => ({ ...t, id: targetIds[i], isDone: false }))
+      );
+    });
+
+    it('DB エラー -> DB エラーが返ってくる', async (t: TestContext) => {
+      const result = await deleteTodosMany(targetIds, mockFailureRepo);
+      if (result.ok) throw new Error('失敗すべきケースで成功');
+      t.assert.strictEqual(result.err.type, 'persistence-error');
+
+      const findResult = await repo.findAll();
+      if (!findResult.ok) throw new Error('repo.findAll() が失敗');
+      t.assert.deepStrictEqual(
+        findResult.data,
+        testNoIdTodos.map((t, i) => ({ ...t, id: targetIds[i], isDone: false }))
+      );
+    });
+  });
 });
