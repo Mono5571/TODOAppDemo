@@ -1476,4 +1476,8 @@ const length_emoji_joined_2 = [...segmenterJa.segment('👨‍👩‍👧‍👦
 
 ## 2026-10-24
 
-- schematic_diagram.md にアーキテクチャ全体図を書いた
+- schematic_diagram.md にアーキテクチャ全体図を書く
+
+## 2026-11-02
+
+- todoCRUD のテストを書き終える
