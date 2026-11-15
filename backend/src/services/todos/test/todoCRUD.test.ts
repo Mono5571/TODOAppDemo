@@ -4,12 +4,13 @@ import {
   createMockSuccessTodoRepository,
   createMockFailureTodoRepository
 } from '../../../repositories/todo/mockTodoRepository.ts';
-import type { Todo } from '@todo/shared';
+import type { Result, Todo } from '@todo/shared';
 import { createTodo } from '../createTodo.ts';
 import { findTodos } from '../findTodos.ts';
 import { updateTodoIsDone } from '../updateTodoIsDone.ts';
 import { deleteTodo } from '../deleteTodo.ts';
 import { deleteTodosMany } from '../deleteTodosMany.ts';
+import type { TodoRepositoryError } from '../../../repositories/todo/type.ts';
 
 type PreNoIdTodo = {
   task: string;
@@ -358,7 +359,7 @@ describe('Todo Service --ビジネスロジックに基づく入力値検証と�
       mock.timers.enable({ apis: ['Date'], now: new Date(2026, 7, 5) /* 2026年8月5日 */ });
       // テスト用の複数の TODO を保存しておく
       const results = await Promise.all(testNoIdTodos.map((t) => repo.create(t)));
-      if (results.some((r) => !r.ok)) throw new Error('TODO の保存に失敗');
+      if (results.some((r: Result<Todo, TodoRepositoryError>) => !r.ok)) throw new Error('TODO の保存に失敗');
     });
 
     afterEach(async () => {

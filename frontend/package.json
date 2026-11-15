@@ -10,7 +10,7 @@
     "dev": "vite",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test dist/__test__/*.js",
+    "test": "node --test",
     "clean": "rm -rf dist"
   },
   "keywords": [],
